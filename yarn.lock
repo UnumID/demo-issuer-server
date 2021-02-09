@@ -1109,6 +1109,10 @@
     "@typescript-eslint/types" "4.15.0"
     eslint-visitor-keys "^2.0.0"
 
+"@unumid/types@git+ssh://git@github.com/UnumID/types.git#b951c37a6eb82b66a8e1c8249c6e51e728fec2d1":
+  version "0.0.1"
+  resolved "git+ssh://git@github.com/UnumID/types.git#b951c37a6eb82b66a8e1c8249c6e51e728fec2d1"
+
 abab@^2.0.3:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/abab/-/abab-2.0.5.tgz#c0b678fb32d60fc1219c784d6a826fe385aeb79a"
