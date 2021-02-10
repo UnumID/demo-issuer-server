@@ -8,7 +8,7 @@ import { resetDb } from '../helpers/resetDb';
 describe('Issuer entity', () => {
   const now = new Date().toISOString();
   const options = {
-    data: {
+    issuer: {
       uuid: v4(),
       createdAt: now,
       updatedAt: now,
@@ -32,7 +32,7 @@ describe('Issuer entity', () => {
     });
 
     it('sets the issuer data from options', () => {
-      expect(issuer.data).toEqual(options.data);
+      expect(issuer.issuer).toEqual(options.issuer);
     });
   });
 
@@ -57,7 +57,7 @@ describe('Issuer entity', () => {
       expect(savedIssuer.uuid).toEqual(issuer.uuid);
       expect(savedIssuer.createdAt).toEqual(issuer.createdAt);
       expect(savedIssuer.updatedAt).toEqual(issuer.updatedAt);
-      expect(savedIssuer.data).toEqual(issuer.data);
+      expect(savedIssuer.issuer).toEqual(issuer.issuer);
     });
   });
 });
