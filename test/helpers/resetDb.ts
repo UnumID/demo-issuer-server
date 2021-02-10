@@ -4,4 +4,5 @@ export async function resetDb (orm: MikroORM): Promise<void> {
   const { em } = orm;
   const connection = em.getConnection();
   await connection.execute('DELETE FROM "User";');
+  await connection.execute('DELETE FROM "Issuer";');
 }
