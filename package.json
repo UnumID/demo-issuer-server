@@ -24,11 +24,11 @@
     "yarn": ">= 0.18.0"
   },
   "scripts": {
-    "test": "yarn run lint && yarn run compile && yarn run jest",
+    "test": "yarn run lint && yarn run compile && NODE_ENV=test yarn run migrate && NODE_ENV=test yarn run jest",
     "lint": "eslint src/. test/. --config .eslintrc.json --ext .ts --fix",
     "dev": "ts-node-dev --no-notify src/",
     "start": "yarn run compile && node lib/",
-    "jest": "jest  --forceExit",
+    "jest": "jest  --forceExit --max-workers=1",
     "compile": "shx rm -rf lib/ && tsc",
     "migrate": "yarn migration:up",
     "migration:create": "yarn mikro-orm migration:create",

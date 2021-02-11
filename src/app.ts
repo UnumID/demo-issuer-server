@@ -15,6 +15,7 @@ import middleware from './middleware';
 import services from './services';
 import appHooks from './app.hooks';
 import channels from './channels';
+import { setupMikroOrm } from './setupMikroOrm';
 
 import authentication from './authentication';
 
@@ -44,6 +45,9 @@ export default async function generateApp (): Promise<Application> {
   // Configure other middleware (see `middleware/index.ts`)
   app.configure(middleware);
   app.configure(authentication);
+
+  // set up mikro-orm
+  await setupMikroOrm(app);
   // Set up our services (see `services/index.ts`)
   app.configure(services);
   // Set up event channels (see channels.ts)

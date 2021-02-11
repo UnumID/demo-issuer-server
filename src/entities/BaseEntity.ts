@@ -11,10 +11,10 @@ export abstract class BaseEntity {
   @PrimaryKey()
   uuid: string;
 
-  @Property()
+  @Property({ columnType: 'timestamptz(6)' })
   createdAt: Date;
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ onUpdate: () => new Date(), columnType: 'timestamptz(6)' })
   updatedAt: Date;
 
   constructor (options: BaseEntityOptions) {
