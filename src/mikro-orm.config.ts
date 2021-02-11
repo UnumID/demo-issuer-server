@@ -6,6 +6,7 @@ import { config } from './config';
 import { BaseEntity } from './entities/BaseEntity';
 import { User } from './entities/User';
 import { IssuerEntity, EmbeddedIssuer } from './entities/Issuer';
+import { CredentialEntity, EmbeddedCredential } from './entities/Credential';
 
 const mikroOrmConfig: Options = {
   baseDir: process.cwd(),
@@ -19,7 +20,9 @@ const mikroOrmConfig: Options = {
     BaseEntity,
     User,
     IssuerEntity,
-    EmbeddedIssuer
+    EmbeddedIssuer,
+    CredentialEntity,
+    EmbeddedCredential
   ],
   entitiesTs: ['src/entities'],
   metadataProvider: TsMorphMetadataProvider,
