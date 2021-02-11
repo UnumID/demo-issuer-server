@@ -50,56 +50,56 @@ describe('IssuerDataService', () => {
         const retrievedIssuer = await service.get(savedIssuer.uuid);
         expect(retrievedIssuer).toEqual(savedIssuer);
       });
+    });
 
-      describe('get', () => {
-        let savedIssuer: IssuerEntity;
+    describe('get', () => {
+      let savedIssuer: IssuerEntity;
 
-        beforeEach(async () => {
-          savedIssuer = await service.create(options);
-        });
-        it('gets an issuer from the database by uuid', async () => {
-          const retrievedIssuer = await service.get(savedIssuer.uuid);
-          expect(retrievedIssuer).toEqual(savedIssuer);
-        });
-
-        it('gets an issuer from the db by a query', async () => {
-          const retrievedIssuer = await service.get(null, { query: { where: { issuer_did: options.issuer.did } } });
-          expect(retrievedIssuer).toEqual(savedIssuer);
-        });
+      beforeEach(async () => {
+        savedIssuer = await service.create(options);
+      });
+      it('gets an issuer from the database by uuid', async () => {
+        const retrievedIssuer = await service.get(savedIssuer.uuid);
+        expect(retrievedIssuer).toEqual(savedIssuer);
       });
 
-      describe('find', () => {
-        let savedIssuer1: IssuerEntity;
-        let savedIssuer2: IssuerEntity;
+      it('gets an issuer from the db by a query', async () => {
+        const retrievedIssuer = await service.get(null, { query: { where: { issuer_did: options.issuer.did } } });
+        expect(retrievedIssuer).toEqual(savedIssuer);
+      });
+    });
 
-        beforeEach(async () => {
-          savedIssuer1 = await service.create(options);
-          savedIssuer2 = await service.create(options);
-        });
+    describe('find', () => {
+      let savedIssuer1: IssuerEntity;
+      let savedIssuer2: IssuerEntity;
 
-        it('gets all issuers from the database', async () => {
-          const retrievedIssuers = await service.find();
-          expect(retrievedIssuers).toEqual([savedIssuer1, savedIssuer2]);
-        });
+      beforeEach(async () => {
+        savedIssuer1 = await service.create(options);
+        savedIssuer2 = await service.create(options);
       });
 
-      describe('remove', () => {
-        let savedIssuer: IssuerEntity;
+      it('gets all issuers from the database', async () => {
+        const retrievedIssuers = await service.find();
+        expect(retrievedIssuers).toEqual([savedIssuer1, savedIssuer2]);
+      });
+    });
 
-        beforeEach(async () => {
-          savedIssuer = await service.create(options);
-          await service.create(options);
-        });
+    describe('remove', () => {
+      let savedIssuer: IssuerEntity;
 
-        it('deletes an issuer', async () => {
-          await service.remove(savedIssuer.uuid);
-          try {
-            await service.get(savedIssuer.uuid);
-            fail();
-          } catch (e) {
-            expect(e).toBeInstanceOf(NotFound);
-          }
-        });
+      beforeEach(async () => {
+        savedIssuer = await service.create(options);
+        await service.create(options);
+      });
+
+      it('deletes an issuer', async () => {
+        await service.remove(savedIssuer.uuid);
+        try {
+          await service.get(savedIssuer.uuid);
+          fail();
+        } catch (e) {
+          expect(e).toBeInstanceOf(NotFound);
+        }
       });
     });
   });
