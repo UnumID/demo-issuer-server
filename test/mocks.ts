@@ -1,4 +1,7 @@
-import { Credential } from '@unumid/types';
+import { Credential, Issuer } from '@unumid/types';
+import { v4 } from 'uuid';
+
+import { IssuerEntity } from '../src/entities/Issuer';
 import { User } from '../src/entities/User';
 
 export const dummyCredential: Credential = {
@@ -67,3 +70,25 @@ export const dummyUser2 = new User({
   email: 'test2@unumid.org',
   password: 'test'
 });
+
+const now = new Date().toISOString();
+
+const dummyIssuer: Issuer = {
+  uuid: v4(),
+  createdAt: now,
+  updatedAt: now,
+  did: `did:unum:${v4()}`,
+  name: 'test issuer',
+  customerUuid: v4(),
+  isAuthorized: true
+};
+
+export const dummyIssuerOptions = {
+  issuer: dummyIssuer,
+  privateKey: '-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgacp2BLU+IxZYJopo\nGBTF0J2jvWY+EvS5fdlexMnjKoahRANCAASGXgT4l1h1JZaMPpdCp/QCcyfQbtPM\nSIuYeKYilXESM0UsTEYIvFNdzw32sUqYOPL5r8hPzp3nrSqKfT/C+yoQ\n-----END PRIVATE KEY-----\n',
+  authToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaXNzdWVyIiwidXVpZCI6Ijk1ZWI5YzFhLTQ0ZTgtNGE5ZS1hNzFhLWNjNTNiNjJiMjRhMiIsImRpZCI6ImRpZDp1bnVtOjZkYjA3NThmLWEwYTUtNDI4MC1hYWI2LTg1NTY5NzI1MjVjYiIsImV4cCI6MTYxMzA3MTIyMS40MDIsImlhdCI6MTYxMzE4MjQ3NX0.GZZE3H9NcOVOhENnNlECVDkW1bEKBZofgw6PK_-jchM'
+};
+
+export const dummyIssuerEntity = new IssuerEntity(dummyIssuerOptions);
+
+export const dummyIssuerEntity2 = new IssuerEntity(dummyIssuerOptions);

@@ -6,6 +6,7 @@ import generateApp from '../../../src/app';
 import { Application } from '../../../src/declarations';
 import { IssuerEntity } from '../../../src/entities/Issuer';
 import { resetDb } from '../../helpers/resetDb';
+import { dummyIssuerOptions } from '../../mocks';
 
 describe('IssuerDataService', () => {
   describe('initializing the service', () => {
@@ -18,20 +19,9 @@ describe('IssuerDataService', () => {
 
   describe('using the service', () => {
     let app: Application;
-    let service: MikroOrmService;
+    let service: MikroOrmService<IssuerEntity>;
 
     const now = new Date().toISOString();
-    const options = {
-      issuer: {
-        uuid: v4(),
-        createdAt: now,
-        updatedAt: now,
-        did: `did:unum:${v4()}`,
-        name: 'test issuer',
-        customerUuid: v4(),
-        isAuthorized: true
-      }
-    };
 
     beforeEach(async () => {
       app = await generateApp();
@@ -46,7 +36,7 @@ describe('IssuerDataService', () => {
 
     describe('create', () => {
       it('saves an issuer in the database', async () => {
-        const savedIssuer = await service.create(options);
+        const savedIssuer = await service.create(dummyIssuerOptions);
         const retrievedIssuer = await service.get(savedIssuer.uuid);
         expect(retrievedIssuer).toEqual(savedIssuer);
       });
@@ -56,7 +46,7 @@ describe('IssuerDataService', () => {
       let savedIssuer: IssuerEntity;
 
       beforeEach(async () => {
-        savedIssuer = await service.create(options);
+        savedIssuer = await service.create(dummyIssuerOptions);
       });
       it('gets an issuer from the database by uuid', async () => {
         const retrievedIssuer = await service.get(savedIssuer.uuid);
@@ -64,7 +54,7 @@ describe('IssuerDataService', () => {
       });
 
       it('gets an issuer from the db by a query', async () => {
-        const retrievedIssuer = await service.get(null, { query: { where: { issuer_did: options.issuer.did } } });
+        const retrievedIssuer = await service.get(null, { query: { where: { issuer_did: dummyIssuerOptions.issuer.did } } });
         expect(retrievedIssuer).toEqual(savedIssuer);
       });
     });
@@ -74,8 +64,8 @@ describe('IssuerDataService', () => {
       let savedIssuer2: IssuerEntity;
 
       beforeEach(async () => {
-        savedIssuer1 = await service.create(options);
-        savedIssuer2 = await service.create(options);
+        savedIssuer1 = await service.create(dummyIssuerOptions);
+        savedIssuer2 = await service.create(dummyIssuerOptions);
       });
 
       it('gets all issuers from the database', async () => {
@@ -88,8 +78,8 @@ describe('IssuerDataService', () => {
       let savedIssuer: IssuerEntity;
 
       beforeEach(async () => {
-        savedIssuer = await service.create(options);
-        await service.create(options);
+        savedIssuer = await service.create(dummyIssuerOptions);
+        await service.create(dummyIssuerOptions);
       });
 
       it('deletes an issuer', async () => {

@@ -4,22 +4,12 @@ import { v4 } from 'uuid';
 import { IssuerEntity } from '../../src/entities/Issuer';
 import mikroOrmConfig from '../../src/mikro-orm.config';
 import { resetDb } from '../helpers/resetDb';
+import { dummyIssuerOptions } from '../mocks';
 
 describe('Issuer entity', () => {
   const now = new Date().toISOString();
-  const options = {
-    issuer: {
-      uuid: v4(),
-      createdAt: now,
-      updatedAt: now,
-      did: `did:unum:${v4()}`,
-      name: 'test issuer',
-      customerUuid: v4(),
-      isAuthorized: true
-    }
-  };
 
-  const issuer = new IssuerEntity(options);
+  const issuer = new IssuerEntity(dummyIssuerOptions);
   describe('constructor behavior', () => {
     it('generates a uuid', () => {
       expect(issuer.uuid).toBeDefined();
@@ -32,7 +22,7 @@ describe('Issuer entity', () => {
     });
 
     it('sets the issuer data from options', () => {
-      expect(issuer.issuer).toEqual(options.issuer);
+      expect(issuer.issuer).toEqual(dummyIssuerOptions.issuer);
     });
   });
 

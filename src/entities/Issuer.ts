@@ -5,6 +5,8 @@ import { BaseEntity, BaseEntityOptions } from './BaseEntity';
 
 interface IssuerEntityOptions extends BaseEntityOptions {
   issuer: Issuer;
+  privateKey: string;
+  authToken: string;
 }
 
 @Embeddable()
@@ -56,9 +58,17 @@ export class IssuerEntity extends BaseEntity {
   @Embedded()
   issuer: EmbeddedIssuer;
 
+  @Property({ columnType: 'text' })
+  privateKey: string;
+
+  @Property({ columnType: 'text' })
+  authToken: string;
+
   constructor (options: IssuerEntityOptions) {
     super(options);
 
     this.issuer = new EmbeddedIssuer(options.issuer);
+    this.privateKey = options.privateKey;
+    this.authToken = options.authToken;
   }
 }
