@@ -1,4 +1,5 @@
 import { Credential } from '@unumid/types';
+import { User } from '../src/entities/User';
 
 export const dummyCredential: Credential = {
   '@context': [
@@ -56,3 +57,13 @@ export const dummyCredential: Credential = {
     proofPurpose: 'AssertionMethod'
   }
 };
+
+export const dummyUser = new User({
+  email: 'test@unumid.org',
+  password: 'test'
+});
+
+export const dummyUser2 = new User({
+  email: 'test2@unumid.org',
+  password: 'test'
+});

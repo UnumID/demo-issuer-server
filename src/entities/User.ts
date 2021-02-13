@@ -3,7 +3,7 @@ import { omit } from 'lodash';
 
 import { BaseEntity, BaseEntityOptions } from './BaseEntity';
 
-interface UserEntityOptions extends BaseEntityOptions {
+export interface UserEntityOptions extends BaseEntityOptions {
   password: string;
   email: string;
   phone?: string;
