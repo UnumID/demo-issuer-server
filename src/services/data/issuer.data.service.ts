@@ -6,14 +6,13 @@ import { IssuerEntity } from '../../entities/Issuer';
 
 declare module '../../declarations' {
   interface ServiceTypes {
-    issuerData: MikroOrmService & ServiceAddons<IssuerEntity>;
+    issuerData: MikroOrmService<IssuerEntity> & ServiceAddons<IssuerEntity>;
   }
 }
 
 export default function (app: Application): void {
   const userDataService = createService({
     Entity: IssuerEntity,
-    name: 'IssuerEntity',
     orm: app.get('orm')
   });
 

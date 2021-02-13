@@ -7,14 +7,13 @@ import hooks from './user.data.hooks';
 
 declare module '../../declarations' {
   interface ServiceTypes {
-    userData: MikroOrmService & ServiceAddons<User>;
+    userData: MikroOrmService<User> & ServiceAddons<User>;
   }
 }
 
 export default function (app: Application): void {
   const userDataService = createService({
     Entity: User,
-    name: 'User',
     orm: app.get('orm')
   });
 
