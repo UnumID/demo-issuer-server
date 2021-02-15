@@ -1,6 +1,6 @@
 import { IssuerService } from '../../../../src/services/api/issuer/issuer.class';
 import { Application } from '../../../../src/declarations';
-import { dummyIssuerEntity, dummyIssuerEntity2 } from '../../../mocks';
+import { dummyIssuerEntity, dummyIssuerEntity2, dummyIssuerOptions } from '../../../mocks';
 
 describe('IssuerService class', () => {
   let service: IssuerService;
@@ -53,7 +53,7 @@ describe('IssuerService class', () => {
     it('creates a issuer with the issuer data service', async () => {
       mockIssuerDataService.create.mockResolvedValueOnce(dummyIssuerEntity);
       const requestDto = {
-        data: { email: 'test@unumid.org', password: 'test' }
+        data: dummyIssuerOptions
       };
       const responseDto = await service.create(requestDto);
       expect(mockIssuerDataService.create).toBeCalledWith(requestDto.data, undefined);
