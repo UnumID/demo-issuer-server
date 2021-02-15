@@ -50,7 +50,7 @@ export class IssuerService implements DtoServiceMethods<IssuerEntity> {
       const issuers = await issuerDataService.find(params);
       return { result: issuers };
     } catch (e) {
-      logger.error('error in UserDataService.find', e);
+      logger.error('error in IssuerDataService.find', e);
       throw e;
     }
   }
@@ -61,7 +61,7 @@ export class IssuerService implements DtoServiceMethods<IssuerEntity> {
       const patchedIssuer = await issuerDataService.patch(uuid, requestDto.data, params);
       return { result: patchedIssuer };
     } catch (e) {
-      logger.error('error in issuerDataService.patch', e);
+      logger.error('error in IssuerDataService.patch', e);
       throw e;
     }
   }
@@ -72,7 +72,7 @@ export class IssuerService implements DtoServiceMethods<IssuerEntity> {
       const response = await issuerDataService.remove(uuid, params);
       return { result: response };
     } catch (e) {
-      logger.warn('error in UserService.remove', e);
+      logger.warn('error in IssuerDataService.remove', e);
       throw e;
     }
   }
