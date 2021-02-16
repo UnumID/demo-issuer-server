@@ -1,6 +1,4 @@
 import { EntityRepository, MikroORM } from '@mikro-orm/core';
-import { v4 } from 'uuid';
-import { omit, set } from 'lodash';
 
 import { CredentialEntity, CredentialEntityOptions } from '../../src/entities/Credential';
 import mikroOrmConfig from '../../src/mikro-orm.config';

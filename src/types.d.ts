@@ -1,4 +1,4 @@
-import { CredentialSubject, Credential } from '@unumid/types';
+import { Credential } from '@unumid/types';
 
 export type Rename<
 T,
