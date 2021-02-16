@@ -1,12 +1,13 @@
 import { ServiceAddons } from '@feathersjs/feathers';
 
 import { Application } from '../../../declarations';
-import { UserService, UserResponseDto, UserListResponseDto } from './user.class';
+import { UserService } from './user.class';
+import { User } from '../../../entities/User';
 
 // add this service to the service type index
 declare module '../../../declarations' {
   interface ServiceTypes {
-    user: UserService & ServiceAddons<UserResponseDto | UserListResponseDto>;
+    user: UserService & ServiceAddons<User>;
   }
 }
 

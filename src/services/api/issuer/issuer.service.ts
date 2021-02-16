@@ -1,12 +1,13 @@
 import { ServiceAddons } from '@feathersjs/feathers';
 
 import { Application } from '../../../declarations';
-import { IssuerService, IssuerResponseDto, IssuerListResponseDto } from './issuer.class';
+import { IssuerService } from './issuer.class';
+import { IssuerEntity } from '../../../entities/Issuer';
 
 // add this service to the service type index
 declare module '../../../declarations' {
   interface ServiceTypes {
-    issuer: IssuerService & ServiceAddons<IssuerResponseDto | IssuerListResponseDto>;
+    issuer: IssuerService & ServiceAddons<IssuerEntity>;
   }
 }
 

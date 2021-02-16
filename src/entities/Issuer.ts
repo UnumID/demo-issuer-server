@@ -1,74 +1,71 @@
-import { Entity, Property, Embeddable, Embedded } from '@mikro-orm/core';
-import { Issuer } from '@unumid/types';
+import { Entity, Property } from '@mikro-orm/core';
 
 import { BaseEntity, BaseEntityOptions } from './BaseEntity';
 
-interface IssuerEntityOptions extends BaseEntityOptions {
-  issuer: Issuer;
+export interface IssuerEntityOptions extends BaseEntityOptions {
+  issuerUuid: string;
+  issuerDid: string;
+  issuerCreatedAt: Date;
+  issuerUpdatedAt: Date;
+  issuerName: string;
+  issuerIsAuthorized: boolean;
+  issuerCustomerUuid: string;
   privateKey: string;
   authToken: string;
-}
-
-@Embeddable()
-export class EmbeddedIssuer implements Issuer {
-  @Property()
-  uuid: string;
-
-  @Property()
-  did: string;
-
-  @Property()
-  createdAt: string;
-
-  @Property()
-  updatedAt: string;
-
-  @Property()
-  name: string;
-
-  @Property()
-  isAuthorized: boolean;
-
-  @Property()
-  customerUuid: string;
-
-  constructor (options: Issuer) {
-    const {
-      uuid,
-      did,
-      createdAt,
-      updatedAt,
-      name,
-      isAuthorized,
-      customerUuid
-    } = options;
-
-    this.uuid = uuid;
-    this.did = did;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
-    this.name = name;
-    this.isAuthorized = isAuthorized;
-    this.customerUuid = customerUuid;
-  }
 }
 
 @Entity({ tableName: 'Issuer' })
 export class IssuerEntity extends BaseEntity {
-  @Embedded()
-  issuer: EmbeddedIssuer;
-
   @Property({ columnType: 'text' })
   privateKey: string;
 
   @Property({ columnType: 'text' })
   authToken: string;
 
+  @Property({ columnType: 'uuid' })
+  issuerUuid: string;
+
+  @Property({ columnType: 'uuid' })
+  issuerCustomerUuid: string;
+
+  @Property()
+  issuerDid: string;
+
+  @Property({ columnType: 'timestamptz(6)' })
+  issuerCreatedAt: Date;
+
+  @Property({ columnType: 'timestamptz(6)' })
+  issuerUpdatedAt: Date;
+
+  @Property()
+  issuerIsAuthorized: boolean;
+
+  @Property()
+  issuerName: string;
+
   constructor (options: IssuerEntityOptions) {
     super(options);
 
-    this.issuer = new EmbeddedIssuer(options.issuer);
-    this.privateKey = options.privateKey;
-    this.authToken = options.authToken;
+    const {
+      privateKey,
+      authToken,
+      issuerUuid,
+      issuerCustomerUuid,
+      issuerDid,
+      issuerCreatedAt,
+      issuerUpdatedAt,
+      issuerIsAuthorized,
+      issuerName
+    } = options;
+
+    this.privateKey = privateKey;
+    this.authToken = authToken;
+    this.issuerUuid = issuerUuid;
+    this.issuerCustomerUuid = issuerCustomerUuid;
+    this.issuerCreatedAt = issuerCreatedAt;
+    this.issuerUpdatedAt = issuerUpdatedAt;
+    this.issuerIsAuthorized = issuerIsAuthorized;
+    this.issuerName = issuerName;
+    this.issuerDid = issuerDid;
   }
 }

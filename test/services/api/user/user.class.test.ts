@@ -29,18 +29,18 @@ describe('UserService class', () => {
     it('gets a user from the data service by id', async () => {
       mockUserDataService.get.mockResolvedValueOnce(dummyUser);
 
-      const responseDto = await service.get(dummyUser.uuid);
+      const user = await service.get(dummyUser.uuid);
       expect(mockUserDataService.get).toBeCalledWith(dummyUser.uuid, undefined);
-      expect(responseDto).toEqual({ result: dummyUser });
+      expect(user).toEqual(dummyUser);
     });
   });
 
   describe('find', () => {
     it('gets all users from the data service', async () => {
       mockUserDataService.find.mockResolvedValueOnce([dummyUser, dummyUser2]);
-      const responseDto = await service.find();
+      const foundUsers = await service.find();
       expect(mockUserDataService.find).toBeCalled();
-      expect(responseDto).toEqual({ result: [dummyUser, dummyUser2] });
+      expect(foundUsers).toEqual([dummyUser, dummyUser2]);
     });
 
     it('gets users by params from the data service', async () => {
@@ -54,12 +54,10 @@ describe('UserService class', () => {
   describe('create', () => {
     it('creates a user with the user data service', async () => {
       mockUserDataService.create.mockResolvedValueOnce(dummyUser);
-      const requestDto = {
-        data: { email: 'test@unumid.org', password: 'test' }
-      };
-      const responseDto = await service.create(requestDto);
-      expect(mockUserDataService.create).toBeCalledWith(requestDto.data, undefined);
-      expect(responseDto).toEqual({ result: dummyUser });
+      const options = { email: 'test@unumid.org', password: 'test' };
+      const createdUser = await service.create(options);
+      expect(mockUserDataService.create).toBeCalledWith(options, undefined);
+      expect(createdUser).toEqual(dummyUser);
     });
   });
 
@@ -72,17 +70,12 @@ describe('UserService class', () => {
       };
       mockUserDataService.patch.mockResolvedValueOnce(patchedUser);
 
-      const requestDto = {
-        data: { did }
-      };
+      const options = { did };
 
-      const responseDto = await service.patch(dummyUser.uuid, requestDto);
-      expect(mockUserDataService.patch).toBeCalledWith(dummyUser.uuid, requestDto.data, undefined);
+      const response = await service.patch(dummyUser.uuid, options);
+      expect(mockUserDataService.patch).toBeCalledWith(dummyUser.uuid, options, undefined);
 
-      const expected = {
-        result: patchedUser
-      };
-      expect(responseDto).toEqual(expected);
+      expect(response).toEqual(patchedUser);
     });
   });
 
@@ -95,9 +88,8 @@ describe('UserService class', () => {
 
     it('returns the removed user', async () => {
       mockUserDataService.remove.mockResolvedValueOnce(dummyUser);
-      const responseDto = await service.remove(dummyUser.uuid);
-      const expected = { result: dummyUser };
-      expect(responseDto).toEqual(expected);
+      const removedUser = await service.remove(dummyUser.uuid);
+      expect(removedUser).toEqual(dummyUser);
     });
   });
 });

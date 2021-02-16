@@ -1,12 +1,11 @@
 import { NotFound } from '@feathersjs/errors';
 import { Service as MikroOrmService } from 'feathers-mikro-orm';
-import { v4 } from 'uuid';
 
 import generateApp from '../../../src/app';
 import { Application } from '../../../src/declarations';
 import { CredentialEntity } from '../../../src/entities/Credential';
 import { resetDb } from '../../helpers/resetDb';
-import { dummyCredential } from '../../mocks';
+import { dummyCredentialEntityOptions } from '../../mocks';
 
 describe('CredentialDataService', () => {
   describe('initializing the service', () => {
@@ -21,10 +20,6 @@ describe('CredentialDataService', () => {
     let app: Application;
     let service: MikroOrmService;
 
-    const options = {
-      credential: dummyCredential
-    };
-
     beforeEach(async () => {
       app = await generateApp();
       service = app.service('credentialData');
@@ -38,7 +33,7 @@ describe('CredentialDataService', () => {
 
     describe('create', () => {
       it('saves a credential in the database', async () => {
-        const savedCredential = await service.create(options);
+        const savedCredential = await service.create(dummyCredentialEntityOptions);
         const retrievedCredential = await service.get(savedCredential.uuid);
         expect(retrievedCredential).toEqual(savedCredential);
       });
@@ -48,7 +43,7 @@ describe('CredentialDataService', () => {
       let savedCredential: CredentialEntity;
 
       beforeEach(async () => {
-        savedCredential = await service.create(options);
+        savedCredential = await service.create(dummyCredentialEntityOptions);
       });
 
       afterEach(async () => {
@@ -63,7 +58,7 @@ describe('CredentialDataService', () => {
       });
 
       it('gets a credential entity from the db by a query', async () => {
-        const retrievedCredential = await service.get(null, { query: { where: { credential_id: options.credential.id } } });
+        const retrievedCredential = await service.get(null, { query: { where: { credentialId: dummyCredentialEntityOptions.credentialId } } });
         expect(retrievedCredential).toEqual(savedCredential);
       });
     });
@@ -73,8 +68,8 @@ describe('CredentialDataService', () => {
       let savedCredential2: CredentialEntity;
 
       beforeEach(async () => {
-        savedCredential1 = await service.create(options);
-        savedCredential2 = await service.create(options);
+        savedCredential1 = await service.create(dummyCredentialEntityOptions);
+        savedCredential2 = await service.create(dummyCredentialEntityOptions);
       });
 
       it('gets all credentials from the database', async () => {
@@ -92,7 +87,7 @@ describe('CredentialDataService', () => {
       let savedCredential: CredentialEntity;
 
       beforeEach(async () => {
-        savedCredential = await service.create(options);
+        savedCredential = await service.create(dummyCredentialEntityOptions);
       });
 
       it('deletes a credential', async () => {

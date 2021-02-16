@@ -1,12 +1,13 @@
 import { ServiceAddons } from '@feathersjs/feathers';
 
 import { Application } from '../../../declarations';
-import { CredentialService, CredentialResponseDto, CredentialListResponseDto } from './credential.class';
+import { CredentialService } from './credential.class';
+import { CredentialEntity } from '../../../entities/Credential';
 
 // add this service to the service type index
 declare module '../../../declarations' {
   interface ServiceTypes {
-    credential: CredentialService & ServiceAddons<CredentialResponseDto | CredentialListResponseDto>;
+    credential: CredentialService & ServiceAddons<CredentialEntity>;
   }
 }
 
