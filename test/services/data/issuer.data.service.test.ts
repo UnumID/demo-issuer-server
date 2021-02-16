@@ -21,8 +21,6 @@ describe('IssuerDataService', () => {
     let app: Application;
     let service: MikroOrmService<IssuerEntity>;
 
-    const now = new Date().toISOString();
-
     beforeEach(async () => {
       app = await generateApp();
       service = app.service('issuerData');
@@ -54,7 +52,7 @@ describe('IssuerDataService', () => {
       });
 
       it('gets an issuer from the db by a query', async () => {
-        const retrievedIssuer = await service.get(null, { query: { where: { issuer_did: dummyIssuerOptions.issuer.did } } });
+        const retrievedIssuer = await service.get(null, { query: { where: { issuerDid: dummyIssuerOptions.issuerDid } } });
         expect(retrievedIssuer).toEqual(savedIssuer);
       });
     });

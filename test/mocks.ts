@@ -4,10 +4,9 @@ import { CredentialEntity } from '../src/entities/Credential';
 
 import { IssuerEntity } from '../src/entities/Issuer';
 import { User } from '../src/entities/User';
-import { CredentialWithRenamedContext } from '../src/types';
 
-export const dummyCredential: CredentialWithRenamedContext = {
-  context: [
+export const dummyCredential: Credential = {
+  '@context': [
     'https://www.w3.org/2018/credentials/v1'
   ],
   credentialStatus: {
@@ -64,7 +63,15 @@ export const dummyCredential: CredentialWithRenamedContext = {
 };
 
 export const dummyCredentialEntityOptions = {
-  credential: dummyCredential
+  credentialContext: dummyCredential['@context'],
+  credentialCredentialStatus: dummyCredential.credentialStatus,
+  credentialCredentialSubject: dummyCredential.credentialSubject,
+  credentialId: dummyCredential.id,
+  credentialIssuer: dummyCredential.issuer,
+  credentialType: dummyCredential.type,
+  credentialIssuanceDate: dummyCredential.issuanceDate,
+  credentialExpirationDate: dummyCredential.expirationDate,
+  credentialProof: dummyCredential.proof
 };
 
 export const dummyCredentialEntity = new CredentialEntity(dummyCredentialEntityOptions);
@@ -94,7 +101,13 @@ const dummyIssuer: Issuer = {
 };
 
 export const dummyIssuerOptions = {
-  issuer: dummyIssuer,
+  issuerUuid: dummyIssuer.uuid,
+  issuerCreatedAt: new Date(dummyIssuer.createdAt),
+  issuerUpdatedAt: new Date(dummyIssuer.updatedAt),
+  issuerDid: dummyIssuer.did,
+  issuerName: dummyIssuer.name,
+  issuerCustomerUuid: dummyIssuer.customerUuid,
+  issuerIsAuthorized: dummyIssuer.isAuthorized,
   privateKey: '-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgacp2BLU+IxZYJopo\nGBTF0J2jvWY+EvS5fdlexMnjKoahRANCAASGXgT4l1h1JZaMPpdCp/QCcyfQbtPM\nSIuYeKYilXESM0UsTEYIvFNdzw32sUqYOPL5r8hPzp3nrSqKfT/C+yoQ\n-----END PRIVATE KEY-----\n',
   authToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaXNzdWVyIiwidXVpZCI6Ijk1ZWI5YzFhLTQ0ZTgtNGE5ZS1hNzFhLWNjNTNiNjJiMjRhMiIsImRpZCI6ImRpZDp1bnVtOjZkYjA3NThmLWEwYTUtNDI4MC1hYWI2LTg1NTY5NzI1MjVjYiIsImV4cCI6MTYxMzA3MTIyMS40MDIsImlhdCI6MTYxMzE4MjQ3NX0.GZZE3H9NcOVOhENnNlECVDkW1bEKBZofgw6PK_-jchM'
 };

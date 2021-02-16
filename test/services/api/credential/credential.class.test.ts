@@ -29,7 +29,7 @@ describe('CredentialService class', () => {
 
       const responseDto = await service.get(dummyCredentialEntity.uuid);
       expect(mockCredentialDataService.get).toBeCalledWith(dummyCredentialEntity.uuid, undefined);
-      expect(responseDto).toEqual({ result: dummyCredentialEntity });
+      expect(responseDto).toEqual(dummyCredentialEntity);
     });
   });
 
@@ -38,12 +38,12 @@ describe('CredentialService class', () => {
       mockCredentialDataService.find.mockResolvedValueOnce([dummyCredentialEntity, dummyCredentialEntity2]);
       const responseDto = await service.find();
       expect(mockCredentialDataService.find).toBeCalled();
-      expect(responseDto).toEqual({ result: [dummyCredentialEntity, dummyCredentialEntity2] });
+      expect(responseDto).toEqual([dummyCredentialEntity, dummyCredentialEntity2]);
     });
 
     it('gets credentials by params from the data service', async () => {
       mockCredentialDataService.find.mockResolvedValueOnce([dummyCredentialEntity]);
-      const params = { where: { email: 'test@unumid.org' } };
+      const params = { where: { credentialId: dummyCredentialEntity.credentialId } };
       service.find(params);
       expect(mockCredentialDataService.find).toBeCalledWith(params);
     });
@@ -52,12 +52,9 @@ describe('CredentialService class', () => {
   describe('create', () => {
     it('creates a credential with the credential data service', async () => {
       mockCredentialDataService.create.mockResolvedValueOnce(dummyCredentialEntity);
-      const requestDto = {
-        data: dummyCredentialEntityOptions
-      };
-      const responseDto = await service.create(requestDto);
-      expect(mockCredentialDataService.create).toBeCalledWith(requestDto.data, undefined);
-      expect(responseDto).toEqual({ result: dummyCredentialEntity });
+      const responseDto = await service.create(dummyCredentialEntityOptions);
+      expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptions, undefined);
+      expect(responseDto).toEqual(dummyCredentialEntity);
     });
   });
 
@@ -71,8 +68,7 @@ describe('CredentialService class', () => {
     it('returns the removed credential', async () => {
       mockCredentialDataService.remove.mockResolvedValueOnce(dummyCredentialEntity);
       const responseDto = await service.remove(dummyCredentialEntity.uuid);
-      const expected = { result: dummyCredentialEntity };
-      expect(responseDto).toEqual(expected);
+      expect(responseDto).toEqual(dummyCredentialEntity);
     });
   });
 });

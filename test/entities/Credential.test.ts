@@ -1,16 +1,12 @@
 import { EntityRepository, MikroORM } from '@mikro-orm/core';
 
-import { CredentialEntity, CredentialEntityOptions } from '../../src/entities/Credential';
+import { CredentialEntity } from '../../src/entities/Credential';
 import mikroOrmConfig from '../../src/mikro-orm.config';
 import { resetDb } from '../helpers/resetDb';
-import { dummyCredential } from '../mocks';
+import { dummyCredentialEntityOptions } from '../mocks';
 
 describe('Credential entity', () => {
-  const options: CredentialEntityOptions = {
-    credential: dummyCredential
-  };
-
-  const credentialEntity = new CredentialEntity(options);
+  const credentialEntity = new CredentialEntity(dummyCredentialEntityOptions);
 
   describe('constructor behavior', () => {
     it('generates a uuid', () => {
@@ -24,7 +20,15 @@ describe('Credential entity', () => {
     });
 
     it('sets the credential data from options', () => {
-      expect(credentialEntity.credential).toEqual(options.credential);
+      expect(credentialEntity.credentialContext).toEqual(dummyCredentialEntityOptions.credentialContext);
+      expect(credentialEntity.credentialId).toEqual(dummyCredentialEntityOptions.credentialId);
+      expect(credentialEntity.credentialCredentialStatus).toEqual(dummyCredentialEntityOptions.credentialCredentialStatus);
+      expect(credentialEntity.credentialCredentialSubject).toEqual(dummyCredentialEntityOptions.credentialCredentialSubject);
+      expect(credentialEntity.credentialIssuer).toEqual(dummyCredentialEntityOptions.credentialIssuer);
+      expect(credentialEntity.credentialType).toEqual(dummyCredentialEntityOptions.credentialType);
+      expect(credentialEntity.credentialIssuanceDate).toEqual(dummyCredentialEntityOptions.credentialIssuanceDate);
+      expect(credentialEntity.credentialExpirationDate).toEqual(dummyCredentialEntityOptions.credentialExpirationDate);
+      expect(credentialEntity.credentialProof).toEqual(dummyCredentialEntityOptions.credentialProof);
     });
   });
 
@@ -49,7 +53,15 @@ describe('Credential entity', () => {
       expect(retrievedCredentialEntity.uuid).toEqual(credentialEntity.uuid);
       expect(retrievedCredentialEntity.createdAt).toEqual(credentialEntity.createdAt);
       expect(retrievedCredentialEntity.updatedAt).toEqual(credentialEntity.updatedAt);
-      expect(retrievedCredentialEntity.credential).toEqual(credentialEntity.credential);
+      expect(retrievedCredentialEntity.credentialContext).toEqual(credentialEntity.credentialContext);
+      expect(retrievedCredentialEntity.credentialId).toEqual(credentialEntity.credentialId);
+      expect(retrievedCredentialEntity.credentialCredentialStatus).toEqual(credentialEntity.credentialCredentialStatus);
+      expect(retrievedCredentialEntity.credentialCredentialSubject).toEqual(credentialEntity.credentialCredentialSubject);
+      expect(retrievedCredentialEntity.credentialIssuer).toEqual(credentialEntity.credentialIssuer);
+      expect(retrievedCredentialEntity.credentialType).toEqual(credentialEntity.credentialType);
+      expect(retrievedCredentialEntity.credentialIssuanceDate).toEqual(credentialEntity.credentialIssuanceDate);
+      expect(retrievedCredentialEntity.credentialExpirationDate).toEqual(credentialEntity.credentialExpirationDate);
+      expect(retrievedCredentialEntity.credentialProof).toEqual(credentialEntity.credentialProof);
     });
   });
 });
