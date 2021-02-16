@@ -26,7 +26,7 @@ describe('Credential entity', () => {
     });
 
     it('sets the credential data from options', () => {
-      expect(set(omit(credentialEntity.credential, 'context'), '@context', credentialEntity.credential.context)).toEqual(options.credential);
+      expect(credentialEntity.credential).toEqual(options.credential);
     });
   });
 

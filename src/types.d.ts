@@ -1,3 +1,5 @@
+import { CredentialSubject, Credential } from '@unumid/types';
+
 export type Rename<
 T,
 K extends keyof T,
@@ -16,3 +18,5 @@ export interface RequestDto<T = any> extends Dto<T> {
 export interface ResponseDto<T = any> extends Dto<T> {
   result: T;
 }
+
+export type CredentialWithRenamedContext = Rename<Credential, '@context', 'context'>;

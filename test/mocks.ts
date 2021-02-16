@@ -1,11 +1,13 @@
 import { Credential, Issuer } from '@unumid/types';
 import { v4 } from 'uuid';
+import { CredentialEntity } from '../src/entities/Credential';
 
 import { IssuerEntity } from '../src/entities/Issuer';
 import { User } from '../src/entities/User';
+import { CredentialWithRenamedContext } from '../src/types';
 
-export const dummyCredential: Credential = {
-  '@context': [
+export const dummyCredential: CredentialWithRenamedContext = {
+  context: [
     'https://www.w3.org/2018/credentials/v1'
   ],
   credentialStatus: {
@@ -60,6 +62,14 @@ export const dummyCredential: Credential = {
     proofPurpose: 'AssertionMethod'
   }
 };
+
+export const dummyCredentialEntityOptions = {
+  credential: dummyCredential
+};
+
+export const dummyCredentialEntity = new CredentialEntity(dummyCredentialEntityOptions);
+
+export const dummyCredentialEntity2 = new CredentialEntity(dummyCredentialEntityOptions);
 
 export const dummyUser = new User({
   email: 'test@unumid.org',
