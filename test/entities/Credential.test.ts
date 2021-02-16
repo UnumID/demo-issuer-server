@@ -1,6 +1,4 @@
 import { EntityRepository, MikroORM } from '@mikro-orm/core';
-import { v4 } from 'uuid';
-import { omit, set } from 'lodash';
 
 import { CredentialEntity, CredentialEntityOptions } from '../../src/entities/Credential';
 import mikroOrmConfig from '../../src/mikro-orm.config';
@@ -26,7 +24,7 @@ describe('Credential entity', () => {
     });
 
     it('sets the credential data from options', () => {
-      expect(set(omit(credentialEntity.credential, 'context'), '@context', credentialEntity.credential.context)).toEqual(options.credential);
+      expect(credentialEntity.credential).toEqual(options.credential);
     });
   });
 

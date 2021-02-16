@@ -6,14 +6,13 @@ import { CredentialEntity } from '../../entities/Credential';
 
 declare module '../../declarations' {
   interface ServiceTypes {
-    credentialData: MikroOrmService & ServiceAddons<CredentialEntity>;
+    credentialData: MikroOrmService<CredentialEntity> & ServiceAddons<CredentialEntity>;
   }
 }
 
 export default function (app: Application): void {
   const userDataService = createService({
     Entity: CredentialEntity,
-    name: 'CredentialEntity',
     orm: app.get('orm')
   });
 

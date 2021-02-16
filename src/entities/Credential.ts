@@ -1,15 +1,15 @@
 import { Entity, Property, Embeddable, Embedded } from '@mikro-orm/core';
-import { Credential, CredentialSubject, Proof } from '@unumid/types';
+import { CredentialSubject, Proof } from '@unumid/types';
 
 import { BaseEntity, BaseEntityOptions } from './BaseEntity';
-import { Rename } from '../types';
+import { CredentialWithRenamedContext } from '../types';
 
 export interface CredentialEntityOptions extends BaseEntityOptions {
-  credential: Credential
+  credential: CredentialWithRenamedContext
 }
 
 @Embeddable()
-export class EmbeddedCredential implements Rename<Credential, '@context', 'context'> {
+export class EmbeddedCredential implements CredentialWithRenamedContext {
   @Property({ serializedName: '@context' })
   context: ['https://www.w3.org/2018/credentials/v1', ...string[]];
 
@@ -37,7 +37,7 @@ export class EmbeddedCredential implements Rename<Credential, '@context', 'conte
   @Property()
   proof: Proof;
 
-  constructor (options: Credential) {
+  constructor (options: CredentialWithRenamedContext) {
     const {
       credentialSubject,
       credentialStatus,
@@ -46,10 +46,11 @@ export class EmbeddedCredential implements Rename<Credential, '@context', 'conte
       id,
       issuanceDate,
       expirationDate,
-      proof
+      proof,
+      context
     } = options;
 
-    this.context = options['@context'];
+    this.context = context;
     this.credentialStatus = credentialStatus;
     this.credentialSubject = credentialSubject;
     this.issuer = issuer;
