@@ -81,6 +81,9 @@ export const buildKYCCredentialSubject = (did: string): KYCCredentialSubject => 
   confidence: '99%'
 });
 
+export const formatBearerToken = (token: string): string =>
+  token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+
 export const issueCredential = async (
   issuerEntity: IssuerEntity,
   credentialSubject: CredentialSubject,
@@ -90,7 +93,7 @@ export const issueCredential = async (
 
   try {
     authCredentialResponse = await sdkIssueCredential(
-      issuerEntity.authToken,
+      formatBearerToken(issuerEntity.authToken),
       credentialType,
       issuerEntity.issuerDid,
       credentialSubject,

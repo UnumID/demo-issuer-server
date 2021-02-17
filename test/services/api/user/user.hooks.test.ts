@@ -13,7 +13,8 @@ import {
   convertIssuerDtoToCredentialEntityOptions,
   getDefaultIssuerEntity,
   issueAuthCredential,
-  issueKYCCredential
+  issueKYCCredential,
+  formatBearerToken
 } from '../../../../src/services/api/user/user.hooks';
 import { dummyCredentialDto, dummyCredentialEntityOptions, dummyIssuerEntity } from '../../../mocks';
 
@@ -87,7 +88,7 @@ describe('user api service hooks', () => {
       it('issues a credential using the server sdk', async () => {
         await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
         expect(mockIssueCredential).toBeCalledWith(
-          dummyIssuerEntity.authToken,
+          formatBearerToken(dummyIssuerEntity.authToken),
           credentialType,
           dummyIssuerEntity.issuerDid,
           credentialSubject,
@@ -130,6 +131,18 @@ describe('user api service hooks', () => {
           credentialProof: dummyCredentialDto.body.proof
         };
         expect(received).toEqual(expected);
+      });
+    });
+
+    describe('formatBearerToken', () => {
+      it('returns the token formatted as a Bearer token', () => {
+        const bearerToken = formatBearerToken(dummyIssuerEntity.authToken);
+        expect(bearerToken).toEqual(`Bearer ${dummyIssuerEntity.authToken}`);
+      });
+
+      it('returns a correctly formatted token without changing it', () => {
+        const bearerToken = `Bearer ${dummyIssuerEntity.authToken}`;
+        expect(formatBearerToken(bearerToken)).toBe(bearerToken);
       });
     });
   });
@@ -234,7 +247,7 @@ describe('user api service hooks', () => {
 
         expect(mockIssueCredential).toBeCalled();
         expect(mockIssueCredential).toBeCalledWith(
-          dummyIssuerEntity.authToken,
+          formatBearerToken(dummyIssuerEntity.authToken),
           'DemoAuthCredential',
           dummyIssuerEntity.issuerDid,
           buildAuthCredentialSubject(ctx.data.did, ctx.id as string),
@@ -437,7 +450,7 @@ describe('user api service hooks', () => {
 
         expect(mockIssueCredential).toBeCalled();
         expect(mockIssueCredential).toBeCalledWith(
-          dummyIssuerEntity.authToken,
+          formatBearerToken(dummyIssuerEntity.authToken),
           'KYCCredential',
           dummyIssuerEntity.issuerDid,
           buildKYCCredentialSubject(ctx.data.did),
