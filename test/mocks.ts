@@ -1,5 +1,7 @@
 import { Credential, Issuer } from '@unumid/types';
+import { IssuerDto } from '@unumid/server-sdk';
 import { v4 } from 'uuid';
+
 import { CredentialEntity } from '../src/entities/Credential';
 
 import { IssuerEntity } from '../src/entities/Issuer';
@@ -116,3 +118,8 @@ export const dummyIssuerEntityOptions = {
 export const dummyIssuerEntity = new IssuerEntity(dummyIssuerEntityOptions);
 
 export const dummyIssuerEntity2 = new IssuerEntity(dummyIssuerEntityOptions);
+
+export const dummyCredentialDto: IssuerDto<Credential> = {
+  body: dummyCredential,
+  authToken: dummyIssuerEntityOptions.authToken
+};
