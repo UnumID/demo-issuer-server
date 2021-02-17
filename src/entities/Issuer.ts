@@ -12,6 +12,7 @@ export interface IssuerEntityOptions extends BaseEntityOptions {
   issuerCustomerUuid: string;
   privateKey: string;
   authToken: string;
+  apiKey: string;
 }
 
 @Entity({ tableName: 'Issuer' })
@@ -43,6 +44,9 @@ export class IssuerEntity extends BaseEntity {
   @Property()
   issuerName: string;
 
+  @Property()
+  apiKey: string;
+
   constructor (options: IssuerEntityOptions) {
     super(options);
 
@@ -55,7 +59,8 @@ export class IssuerEntity extends BaseEntity {
       issuerCreatedAt,
       issuerUpdatedAt,
       issuerIsAuthorized,
-      issuerName
+      issuerName,
+      apiKey
     } = options;
 
     this.privateKey = privateKey;
@@ -67,5 +72,6 @@ export class IssuerEntity extends BaseEntity {
     this.issuerIsAuthorized = issuerIsAuthorized;
     this.issuerName = issuerName;
     this.issuerDid = issuerDid;
+    this.apiKey = apiKey;
   }
 }

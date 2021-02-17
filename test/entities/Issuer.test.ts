@@ -3,10 +3,10 @@ import { EntityRepository, MikroORM } from '@mikro-orm/core';
 import { IssuerEntity } from '../../src/entities/Issuer';
 import mikroOrmConfig from '../../src/mikro-orm.config';
 import { resetDb } from '../helpers/resetDb';
-import { dummyIssuerOptions } from '../mocks';
+import { dummyIssuerEntityOptions } from '../mocks';
 
 describe('Issuer entity', () => {
-  const issuer = new IssuerEntity(dummyIssuerOptions);
+  const issuer = new IssuerEntity(dummyIssuerEntityOptions);
   describe('constructor behavior', () => {
     it('generates a uuid', () => {
       expect(issuer.uuid).toBeDefined();
@@ -18,18 +18,19 @@ describe('Issuer entity', () => {
       expect(issuer.updatedAt).toEqual(issuer.createdAt);
     });
 
-    it('sets the privateKey and authToken from options', () => {
-      expect(issuer.privateKey).toEqual(dummyIssuerOptions.privateKey);
-      expect(issuer.authToken).toEqual(dummyIssuerOptions.authToken);
+    it('sets the apiKey, privateKey, authToken from options', () => {
+      expect(issuer.apiKey).toEqual(dummyIssuerEntityOptions.apiKey);
+      expect(issuer.privateKey).toEqual(dummyIssuerEntityOptions.privateKey);
+      expect(issuer.authToken).toEqual(dummyIssuerEntityOptions.authToken);
     });
     it('sets the issuer data from options', () => {
-      expect(issuer.issuerUuid).toEqual(dummyIssuerOptions.issuerUuid);
-      expect(issuer.issuerDid).toEqual(dummyIssuerOptions.issuerDid);
-      expect(issuer.issuerCreatedAt).toEqual(dummyIssuerOptions.issuerCreatedAt);
-      expect(issuer.issuerUpdatedAt).toEqual(dummyIssuerOptions.issuerUpdatedAt);
-      expect(issuer.issuerName).toEqual(dummyIssuerOptions.issuerName);
-      expect(issuer.issuerIsAuthorized).toEqual(dummyIssuerOptions.issuerIsAuthorized);
-      expect(issuer.issuerCustomerUuid).toEqual(dummyIssuerOptions.issuerCustomerUuid);
+      expect(issuer.issuerUuid).toEqual(dummyIssuerEntityOptions.issuerUuid);
+      expect(issuer.issuerDid).toEqual(dummyIssuerEntityOptions.issuerDid);
+      expect(issuer.issuerCreatedAt).toEqual(dummyIssuerEntityOptions.issuerCreatedAt);
+      expect(issuer.issuerUpdatedAt).toEqual(dummyIssuerEntityOptions.issuerUpdatedAt);
+      expect(issuer.issuerName).toEqual(dummyIssuerEntityOptions.issuerName);
+      expect(issuer.issuerIsAuthorized).toEqual(dummyIssuerEntityOptions.issuerIsAuthorized);
+      expect(issuer.issuerCustomerUuid).toEqual(dummyIssuerEntityOptions.issuerCustomerUuid);
     });
   });
 
