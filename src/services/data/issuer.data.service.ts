@@ -11,7 +11,7 @@ class IssuerDataService extends MikroOrmService<IssuerEntity> {
       const [defaultIssuerEntity] = await this.find();
       return defaultIssuerEntity;
     } catch (e) {
-      logger.error('error getting default IssuerEntity', e);
+      logger.error('IssuerDataService.getDefaultEntity caught an error thrown by this.find', e);
       throw e;
     }
   }

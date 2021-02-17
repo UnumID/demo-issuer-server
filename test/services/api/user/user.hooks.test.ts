@@ -109,7 +109,7 @@ describe('user api service hooks', () => {
           await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
           fail();
         } catch (e) {
-          expect(logger.error).toBeCalledWith(`error issuing ${credentialType}`, err);
+          expect(logger.error).toBeCalledWith('issueCredential caught an error thrown by the server sdk', err);
           expect(e).toEqual(err);
         }
       });
@@ -166,7 +166,10 @@ describe('user api service hooks', () => {
           await getDefaultIssuerEntity(ctx);
           fail();
         } catch (e) {
-          expect(logger.error).toBeCalledWith('error getting default IssuerEntity', err);
+          expect(logger.error).toBeCalledWith(
+            'getDefaultIssuerEntity hook caught an error thrown by issuerDataService.getDefaultIssuerEntity',
+            err
+          );
           expect(e).toEqual(err);
         }
       });
@@ -295,7 +298,10 @@ describe('user api service hooks', () => {
           await issueAuthCredential(ctx);
           fail();
         } catch (e) {
-          expect(logger.error).toBeCalledWith('error saving auth credential', err);
+          expect(logger.error).toBeCalledWith(
+            'issueAuthCredential hook caught an error thrown by credentialDataService.create',
+            err
+          );
           expect(e).toEqual(err);
         }
       });
@@ -363,7 +369,10 @@ describe('user api service hooks', () => {
         try {
           await issueAuthCredential(ctx);
         } catch (e) {
-          expect(logger.error).toBeCalledWith('error updating defaultIssuerEntity authToken', err);
+          expect(logger.error).toBeCalledWith(
+            'issueAuthCredential hook caught an error thrown by issuerDataService.patch',
+            err
+          );
           expect(e).toEqual(err);
         }
       });
@@ -492,7 +501,10 @@ describe('user api service hooks', () => {
           await issueKYCCredential(ctx);
           fail();
         } catch (e) {
-          expect(logger.error).toBeCalledWith('error saving auth credential', err);
+          expect(logger.error).toBeCalledWith(
+            'issueKYCCredential hook caught an error thrown by credentialDataService.create',
+            err
+          );
           expect(e).toEqual(err);
         }
       });
@@ -560,7 +572,10 @@ describe('user api service hooks', () => {
         try {
           await issueKYCCredential(ctx);
         } catch (e) {
-          expect(logger.error).toBeCalledWith('error updating defaultIssuerEntity authToken', err);
+          expect(logger.error).toBeCalledWith(
+            'issueKYCCredential hook caught an error thrown by issuerDataService.patch',
+            err
+          );
           expect(e).toEqual(err);
         }
       });

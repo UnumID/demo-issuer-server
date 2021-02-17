@@ -98,7 +98,7 @@ export const issueCredential = async (
     );
     return authCredentialResponse as IssuerDto<Credential>;
   } catch (e) {
-    logger.error(`error issuing ${credentialType}`, e);
+    logger.error('issueCredential caught an error thrown by the server sdk', e);
     throw e;
   }
 };
@@ -129,7 +129,7 @@ export const getDefaultIssuerEntity: UserServiceHook = async (ctx) => {
 
     };
   } catch (e) {
-    logger.error('error getting default IssuerEntity', e);
+    logger.error('getDefaultIssuerEntity hook caught an error thrown by issuerDataService.getDefaultIssuerEntity', e);
     throw e;
   }
 };
@@ -149,7 +149,7 @@ export const issueAuthCredential: UserServiceHook = async (ctx) => {
   }
 
   if (!defaultIssuerEntity) {
-    throw new GeneralError('defaultIssuerEntity param is not set. Did you forget to run getDefaultIssuerEntity before this hook?');
+    throw new GeneralError('Error in issuerAuthCredential hook: defaultIssuerEntity param is not set. Did you forget to run the getDefaultIssuerEntity hook first?');
   }
 
   // issue a DemoAuthCredential using the server sdk
@@ -162,7 +162,7 @@ export const issueAuthCredential: UserServiceHook = async (ctx) => {
   try {
     await credentialDataService.create(credentialEntityOptions);
   } catch (e) {
-    logger.error('error saving auth credential', e);
+    logger.error('issueAuthCredential hook caught an error thrown by credentialDataService.create', e);
     throw e;
   }
 
@@ -172,7 +172,7 @@ export const issueAuthCredential: UserServiceHook = async (ctx) => {
     try {
       await issuerDataService.patch(defaultIssuerEntity.uuid, { authToken: issuerDto.authToken });
     } catch (e) {
-      logger.error('error updating defaultIssuerEntity authToken', e);
+      logger.error('issueAuthCredential hook caught an error thrown by issuerDataService.patch', e);
       throw e;
     }
   }
@@ -195,7 +195,7 @@ export const issueKYCCredential: UserServiceHook = async (ctx) => {
   }
 
   if (!defaultIssuerEntity) {
-    throw new GeneralError('defaultIssuerEntity param is not set. Did you forget to run getDefaultIssuerEntity before this hook?');
+    throw new GeneralError('Error in issueKYCCredential hook: defaultIssuerEntity param is not set. Did you forget to run the getDefaultIssuerEntity hook first?');
   }
 
   // issue a DemoAuthCredential using the server sdk
@@ -208,7 +208,7 @@ export const issueKYCCredential: UserServiceHook = async (ctx) => {
   try {
     await credentialDataService.create(credentialEntityOptions);
   } catch (e) {
-    logger.error('error saving auth credential', e);
+    logger.error('issueKYCCredential hook caught an error thrown by credentialDataService.create', e);
     throw e;
   }
 
@@ -218,7 +218,7 @@ export const issueKYCCredential: UserServiceHook = async (ctx) => {
     try {
       await issuerDataService.patch(defaultIssuerEntity.uuid, { authToken: issuerDto.authToken });
     } catch (e) {
-      logger.error('error updating defaultIssuerEntity authToken', e);
+      logger.error('issueKYCCredential hook caught an error thrown by issuerDataService.patch', e);
       throw e;
     }
   }
