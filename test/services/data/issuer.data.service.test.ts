@@ -1,12 +1,11 @@
 import { NotFound } from '@feathersjs/errors';
 import { Service as MikroOrmService } from 'feathers-mikro-orm';
-import { v4 } from 'uuid';
 
 import generateApp from '../../../src/app';
 import { Application } from '../../../src/declarations';
 import { IssuerEntity } from '../../../src/entities/Issuer';
 import { resetDb } from '../../helpers/resetDb';
-import { dummyIssuerOptions } from '../../mocks';
+import { dummyIssuerEntityOptions } from '../../mocks';
 
 describe('IssuerDataService', () => {
   describe('initializing the service', () => {
@@ -34,7 +33,7 @@ describe('IssuerDataService', () => {
 
     describe('create', () => {
       it('saves an issuer in the database', async () => {
-        const savedIssuer = await service.create(dummyIssuerOptions);
+        const savedIssuer = await service.create(dummyIssuerEntityOptions);
         const retrievedIssuer = await service.get(savedIssuer.uuid);
         expect(retrievedIssuer).toEqual(savedIssuer);
       });
@@ -44,7 +43,7 @@ describe('IssuerDataService', () => {
       let savedIssuer: IssuerEntity;
 
       beforeEach(async () => {
-        savedIssuer = await service.create(dummyIssuerOptions);
+        savedIssuer = await service.create(dummyIssuerEntityOptions);
       });
       it('gets an issuer from the database by uuid', async () => {
         const retrievedIssuer = await service.get(savedIssuer.uuid);
@@ -52,7 +51,7 @@ describe('IssuerDataService', () => {
       });
 
       it('gets an issuer from the db by a query', async () => {
-        const retrievedIssuer = await service.get(null, { query: { where: { issuerDid: dummyIssuerOptions.issuerDid } } });
+        const retrievedIssuer = await service.get(null, { query: { where: { issuerDid: dummyIssuerEntityOptions.issuerDid } } });
         expect(retrievedIssuer).toEqual(savedIssuer);
       });
     });
@@ -62,8 +61,8 @@ describe('IssuerDataService', () => {
       let savedIssuer2: IssuerEntity;
 
       beforeEach(async () => {
-        savedIssuer1 = await service.create(dummyIssuerOptions);
-        savedIssuer2 = await service.create(dummyIssuerOptions);
+        savedIssuer1 = await service.create(dummyIssuerEntityOptions);
+        savedIssuer2 = await service.create(dummyIssuerEntityOptions);
       });
 
       it('gets all issuers from the database', async () => {
@@ -76,8 +75,8 @@ describe('IssuerDataService', () => {
       let savedIssuer: IssuerEntity;
 
       beforeEach(async () => {
-        savedIssuer = await service.create(dummyIssuerOptions);
-        await service.create(dummyIssuerOptions);
+        savedIssuer = await service.create(dummyIssuerEntityOptions);
+        await service.create(dummyIssuerEntityOptions);
       });
 
       it('deletes an issuer', async () => {

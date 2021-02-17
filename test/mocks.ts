@@ -1,5 +1,7 @@
 import { Credential, Issuer } from '@unumid/types';
+import { IssuerDto } from '@unumid/server-sdk';
 import { v4 } from 'uuid';
+
 import { CredentialEntity } from '../src/entities/Credential';
 
 import { IssuerEntity } from '../src/entities/Issuer';
@@ -90,7 +92,7 @@ export const dummyUser2 = new User({
 
 const now = new Date().toISOString();
 
-const dummyIssuer: Issuer = {
+export const dummyIssuer: Issuer = {
   uuid: v4(),
   createdAt: now,
   updatedAt: now,
@@ -100,7 +102,7 @@ const dummyIssuer: Issuer = {
   isAuthorized: true
 };
 
-export const dummyIssuerOptions = {
+export const dummyIssuerEntityOptions = {
   issuerUuid: dummyIssuer.uuid,
   issuerCreatedAt: new Date(dummyIssuer.createdAt),
   issuerUpdatedAt: new Date(dummyIssuer.updatedAt),
@@ -109,9 +111,15 @@ export const dummyIssuerOptions = {
   issuerCustomerUuid: dummyIssuer.customerUuid,
   issuerIsAuthorized: dummyIssuer.isAuthorized,
   privateKey: '-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgacp2BLU+IxZYJopo\nGBTF0J2jvWY+EvS5fdlexMnjKoahRANCAASGXgT4l1h1JZaMPpdCp/QCcyfQbtPM\nSIuYeKYilXESM0UsTEYIvFNdzw32sUqYOPL5r8hPzp3nrSqKfT/C+yoQ\n-----END PRIVATE KEY-----\n',
-  authToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaXNzdWVyIiwidXVpZCI6Ijk1ZWI5YzFhLTQ0ZTgtNGE5ZS1hNzFhLWNjNTNiNjJiMjRhMiIsImRpZCI6ImRpZDp1bnVtOjZkYjA3NThmLWEwYTUtNDI4MC1hYWI2LTg1NTY5NzI1MjVjYiIsImV4cCI6MTYxMzA3MTIyMS40MDIsImlhdCI6MTYxMzE4MjQ3NX0.GZZE3H9NcOVOhENnNlECVDkW1bEKBZofgw6PK_-jchM'
+  authToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaXNzdWVyIiwidXVpZCI6Ijk1ZWI5YzFhLTQ0ZTgtNGE5ZS1hNzFhLWNjNTNiNjJiMjRhMiIsImRpZCI6ImRpZDp1bnVtOjZkYjA3NThmLWEwYTUtNDI4MC1hYWI2LTg1NTY5NzI1MjVjYiIsImV4cCI6MTYxMzA3MTIyMS40MDIsImlhdCI6MTYxMzE4MjQ3NX0.GZZE3H9NcOVOhENnNlECVDkW1bEKBZofgw6PK_-jchM',
+  apiKey: '8xPB+vv3e5LwT6H6IBa33FAVHiqJQTwuj4k6R+a3w90='
 };
 
-export const dummyIssuerEntity = new IssuerEntity(dummyIssuerOptions);
+export const dummyIssuerEntity = new IssuerEntity(dummyIssuerEntityOptions);
 
-export const dummyIssuerEntity2 = new IssuerEntity(dummyIssuerOptions);
+export const dummyIssuerEntity2 = new IssuerEntity(dummyIssuerEntityOptions);
+
+export const dummyCredentialDto: IssuerDto<Credential> = {
+  body: dummyCredential,
+  authToken: dummyIssuerEntityOptions.authToken
+};
