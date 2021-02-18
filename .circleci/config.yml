@@ -185,26 +185,26 @@ workflows:
                 - main
                 - test-circleci
 
-      # - build-and-push-image:
-      #     requires:
-      #       - test
-      #     context: AWS-Dev
-      #     repo: hooli-demo-server
-      #     filters:
-      #       branches:
-      #         only:
-      #           - main
-      #           - test-circleci
+      - build-and-push-image:
+          requires:
+            - test
+          context: AWS-Dev
+          repo: demo-issuer-server
+          filters:
+            branches:
+              only:
+                - main
+                - test-circleci
 
-      # - deploy-image:
-      #     requires:
-      #       - build-and-push-image
-      #     context: AWS-Dev
-      #     repo: hooli-demo-server
-      #     deployment: hooli-demo-server
-      #     filters:
-      #       branches:
-      #         only:
-      #           - main
-      #           - test-circleci
+      - deploy-image:
+          requires:
+            - build-and-push-image
+          context: AWS-Dev
+          repo: demo-issuer-server
+          deployment: demo-issuer-server
+          filters:
+            branches:
+              only:
+                - main
+                - test-circleci
 
