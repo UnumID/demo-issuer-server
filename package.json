@@ -27,7 +27,7 @@
     "test": "yarn run lint && yarn run compile && NODE_ENV=test yarn run migrate && NODE_ENV=test yarn run jest",
     "lint": "eslint src/. test/. --config .eslintrc.json --ext .ts --fix",
     "dev": "ts-node-dev --no-notify src/",
-    "start": "yarn run compile && node lib/",
+    "start": "yarn migrate && node lib/",
     "jest": "jest  --forceExit --max-workers=1",
     "compile": "shx rm -rf lib/ && tsc",
     "migrate": "yarn migration:up",
