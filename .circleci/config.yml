@@ -162,6 +162,7 @@ workflows:
       - deploy-image-sandbox:
           requires:
             - build-and-push-image-sandbox
+          context: AWS-Dev
           repo: demo-issuer-server
           deployment: demo-issuer-server
           filters:
