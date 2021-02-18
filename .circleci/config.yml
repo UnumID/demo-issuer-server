@@ -122,6 +122,9 @@ jobs:
         type: string
       deployment:
         type: string
+      namespace:
+        type: string
+        default: "demos"
 
     executor: aws-eks/python3
     steps:
@@ -132,7 +135,7 @@ jobs:
           cluster-name: << parameters.cluster-name >>
       - run:
           command: |
-            kubectl set image deployment/<< parameters.deployment >> << parameters.deployment >>=${AWS_ECR_URL}/<< parameters.repo >>:"${CIRCLE_TAG}"
+            kubectl set image deployment/<< parameters.deployment >> << parameters.deployment >>=${AWS_ECR_URL}/<< parameters.repo >>:"${CIRCLE_TAG}" -n << parameters.namespace >>
           name: Update container image
 
 workflows:
@@ -145,27 +148,27 @@ workflows:
             branches:
               ignore: /.*/
 
-      # - build-and-push-image-sandbox:
-      #     requires:
-      #       - test
-      #     context: AWS-Dev
-      #     repo: hooli-demo-server
-      #     filters:
-      #       tags:
-      #         only: /^v.*/
-      #       branches:
-      #         ignore: /.*/
+      - build-and-push-image-sandbox:
+          requires:
+            - test
+          context: AWS-Dev
+          repo: demo-issuer-server
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
 
-      # - deploy-image-sandbox:
-      #     requires:
-      #       - build-and-push-image-sandbox
-      #     repo: hooli-demo-server
-      #     deployment: hooli-demo-server
-      #     filters:
-      #       tags:
-      #         only: /^v.*/
-      #       branches:
-      #         ignore: /.*/
+      - deploy-image-sandbox:
+          requires:
+            - build-and-push-image-sandbox
+          repo: demo-issuer-server
+          deployment: demo-issuer-server
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
 
   lint-and-test:
     jobs:
@@ -185,26 +188,26 @@ workflows:
                 - main
                 - test-circleci
 
-      # - build-and-push-image:
-      #     requires:
-      #       - test
-      #     context: AWS-Dev
-      #     repo: hooli-demo-server
-      #     filters:
-      #       branches:
-      #         only:
-      #           - main
-      #           - test-circleci
+      - build-and-push-image:
+          requires:
+            - test
+          context: AWS-Dev
+          repo: demo-issuer-server
+          filters:
+            branches:
+              only:
+                - main
+                - test-circleci
 
-      # - deploy-image:
-      #     requires:
-      #       - build-and-push-image
-      #     context: AWS-Dev
-      #     repo: hooli-demo-server
-      #     deployment: hooli-demo-server
-      #     filters:
-      #       branches:
-      #         only:
-      #           - main
-      #           - test-circleci
+      - deploy-image:
+          requires:
+            - build-and-push-image
+          context: AWS-Dev
+          repo: demo-issuer-server
+          deployment: demo-issuer-server
+          filters:
+            branches:
+              only:
+                - main
+                - test-circleci
 
