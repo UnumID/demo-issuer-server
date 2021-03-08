@@ -1,17 +1,11 @@
 import { Entity, Property, wrap } from '@mikro-orm/core';
 import { omit } from 'lodash';
+import { DemoUser, DemoUserCreateOptions } from '@unumid/demo-types';
 
 import { BaseEntity, BaseEntityOptions } from './BaseEntity';
 
-export interface UserEntityOptions extends BaseEntityOptions {
-  password: string;
-  email: string;
-  phone?: string;
-  did?: string;
-}
-
 @Entity()
-export class User extends BaseEntity {
+export class User extends BaseEntity implements DemoUser {
   @Property({ unique: true })
   email: string;
 
@@ -24,15 +18,14 @@ export class User extends BaseEntity {
   @Property()
   did?: string;
 
-  constructor (options: UserEntityOptions) {
+  constructor (options: DemoUserCreateOptions & BaseEntityOptions) {
     super(options);
 
-    const { email, phone, password, did } = options;
+    const { email, phone, password } = options;
 
     this.email = email;
     this.phone = phone;
     this.password = password;
-    this.did = did;
   }
 
   toJSON (ignoreFields?: string[]): Record<string, unknown> {

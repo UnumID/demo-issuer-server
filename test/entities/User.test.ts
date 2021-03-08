@@ -1,5 +1,4 @@
 import { EntityRepository, MikroORM } from '@mikro-orm/core';
-import { v4 } from 'uuid';
 
 import { User } from '../../src/entities/User';
 import mikroOrmConfig from '../../src/mikro-orm.config';
@@ -33,16 +32,14 @@ describe('User entity', () => {
       expect(user.phone).toBeUndefined();
     });
 
-    it('sets the did and phone properties if they are provided', () => {
+    it('sets the phone properties if it id provided', () => {
       const options2 = {
         ...options,
-        phone: '5555555555',
-        did: `did:unum:${v4}`
+        phone: '5555555555'
       };
 
       const user2 = new User(options2);
 
-      expect(user2.did).toEqual(options2.did);
       expect(user2.phone).toEqual(options2.phone);
     });
   });
