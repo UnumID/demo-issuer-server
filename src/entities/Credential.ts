@@ -1,9 +1,9 @@
 import { Entity, Property } from '@mikro-orm/core';
 import { CredentialSubject, Proof } from '@unumid/types';
 
-import { BaseEntity, BaseEntityOptions } from './BaseEntity';
+import { BaseEntity } from './BaseEntity';
 
-export interface CredentialEntityOptions extends BaseEntityOptions {
+export interface CredentialEntityOptions extends Partial<BaseEntity> {
   credentialContext: ['https://www.w3.org/2018/credentials/v1', ...string[]];
   credentialId: string;
   credentialCredentialSubject: CredentialSubject;

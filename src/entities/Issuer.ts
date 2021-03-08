@@ -1,8 +1,8 @@
 import { Entity, Property } from '@mikro-orm/core';
 
-import { BaseEntity, BaseEntityOptions } from './BaseEntity';
+import { BaseEntity } from './BaseEntity';
 
-export interface IssuerEntityOptions extends BaseEntityOptions {
+export interface IssuerEntityOptions extends Partial<BaseEntity> {
   issuerUuid: string;
   issuerDid: string;
   issuerCreatedAt: Date;

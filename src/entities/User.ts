@@ -2,7 +2,9 @@ import { Entity, Property, wrap } from '@mikro-orm/core';
 import { omit } from 'lodash';
 import { DemoUser, DemoUserCreateOptions } from '@unumid/demo-types';
 
-import { BaseEntity, BaseEntityOptions } from './BaseEntity';
+import { BaseEntity } from './BaseEntity';
+
+type UserEntityOptions = DemoUserCreateOptions & Partial<BaseEntity>;
 
 @Entity()
 export class User extends BaseEntity implements DemoUser {
@@ -18,7 +20,7 @@ export class User extends BaseEntity implements DemoUser {
   @Property()
   did?: string;
 
-  constructor (options: DemoUserCreateOptions & BaseEntityOptions) {
+  constructor (options: UserEntityOptions) {
     super(options);
 
     const { email, phone, password } = options;
