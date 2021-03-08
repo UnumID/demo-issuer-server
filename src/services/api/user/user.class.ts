@@ -1,4 +1,5 @@
 import { NullableId, Params } from '@feathersjs/feathers';
+import { DemoUserCreateOptions } from '@unumid/demo-types';
 
 import { Application } from '../../../declarations';
 import { User } from '../../../entities/User';
@@ -16,7 +17,7 @@ export class UserService {
     this.app = app;
   }
 
-  async create (data: Partial<User>, params?: Params): Promise<User> {
+  async create (data: DemoUserCreateOptions, params?: Params): Promise<User> {
     const userDataService = this.app.service('userData');
 
     try {
