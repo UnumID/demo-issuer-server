@@ -1,13 +1,8 @@
 import { Property, PrimaryKey } from '@mikro-orm/core';
 import { v4 } from 'uuid';
+import { DemoBaseEntity } from '@unumid/demo-types';
 
-export interface BaseEntityOptions {
-  uuid?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export abstract class BaseEntity {
+export abstract class BaseEntity implements DemoBaseEntity {
   @PrimaryKey()
   uuid: string;
 
@@ -17,7 +12,7 @@ export abstract class BaseEntity {
   @Property({ onUpdate: () => new Date(), columnType: 'timestamptz(6)' })
   updatedAt: Date;
 
-  constructor (options: BaseEntityOptions) {
+  constructor (options: Partial<BaseEntity>) {
     const { uuid, createdAt, updatedAt } = options;
 
     this.uuid = uuid || v4();
