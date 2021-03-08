@@ -1123,6 +1123,12 @@
     "@typescript-eslint/types" "4.15.0"
     eslint-visitor-keys "^2.0.0"
 
+"@unumid/demo-types@git+ssh://git@github.com/UnumID/demo-types#v0.1.0":
+  version "0.0.1"
+  resolved "git+ssh://git@github.com/UnumID/demo-types#f00a3756f319be3019266e5ab4c7548925912a66"
+  dependencies:
+    "@unumid/types" "git+ssh://git@github.com/UnumID/types.git#v0.0.3"
+
 "@unumid/server-sdk@git+ssh://git@github.com/UnumID/Server-SDK-Typescript.git#v0.0.1":
   version "0.1.0"
   resolved "git+ssh://git@github.com/UnumID/Server-SDK-Typescript.git#8648bbd2bf9d47ff6be7eb65a7a85bf9b13aeaa5"
@@ -1136,9 +1142,9 @@
     winston "^3.3.3"
     winston-syslog "^2.4.4"
 
-"@unumid/types@git+ssh://git@github.com/UnumID/types.git#b951c37a6eb82b66a8e1c8249c6e51e728fec2d1":
+"@unumid/types@git+ssh://git@github.com/UnumID/types.git#v0.0.3":
   version "0.0.1"
-  resolved "git+ssh://git@github.com/UnumID/types.git#b951c37a6eb82b66a8e1c8249c6e51e728fec2d1"
+  resolved "git+ssh://git@github.com/UnumID/types.git#c11cdc69f2657d131bae551a80ff36d1b1134e51"
 
 abab@^2.0.3:
   version "2.0.5"
