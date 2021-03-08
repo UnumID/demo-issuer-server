@@ -32,7 +32,7 @@ describe('User entity', () => {
       expect(user.phone).toBeUndefined();
     });
 
-    it('sets the phone properties if it id provided', () => {
+    it('sets the phone properties if it is provided', () => {
       const options2 = {
         ...options,
         phone: '5555555555'
