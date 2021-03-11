@@ -32,10 +32,12 @@ describe('user api service hooks', () => {
       it('builds the CredentialSubject for a DemoAuthCredential with the provided did and userUuid', () => {
         const did = `did:unum:${v4}`;
         const userUuid = v4();
-        const authCredential = buildAuthCredentialSubject(did, userUuid);
+        const userEmail = 'test@unum.id';
+        const authCredential = buildAuthCredentialSubject(did, userUuid, userEmail);
         const expected = {
           id: did,
           userUuid,
+          userEmail,
           isAuthorized: true
         };
         expect(authCredential).toEqual(expected);
@@ -83,7 +85,8 @@ describe('user api service hooks', () => {
       const did = `did:unum:${v4}`;
       const userUuid = v4();
       const credentialType = 'DemoAuthCredential';
-      const credentialSubject = buildAuthCredentialSubject(did, userUuid);
+      const userEmail = 'test@unum.id';
+      const credentialSubject = buildAuthCredentialSubject(did, userUuid, userEmail);
 
       it('issues a credential using the server sdk', async () => {
         await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
@@ -194,9 +197,12 @@ describe('user api service hooks', () => {
       });
 
       it('throws if the defaultIssuerEntity param has not been set', async () => {
+        const userUuid = v4();
+        const did = `did:unum:${v4()}`;
         const ctx = {
-          data: { did: `did:unum:${v4()}` },
-          id: v4(),
+          data: { did },
+          result: { uuid: userUuid, email: 'test@unum.id', did },
+          id: userUuid,
           params: {}
         } as unknown as HookContext;
 
@@ -210,9 +216,12 @@ describe('user api service hooks', () => {
       });
 
       it('exits early if the did is not being updated', async () => {
+        const userUuid = v4();
+        const did = `did:unum:${v4()}`;
         const ctx = {
           data: { email: 'test@unumid.org' },
-          id: v4(),
+          id: userUuid,
+          result: { did, uuid: userUuid, email: 'test@unumid.org' },
           params: { defaultIssuerEntity: dummyIssuerEntity }
         } as unknown as HookContext;
 
@@ -234,9 +243,13 @@ describe('user api service hooks', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+        const userUuid = v4();
+        const did = `did:unum:${v4()}`;
+        const userEmail = 'test@unum.id';
         const ctx = {
-          data: { did: `did:unum:${v4()}` },
-          id: v4(),
+          data: { did },
+          id: userUuid,
+          result: { uuid: userUuid, did, email: userEmail },
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
@@ -250,7 +263,7 @@ describe('user api service hooks', () => {
           formatBearerToken(dummyIssuerEntity.authToken),
           'DemoAuthCredential',
           dummyIssuerEntity.issuerDid,
-          buildAuthCredentialSubject(ctx.data.did, ctx.id as string),
+          buildAuthCredentialSubject(ctx.data.did, ctx.id as string, userEmail),
           dummyIssuerEntity.privateKey
         );
       });
@@ -269,9 +282,13 @@ describe('user api service hooks', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+        const userUuid = v4();
+        const did = `did:unum:${v4()}`;
+        const email = 'test@unum.id';
         const ctx = {
-          data: { did: `did:unum:${v4()}` },
-          id: v4(),
+          data: { did },
+          id: userUuid,
+          result: { uuid: userUuid, did, email },
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
@@ -296,9 +313,15 @@ describe('user api service hooks', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+
+        const userUuid = v4();
+        const did = `did:unum:${v4()}`;
+        const email = 'test@unum.id';
+
         const ctx = {
-          data: { did: `did:unum:${v4()}` },
-          id: v4(),
+          data: { did },
+          id: userUuid,
+          result: { uuid: userUuid, did, email },
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
@@ -336,9 +359,15 @@ describe('user api service hooks', () => {
           ...dummyCredentialDto,
           authToken: 'updated auth token'
         });
+
+        const userUuid = v4();
+        const did = `did:unum:${v4()}`;
+        const email = 'test@unum.id';
+
         const ctx = {
-          data: { did: `did:unum:${v4()}` },
-          id: v4(),
+          data: { did },
+          id: userUuid,
+          result: { uuid: userUuid, did, email },
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
@@ -367,9 +396,15 @@ describe('user api service hooks', () => {
           ...dummyCredentialDto,
           authToken: 'updated auth token'
         });
+
+        const userUuid = v4();
+        const did = `did:unum:${v4()}`;
+        const email = 'test@unum.id';
+
         const ctx = {
-          data: { did: `did:unum:${v4()}` },
-          id: v4(),
+          data: { did },
+          id: userUuid,
+          result: { uuid: userUuid, did, email },
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
@@ -397,9 +432,14 @@ describe('user api service hooks', () => {
       });
 
       it('throws if the defaultIssuerEntity param has not been set', async () => {
+        const userUuid = v4();
+        const did = `did:unum:${v4()}`;
+        const email = 'test@unum.id';
+
         const ctx = {
-          data: { did: `did:unum:${v4()}` },
-          id: v4(),
+          data: { did },
+          id: userUuid,
+          result: { uuid: userUuid, did, email },
           params: {}
         } as unknown as HookContext;
 
@@ -413,9 +453,14 @@ describe('user api service hooks', () => {
       });
 
       it('exits early if the did is not being updated', async () => {
+        const userUuid = v4();
+        const did = `did:unum:${v4()}`;
+        const email = 'test@unum.id';
+
         const ctx = {
-          data: { email: 'test@unumid.org' },
-          id: v4(),
+          data: { email },
+          id: userUuid,
+          result: { uuid: userUuid, did, email },
           params: { defaultIssuerEntity: dummyIssuerEntity }
         } as unknown as HookContext;
 
@@ -472,9 +517,14 @@ describe('user api service hooks', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+        const userUuid = v4();
+        const did = `did:unum:${v4()}`;
+        const email = 'test@unum.id';
+
         const ctx = {
-          data: { did: `did:unum:${v4()}` },
-          id: v4(),
+          data: { did },
+          id: userUuid,
+          result: { uuid: userUuid, did, email },
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
@@ -539,9 +589,14 @@ describe('user api service hooks', () => {
           ...dummyCredentialDto,
           authToken: 'updated auth token'
         });
+        const userUuid = v4();
+        const did = `did:unum:${v4()}`;
+        const email = 'test@unum.id';
+
         const ctx = {
-          data: { did: `did:unum:${v4()}` },
-          id: v4(),
+          data: { did },
+          id: userUuid,
+          result: { uuid: userUuid, did, email },
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
@@ -570,9 +625,14 @@ describe('user api service hooks', () => {
           ...dummyCredentialDto,
           authToken: 'updated auth token'
         });
+        const userUuid = v4();
+        const did = `did:unum:${v4()}`;
+        const email = 'test@unum.id';
+
         const ctx = {
-          data: { did: `did:unum:${v4()}` },
-          id: v4(),
+          data: { did },
+          id: userUuid,
+          result: { uuid: userUuid, did, email },
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
