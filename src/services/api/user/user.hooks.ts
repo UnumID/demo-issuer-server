@@ -12,6 +12,7 @@ import { IssuerEntity } from '../../../entities/Issuer';
 interface AuthCredentialSubject extends CredentialSubject {
   isAuthorized: true;
   userUuid: string;
+  userEmail: string;
 }
 
 interface KYCCredentialSubject extends CredentialSubject {
@@ -43,12 +44,13 @@ interface KYCCredentialSubject extends CredentialSubject {
   confidence: string;
 }
 
-type UserServiceHook = Hook<Partial<User>>;
+type UserServiceHook = Hook<User>;
 
-export const buildAuthCredentialSubject = (did: string, userUuid: string): AuthCredentialSubject => ({
+export const buildAuthCredentialSubject = (did: string, userUuid: string, userEmail: string): AuthCredentialSubject => ({
   id: did,
   isAuthorized: true,
-  userUuid
+  userUuid,
+  userEmail
 });
 
 export const buildKYCCredentialSubject = (did: string): KYCCredentialSubject => ({
@@ -138,10 +140,10 @@ export const getDefaultIssuerEntity: UserServiceHook = async (ctx) => {
 };
 
 export const issueAuthCredential: UserServiceHook = async (ctx) => {
-  const { id, data, params } = ctx;
+  const { id, data, result, params } = ctx;
   const defaultIssuerEntity = params.defaultIssuerEntity as IssuerEntity;
 
-  if (!data || !id) {
+  if (!data || !id || !result) {
     throw new BadRequest();
   }
 
@@ -156,7 +158,7 @@ export const issueAuthCredential: UserServiceHook = async (ctx) => {
   }
 
   // issue a DemoAuthCredential using the server sdk
-  const authCredentialSubject = buildAuthCredentialSubject(did, id as string);
+  const authCredentialSubject = buildAuthCredentialSubject(did, id as string, result.email);
   const issuerDto = await issueCredential(defaultIssuerEntity, authCredentialSubject, 'DemoAuthCredential');
 
   // store the issued credential
