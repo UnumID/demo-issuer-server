@@ -7,6 +7,7 @@ import { BaseEntity } from './entities/BaseEntity';
 import { User } from './entities/User';
 import { IssuerEntity } from './entities/Issuer';
 import { CredentialEntity } from './entities/Credential';
+import { Device } from './entities/Device';
 
 const mikroOrmConfig: Options = {
   baseDir: process.cwd(),
@@ -20,7 +21,8 @@ const mikroOrmConfig: Options = {
     BaseEntity,
     User,
     IssuerEntity,
-    CredentialEntity
+    CredentialEntity,
+    Device
   ],
   entitiesTs: ['src/entities'],
   metadataProvider: TsMorphMetadataProvider,
