@@ -8,7 +8,7 @@ import {
 import { DemoUser, DemoUserCreateOptions } from '@unumid/demo-types';
 
 import { BaseEntity } from './BaseEntity';
-import { Device } from './Device';
+import { FcmRegistrationToken } from './FcmRegistrationToken';
 
 type UserEntityOptions = DemoUserCreateOptions & Partial<BaseEntity>;
 
@@ -26,8 +26,8 @@ export class User extends BaseEntity {
   @Property()
   did?: string;
 
-  @OneToMany({ entity: () => Device, mappedBy: 'user' })
-  devices = new Collection<Device>(this);
+  @OneToMany({ entity: () => FcmRegistrationToken, mappedBy: 'user' })
+  fcmRegistrationTokens = new Collection<FcmRegistrationToken>(this);
 
   constructor (options: UserEntityOptions) {
     super(options);
@@ -49,7 +49,7 @@ export class User extends BaseEntity {
       email: record.email,
       phone: record.phone,
       did: record.did,
-      devices: record.devices
+      fcmRegistrationTokens: record.fcmRegistrationTokens
     };
     return result;
   }

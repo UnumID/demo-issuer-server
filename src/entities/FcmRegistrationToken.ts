@@ -3,23 +3,23 @@ import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { User } from './User';
 
-interface DeviceCreateOptions extends Partial<BaseEntity> {
+interface FcmRegistrationTokenOptions extends Partial<BaseEntity> {
   user: User;
-  fcmRegistrationToken: string;
+  token: string;
 }
 
 @Entity()
-export class Device extends BaseEntity {
+export class FcmRegistrationToken extends BaseEntity {
   @Property({ unique: true })
-  fcmRegistrationToken: string;
+  token: string;
 
   @ManyToOne()
   user: User;
 
-  constructor (options: DeviceCreateOptions) {
+  constructor (options: FcmRegistrationTokenOptions) {
     super(options);
 
-    this.fcmRegistrationToken = options.fcmRegistrationToken;
+    this.token = options.token;
     this.user = options.user;
   }
 }
