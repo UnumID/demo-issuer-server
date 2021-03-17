@@ -26,7 +26,7 @@ export class User extends BaseEntity {
   @Property()
   did?: string;
 
-  @OneToMany({ entity: () => FcmRegistrationToken, mappedBy: 'user' })
+  @OneToMany({ entity: () => FcmRegistrationToken, mappedBy: 'user', eager: true })
   fcmRegistrationTokens = new Collection<FcmRegistrationToken>(this);
 
   constructor (options: UserEntityOptions) {
