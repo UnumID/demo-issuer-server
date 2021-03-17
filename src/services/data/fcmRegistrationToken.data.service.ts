@@ -9,7 +9,7 @@ import logger from '../../logger';
 export class FcmRegistrationTokenDataService extends MikroOrmService {
   async getByToken (token: string): Promise<FcmRegistrationToken | null> {
     try {
-      return this.get(null, { query: { where: { token } } });
+      return await this.get(null, { query: { where: { token } } });
     } catch (e) {
       if (e instanceof NotFound) {
         return null;
