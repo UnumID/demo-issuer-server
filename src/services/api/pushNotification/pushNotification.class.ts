@@ -1,5 +1,6 @@
 import { Application } from '../../../declarations';
 import logger from '../../../logger';
+import { sendPushNotification } from '../../../utils/sendPushNotification';
 
 export class PushNotificationService {
   app: Application;
@@ -9,6 +10,9 @@ export class PushNotificationService {
   }
 
   async create (data: any): Promise<any> {
-    console.log('PushNotificationService.create', data);
+    const user = await this.app.service('userData').get(data.userUuid);
+
+    const tokens = user.fcmRegistrationTokens.getItems().map(fcmrt => fcmrt.token);
+    await sendPushNotification(data.deeplink, tokens);
   }
 }
