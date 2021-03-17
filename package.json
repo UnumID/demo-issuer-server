@@ -61,6 +61,7 @@
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "feathers-mikro-orm": "git+ssh://git@github.com/UnumID/feathers-mikro-orm.git#v0.2.1",
+    "firebase-admin": "^9.5.0",
     "helmet": "^4.2.0",
     "serve-favicon": "^2.5.0",
     "uuid": "^8.3.2",
