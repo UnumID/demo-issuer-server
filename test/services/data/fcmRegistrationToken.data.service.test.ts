@@ -1,8 +1,7 @@
-import { Service as MikroOrmService } from 'feathers-mikro-orm';
-
 import generateApp from '../../../src/app';
 import { Application } from '../../../src/declarations';
 import { User } from '../../../src/entities/User';
+import { FcmRegistrationTokenDataService } from '../../../src/services/data/fcmRegistrationToken.data.service';
 import { resetDb } from '../../helpers/resetDb';
 
 describe('FcmRegistrationTokenDataService', () => {
@@ -16,7 +15,7 @@ describe('FcmRegistrationTokenDataService', () => {
 
   describe('using the service', () => {
     let app: Application;
-    let service: MikroOrmService;
+    let service: FcmRegistrationTokenDataService;
     let user: User;
 
     beforeEach(async () => {
@@ -96,6 +95,19 @@ describe('FcmRegistrationTokenDataService', () => {
 
         const patchedFcmRegistrationToken = await service.patch(fcmRegistrationToken.uuid, patchOptions);
         expect(patchedFcmRegistrationToken.user).toEqual(user2);
+      });
+    });
+
+    describe('getByToken', () => {
+      it('gets a fcmRegistrationToken by the token value', async () => {
+        const options = {
+          token: 'dummy token',
+          user
+        };
+        const fcmRegistrationToken = await service.create(options);
+
+        const retrievedFcmRegistrationToken = await service.getByToken('dummy token');
+        expect(retrievedFcmRegistrationToken).toEqual(fcmRegistrationToken);
       });
     });
   });
