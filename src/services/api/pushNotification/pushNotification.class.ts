@@ -13,6 +13,6 @@ export class PushNotificationService {
     const user = await this.app.service('userData').get(data.userUuid);
 
     const tokens = user.fcmRegistrationTokens.getItems().map(fcmrt => fcmrt.token);
-    await sendPushNotification(data.deeplink, tokens);
+    return await sendPushNotification(data.deeplink, tokens);
   }
 }

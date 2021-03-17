@@ -1,6 +1,8 @@
 import firebaseAdmin from 'firebase-admin';
 
-firebaseAdmin.initializeApp();
+import { config } from '../config';
+
+firebaseAdmin.initializeApp({ credential: firebaseAdmin.credential.cert(config.FIREBASE_CONFIG) });
 
 export const sendPushNotification = async (deeplink: string, tokens: string[]): Promise<any> => {
   const message = {
