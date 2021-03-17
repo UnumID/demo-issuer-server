@@ -27,9 +27,10 @@ describe('User entity', () => {
       expect(user.password).toEqual(options.password);
     });
 
-    it('initializes optional did and phone properties to undefined', () => {
+    it('initializes optional did and phone properties to undefined, and fcmRegistrationTokens to an empty array', () => {
       expect(user.did).toBeUndefined();
       expect(user.phone).toBeUndefined();
+      expect(user.fcmRegistrationTokens.getItems()).toEqual([]);
     });
 
     it('sets the phone properties if it is provided', () => {
@@ -61,7 +62,7 @@ describe('User entity', () => {
       await userRepository.persistAndFlush(user);
       orm.em.clear();
 
-      const savedUser = await userRepository.findOneOrFail(user.uuid);
+      const savedUser = await userRepository.findOneOrFail(user.uuid, ['fcmRegistrationTokens']);
       expect(savedUser.uuid).toEqual(user.uuid);
       expect(savedUser.createdAt).toEqual(user.createdAt);
       expect(savedUser.updatedAt).toEqual(user.updatedAt);
@@ -69,6 +70,7 @@ describe('User entity', () => {
       expect(savedUser.password).toEqual(user.password);
       expect(savedUser.did).toBeNull();
       expect(savedUser.phone).toBeNull();
+      expect(savedUser.fcmRegistrationTokens.getItems()).toEqual([]);
     });
   });
 });

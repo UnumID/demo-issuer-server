@@ -1,13 +1,19 @@
-import { Entity, Property, wrap } from '@mikro-orm/core';
-import { omit } from 'lodash';
+import {
+  Entity,
+  Property,
+  wrap,
+  OneToMany,
+  Collection
+} from '@mikro-orm/core';
 import { DemoUser, DemoUserCreateOptions } from '@unumid/demo-types';
 
 import { BaseEntity } from './BaseEntity';
+import { FcmRegistrationToken } from './FcmRegistrationToken';
 
 type UserEntityOptions = DemoUserCreateOptions & Partial<BaseEntity>;
 
 @Entity()
-export class User extends BaseEntity implements DemoUser {
+export class User extends BaseEntity {
   @Property({ unique: true })
   email: string;
 
@@ -20,6 +26,9 @@ export class User extends BaseEntity implements DemoUser {
   @Property()
   did?: string;
 
+  @OneToMany({ entity: () => FcmRegistrationToken, mappedBy: 'user', eager: true })
+  fcmRegistrationTokens = new Collection<FcmRegistrationToken>(this);
+
   constructor (options: UserEntityOptions) {
     super(options);
 
@@ -30,8 +39,18 @@ export class User extends BaseEntity implements DemoUser {
     this.password = password;
   }
 
-  toJSON (ignoreFields?: string[]): Record<string, unknown> {
+  toJSON (ignoreFields?: string[]): DemoUser {
     const record = wrap(this).toObject(ignoreFields);
-    return omit(record, 'password');
+
+    const result = {
+      uuid: record.uuid,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+      email: record.email,
+      phone: record.phone,
+      did: record.did,
+      fcmRegistrationTokens: record.fcmRegistrationTokens
+    };
+    return result;
   }
 }
