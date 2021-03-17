@@ -4,7 +4,8 @@ import { sendPushNotification } from '../../src/utils/sendPushNotification';
 
 jest.mock('firebase-admin', () => ({
   initializeApp: jest.fn(),
-  messaging: jest.fn()
+  messaging: jest.fn(),
+  credential: { cert: jest.fn() }
 }));
 
 describe('sendPushNotification', () => {

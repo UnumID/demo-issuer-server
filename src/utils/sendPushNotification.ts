@@ -1,8 +1,9 @@
 import firebaseAdmin from 'firebase-admin';
 
-firebaseAdmin.initializeApp();
+import { config } from '../config';
 
 export const sendPushNotification = async (deeplink: string, tokens: string[]): Promise<any> => {
+  firebaseAdmin.initializeApp({ credential: firebaseAdmin.credential.cert(config.FIREBASE_CONFIG) });
   const message = {
     notification: {
       title: 'Authentication Request: ACME website',
