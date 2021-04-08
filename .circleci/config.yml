@@ -6,7 +6,7 @@ orbs:
   kubernetes: circleci/kubernetes@0.4.0
 
 jobs:
-  test:
+  lint-and-test-job:
     docker:
       - image: circleci/node:14.15.0
         environment:
@@ -35,8 +35,10 @@ jobs:
           paths:
             - node_modules
 
+      - run: yarn lint
+
       - run:
-          name: run eslint and jest tests
+          name: Jest Tests
           command: yarn test
 
   build-and-push-image:
@@ -141,7 +143,7 @@ jobs:
 workflows:
   build-and-deploy-release:
     jobs:
-      - test:
+      - lint-and-test-job:
           filters:
             tags:
               only: /^v.*/
@@ -150,7 +152,7 @@ workflows:
 
       - build-and-push-image-sandbox:
           requires:
-            - test
+            - lint-and-test-job
           context: AWS-Dev
           repo: demo-issuer-server
           filters:
@@ -173,7 +175,7 @@ workflows:
 
   lint-and-test:
     jobs:
-      - test:
+      - lint-and-test-job:
           filters:
             branches:
               ignore:
@@ -182,7 +184,7 @@ workflows:
                 - sandbox
   build-and-deploy:
     jobs:
-      - test:
+      - lint-and-test-job:
           filters:
             branches:
               only:
@@ -191,7 +193,7 @@ workflows:
 
       - build-and-push-image:
           requires:
-            - test
+            - lint-and-test-job
           context: AWS-Dev
           repo: demo-issuer-server
           filters:
