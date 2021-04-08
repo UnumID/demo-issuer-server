@@ -1,6 +1,6 @@
 import { BadRequest, GeneralError } from '@feathersjs/errors';
 import { Hook } from '@feathersjs/feathers';
-import { issueCredential as sdkIssueCredential, IssuerDto } from '@unumid/server-sdk';
+import { issueCredential as sdkIssueCredential, UnumDto } from '@unumid/server-sdk';
 import { Credential, CredentialSubject } from '@unumid/types';
 import { Service as MikroOrmService } from 'feathers-mikro-orm';
 
@@ -90,7 +90,7 @@ export const issueCredential = async (
   issuerEntity: IssuerEntity,
   credentialSubject: CredentialSubject,
   credentialType: string
-): Promise<IssuerDto<Credential>> => {
+): Promise<UnumDto<Credential>> => {
   let authCredentialResponse;
 
   try {
@@ -101,14 +101,14 @@ export const issueCredential = async (
       credentialSubject,
       issuerEntity.privateKey
     );
-    return authCredentialResponse as IssuerDto<Credential>;
+    return authCredentialResponse as UnumDto<Credential>;
   } catch (e) {
     logger.error('issueCredential caught an error thrown by the server sdk', e);
     throw e;
   }
 };
 
-export const convertIssuerDtoToCredentialEntityOptions = (issuerDto: IssuerDto<Credential>): CredentialEntityOptions => ({
+export const convertUnumDtoToCredentialEntityOptions = (issuerDto: UnumDto<Credential>): CredentialEntityOptions => ({
   credentialContext: issuerDto.body['@context'],
   credentialId: issuerDto.body.id,
   credentialCredentialSubject: issuerDto.body.credentialSubject,
@@ -163,7 +163,7 @@ export const issueAuthCredential: UserServiceHook = async (ctx) => {
 
   // store the issued credential
   const credentialDataService = ctx.app.service('credentialData') as MikroOrmService<CredentialEntity>;
-  const credentialEntityOptions = convertIssuerDtoToCredentialEntityOptions(issuerDto);
+  const credentialEntityOptions = convertUnumDtoToCredentialEntityOptions(issuerDto);
   try {
     await credentialDataService.create(credentialEntityOptions);
   } catch (e) {
@@ -209,7 +209,7 @@ export const issueKYCCredential: UserServiceHook = async (ctx) => {
 
   // store the issued credential
   const credentialDataService = ctx.app.service('credentialData') as MikroOrmService<CredentialEntity>;
-  const credentialEntityOptions = convertIssuerDtoToCredentialEntityOptions(issuerDto);
+  const credentialEntityOptions = convertUnumDtoToCredentialEntityOptions(issuerDto);
   try {
     await credentialDataService.create(credentialEntityOptions);
   } catch (e) {
