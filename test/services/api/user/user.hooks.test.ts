@@ -10,7 +10,7 @@ import {
   buildAuthCredentialSubject,
   buildKYCCredentialSubject,
   issueCredential,
-  convertIssuerDtoToCredentialEntityOptions,
+  convertUnumDtoToCredentialEntityOptions,
   getDefaultIssuerEntity,
   issueAuthCredential,
   issueKYCCredential,
@@ -119,9 +119,9 @@ describe('user api service hooks', () => {
       });
     });
 
-    describe('convertIssuerDtoToCredentialEntityOptions', () => {
+    describe('convertUnumDtoToCredentialEntityOptions', () => {
       it('converts an IssuerDto containing a Credential to a CredentialEntityOptions object', () => {
-        const received = convertIssuerDtoToCredentialEntityOptions(dummyCredentialDto);
+        const received = convertUnumDtoToCredentialEntityOptions(dummyCredentialDto);
         const expected = {
           credentialContext: dummyCredentialDto.body['@context'],
           credentialId: dummyCredentialDto.body.id,
