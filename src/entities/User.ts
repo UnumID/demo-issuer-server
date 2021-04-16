@@ -8,7 +8,7 @@ import {
 import { DemoUser, DemoUserCreateOptions } from '@unumid/demo-types';
 
 import { BaseEntity } from './BaseEntity';
-import { FcmRegistrationToken } from './FcmRegistrationToken';
+import { PushToken } from './PushToken';
 
 type UserEntityOptions = DemoUserCreateOptions & Partial<BaseEntity>;
 
@@ -26,8 +26,8 @@ export class User extends BaseEntity {
   @Property()
   did?: string;
 
-  @OneToMany({ entity: () => FcmRegistrationToken, mappedBy: 'user', eager: true })
-  fcmRegistrationTokens = new Collection<FcmRegistrationToken>(this);
+  @OneToMany({ entity: () => PushToken, mappedBy: 'user', eager: true })
+  pushTokens = new Collection<PushToken>(this);
 
   constructor (options: UserEntityOptions) {
     super(options);
@@ -49,7 +49,7 @@ export class User extends BaseEntity {
       email: record.email,
       phone: record.phone,
       did: record.did,
-      fcmRegistrationTokens: record.fcmRegistrationTokens
+      pushTokens: record.pushTokens
     };
     return result;
   }
