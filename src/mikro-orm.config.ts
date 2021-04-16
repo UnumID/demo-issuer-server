@@ -7,7 +7,7 @@ import { BaseEntity } from './entities/BaseEntity';
 import { User } from './entities/User';
 import { IssuerEntity } from './entities/Issuer';
 import { CredentialEntity } from './entities/Credential';
-import { FcmRegistrationToken } from './entities/FcmRegistrationToken';
+import { PushToken } from './entities/PushToken';
 
 const mikroOrmConfig: Options = {
   baseDir: process.cwd(),
@@ -22,7 +22,7 @@ const mikroOrmConfig: Options = {
     User,
     IssuerEntity,
     CredentialEntity,
-    FcmRegistrationToken
+    PushToken
   ],
   entitiesTs: ['src/entities'],
   metadataProvider: TsMorphMetadataProvider,

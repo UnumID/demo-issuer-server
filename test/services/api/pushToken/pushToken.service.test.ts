@@ -3,7 +3,7 @@ import generateApp from '../../../../src/app';
 describe('initializing the service', () => {
   it('registers with the app', async () => {
     const app = await generateApp();
-    const service = app.service('fcmRegistrationToken');
+    const service = app.service('pushToken');
     expect(service).toBeDefined();
   });
 });
