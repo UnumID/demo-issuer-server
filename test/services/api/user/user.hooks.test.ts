@@ -1,6 +1,6 @@
 import { GeneralError } from '@feathersjs/errors';
 import { HookContext } from '@feathersjs/feathers';
-import { issueCredential as sdkIssueCredential } from '@unumid/server-sdk';
+import { issueCredential as sdkIssueCredentialDeprecated } from '@unumid/server-sdk-deprecated';
 import { v4 } from 'uuid';
 
 import logger from '../../../../src/logger';
@@ -18,9 +18,18 @@ import {
 } from '../../../../src/services/api/user/user.hooks';
 import { dummyCredentialDto, dummyCredentialEntityOptions, dummyIssuerEntity } from '../../../mocks';
 
-jest.mock('@unumid/server-sdk');
 jest.spyOn(logger, 'error');
-const mockIssueCredential = sdkIssueCredential as jest.Mock;
+
+jest.mock('@unumid/server-sdk-deprecated');
+// jest.mock('@unumid/server-sdk-deprecated', () => {
+//   const actual = jest.requireActual('@unumid/server-sdk-deprecated');
+//   return {
+//     ...actual,
+//     issueCredential: jest.fn() // this is the only exported function we actually want to mock
+//   };
+// });
+
+const mockIssueCredential = sdkIssueCredentialDeprecated as jest.Mock;
 
 describe('user api service hooks', () => {
   afterEach(() => {
