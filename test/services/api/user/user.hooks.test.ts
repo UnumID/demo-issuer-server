@@ -87,9 +87,10 @@ describe('user api service hooks', () => {
       const credentialType = 'DemoAuthCredential';
       const userEmail = 'test@unum.id';
       const credentialSubject = buildAuthCredentialSubject(did, userUuid, userEmail);
+      const version = '1.0.0';
 
       it('issues a credential using the server sdk', async () => {
-        await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
+        await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
         expect(mockIssueCredential).toBeCalledWith(
           formatBearerToken(dummyIssuerEntity.authToken),
           credentialType,
@@ -101,7 +102,7 @@ describe('user api service hooks', () => {
 
       it('returns the response from the sdk', async () => {
         mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
-        const received = await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
+        const received = await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
         expect(received).toEqual(dummyCredentialDto);
       });
 
@@ -110,7 +111,7 @@ describe('user api service hooks', () => {
         mockIssueCredential.mockRejectedValueOnce(err);
 
         try {
-          await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
+          await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
           fail();
         } catch (e) {
           expect(logger.error).toBeCalledWith('issueCredential caught an error thrown by the server sdk', err);
@@ -120,8 +121,9 @@ describe('user api service hooks', () => {
     });
 
     describe('convertUnumDtoToCredentialEntityOptions', () => {
+      const version = '1.0.0';
       it('converts an IssuerDto containing a Credential to a CredentialEntityOptions object', () => {
-        const received = convertUnumDtoToCredentialEntityOptions(dummyCredentialDto);
+        const received = convertUnumDtoToCredentialEntityOptions(dummyCredentialDto, version);
         const expected = {
           credentialContext: dummyCredentialDto.body['@context'],
           credentialId: dummyCredentialDto.body.id,
@@ -405,7 +407,7 @@ describe('user api service hooks', () => {
           data: { did },
           id: userUuid,
           result: { uuid: userUuid, did, email },
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '1.0.0' } },
           app: {
             service: mockService
           }
