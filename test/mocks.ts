@@ -1,5 +1,5 @@
-import { Credential, Issuer } from '@unumid/types-deprecated';
-import { Credential as CredentialV2 } from '@unumid/types';
+import { Credential as CredentialDeprecated, Issuer } from '@unumid/types-deprecated';
+import { Credential } from '@unumid/types';
 import { UnumDto } from '@unumid/server-sdk';
 import { v4 } from 'uuid';
 
@@ -8,7 +8,39 @@ import { CredentialEntity } from '../src/entities/Credential';
 import { IssuerEntity } from '../src/entities/Issuer';
 import { User } from '../src/entities/User';
 
-export const dummyCredential: Credential = {
+export const dummyCredentialSubject = {
+  id: 'did:unum:54ca4b1f-fe7e-43ce-a4e4-8ec178f16a65',
+  firstName: 'Wile',
+  middleInitial: 'E.',
+  lastName: 'Coyote',
+  username: 'Central-value-added-908',
+  ssn4: 4321,
+  contactInformation: {
+    emailAddress: 'AnvilAvoider@gmail.com',
+    phoneNumber: '1234567890',
+    homeAddress: {
+      line1: '98765 Runner Rd.',
+      city: 'Desert',
+      state: 'AZ',
+      zip: 12345,
+      country: 'United States'
+    }
+  },
+  driversLicense: {
+    state: 'AZ',
+    number: 'n-123456789',
+    expiration: '2026-01-14T00:00:00.000Z'
+  },
+  accounts: {
+    checking: {
+      accountNumber: '543888430912',
+      routingNumber: '021000021'
+    }
+  },
+  confidence: '99%'
+};
+
+export const dummyCredential: CredentialDeprecated = {
   '@context': [
     'https://www.w3.org/2018/credentials/v1'
   ],
@@ -16,37 +48,7 @@ export const dummyCredential: Credential = {
     id: 'https://api.dev-unumid.org//credentialStatus/9e90a492-3360-4beb-b3ca-e8eff1ec6e2a',
     type: 'CredentialStatus'
   },
-  credentialSubject: {
-    id: 'did:unum:54ca4b1f-fe7e-43ce-a4e4-8ec178f16a65',
-    firstName: 'Wile',
-    middleInitial: 'E.',
-    lastName: 'Coyote',
-    username: 'Central-value-added-908',
-    ssn4: 4321,
-    contactInformation: {
-      emailAddress: 'AnvilAvoider@gmail.com',
-      phoneNumber: '1234567890',
-      homeAddress: {
-        line1: '98765 Runner Rd.',
-        city: 'Desert',
-        state: 'AZ',
-        zip: 12345,
-        country: 'United States'
-      }
-    },
-    driversLicense: {
-      state: 'AZ',
-      number: 'n-123456789',
-      expiration: '2026-01-14T00:00:00.000Z'
-    },
-    accounts: {
-      checking: {
-        accountNumber: '543888430912',
-        routingNumber: '021000021'
-      }
-    },
-    confidence: '99%'
-  },
+  credentialSubject: dummyCredentialSubject,
   issuer: 'did:unum:2e05967f-216f-44c4-ae8e-d6f71cd17c5a',
   type: [
     'VerifiableCredential',
@@ -120,12 +122,12 @@ export const dummyIssuerEntity = new IssuerEntity(dummyIssuerEntityOptions);
 
 export const dummyIssuerEntity2 = new IssuerEntity(dummyIssuerEntityOptions);
 
-export const dummyCredentialDto: UnumDto<Credential> = {
+export const dummyCredentialDtoDeprecated: UnumDto<CredentialDeprecated> = {
   body: dummyCredential,
   authToken: dummyIssuerEntityOptions.authToken
 };
 
-export const dummyCredentialV2Dto: UnumDto<CredentialV2> = {
+export const dummyCredentialDto: UnumDto<Credential> = {
   body: {
     ...dummyCredential,
     credentialSubject: JSON.stringify(dummyCredential.credentialSubject)
