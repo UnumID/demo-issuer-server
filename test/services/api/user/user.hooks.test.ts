@@ -1,6 +1,7 @@
 import { GeneralError } from '@feathersjs/errors';
 import { HookContext } from '@feathersjs/feathers';
 import { issueCredential as sdkIssueCredentialDeprecated } from '@unumid/server-sdk-deprecated';
+import { issueCredential as sdkIssueCredential } from '@unumid/server-sdk';
 import { v4 } from 'uuid';
 
 import logger from '../../../../src/logger';
@@ -16,20 +17,23 @@ import {
   issueKYCCredential,
   formatBearerToken
 } from '../../../../src/services/api/user/user.hooks';
-import { dummyCredentialDto, dummyCredentialEntityOptions, dummyIssuerEntity } from '../../../mocks';
+import { dummyCredentialDto, dummyCredentialEntityOptions, dummyIssuerEntity, dummyCredentialV2Dto } from '../../../mocks';
 
 jest.spyOn(logger, 'error');
 
 jest.mock('@unumid/server-sdk-deprecated');
-// jest.mock('@unumid/server-sdk-deprecated', () => {
-//   const actual = jest.requireActual('@unumid/server-sdk-deprecated');
-//   return {
-//     ...actual,
-//     issueCredential: jest.fn() // this is the only exported function we actually want to mock
-//   };
-// });
+const mockIssueCredentialDeprecated = sdkIssueCredentialDeprecated as jest.Mock;
 
-const mockIssueCredential = sdkIssueCredentialDeprecated as jest.Mock;
+// jest.mock('@unumid/server-sdk');
+jest.mock('@unumid/server-sdk', () => {
+  const actual = jest.requireActual('@unumid/server-sdk');
+  return {
+    ...actual,
+    issueCredential: jest.fn() // this is the only exported function we actually want to mock
+  };
+});
+
+const mockIssueCredential = sdkIssueCredential as jest.Mock;
 
 describe('user api service hooks', () => {
   afterEach(() => {
@@ -100,6 +104,45 @@ describe('user api service hooks', () => {
 
       it('issues a credential using the server sdk', async () => {
         await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
+        expect(mockIssueCredentialDeprecated).toBeCalledWith(
+          formatBearerToken(dummyIssuerEntity.authToken),
+          credentialType,
+          dummyIssuerEntity.issuerDid,
+          credentialSubject,
+          dummyIssuerEntity.privateKey
+        );
+      });
+
+      it('returns the response from the sdk', async () => {
+        mockIssueCredentialDeprecated.mockResolvedValueOnce(dummyCredentialDto);
+        const received = await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
+        expect(received).toEqual(dummyCredentialDto);
+      });
+
+      it('catches, logs and re-throws errors thrown by the sdk', async () => {
+        const err = new Error('sdk error');
+        mockIssueCredentialDeprecated.mockRejectedValueOnce(err);
+
+        try {
+          await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
+          fail();
+        } catch (e) {
+          expect(logger.error).toBeCalledWith('issueCredential caught an error thrown by the server sdk', err);
+          expect(e).toEqual(err);
+        }
+      });
+    });
+
+    describe('issueCredential version 2.0.0', () => {
+      const did = `did:unum:${v4}`;
+      const userUuid = v4();
+      const credentialType = 'DemoAuthCredential';
+      const userEmail = 'test@unum.id';
+      const credentialSubject = buildAuthCredentialSubject(did, userUuid, userEmail);
+      const version = '2.0.0';
+
+      it('issues a credential using the server sdk', async () => {
+        await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
         expect(mockIssueCredential).toBeCalledWith(
           formatBearerToken(dummyIssuerEntity.authToken),
           credentialType,
@@ -133,6 +176,25 @@ describe('user api service hooks', () => {
       const version = '1.0.0';
       it('converts an IssuerDto containing a Credential to a CredentialEntityOptions object', () => {
         const received = convertUnumDtoToCredentialEntityOptions(dummyCredentialDto, version);
+        const expected = {
+          credentialContext: dummyCredentialDto.body['@context'],
+          credentialId: dummyCredentialDto.body.id,
+          credentialCredentialSubject: dummyCredentialDto.body.credentialSubject,
+          credentialCredentialStatus: dummyCredentialDto.body.credentialStatus,
+          credentialIssuer: dummyCredentialDto.body.issuer,
+          credentialType: dummyCredentialDto.body.type,
+          credentialIssuanceDate: dummyCredentialDto.body.issuanceDate,
+          credentialExpirationDate: dummyCredentialDto.body.expirationDate,
+          credentialProof: dummyCredentialDto.body.proof
+        };
+        expect(received).toEqual(expected);
+      });
+    });
+
+    describe('convertUnumDtoToCredentialEntityOptions version 2.0.0', () => {
+      const version = '2.0.0';
+      it('converts an IssuerDto containing a Credential to a CredentialEntityOptions object', () => {
+        const received = convertUnumDtoToCredentialEntityOptions(dummyCredentialV2Dto, version);
         const expected = {
           credentialContext: dummyCredentialDto.body['@context'],
           credentialId: dummyCredentialDto.body.id,
@@ -233,7 +295,7 @@ describe('user api service hooks', () => {
           data: { email: 'test@unumid.org' },
           id: userUuid,
           result: { did, uuid: userUuid, email: 'test@unumid.org' },
-          params: { defaultIssuerEntity: dummyIssuerEntity }
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } }
         } as unknown as HookContext;
 
         await issueAuthCredential(ctx);
@@ -253,7 +315,7 @@ describe('user api service hooks', () => {
           .mockReturnValueOnce(mockCredentialDataService)
           .mockReturnValueOnce(mockIssuerDataService);
 
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+        mockIssueCredential.mockResolvedValueOnce(dummyCredentialV2Dto);
         const userUuid = v4();
         const did = `did:unum:${v4()}`;
         const userEmail = 'test@unum.id';
@@ -261,7 +323,7 @@ describe('user api service hooks', () => {
           data: { did },
           id: userUuid,
           result: { uuid: userUuid, did, email: userEmail },
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
           app: {
             service: mockService
           }
@@ -292,7 +354,7 @@ describe('user api service hooks', () => {
           .mockReturnValueOnce(mockCredentialDataService)
           .mockReturnValueOnce(mockIssuerDataService);
 
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+        mockIssueCredential.mockResolvedValueOnce(dummyCredentialV2Dto);
         const userUuid = v4();
         const did = `did:unum:${v4()}`;
         const email = 'test@unum.id';
@@ -300,7 +362,7 @@ describe('user api service hooks', () => {
           data: { did },
           id: userUuid,
           result: { uuid: userUuid, did, email },
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
           app: {
             service: mockService
           }
@@ -323,7 +385,7 @@ describe('user api service hooks', () => {
           .mockReturnValueOnce(mockCredentialDataService)
           .mockReturnValueOnce(mockIssuerDataService);
 
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+        mockIssueCredential.mockResolvedValueOnce(dummyCredentialV2Dto);
 
         const userUuid = v4();
         const did = `did:unum:${v4()}`;
@@ -333,7 +395,7 @@ describe('user api service hooks', () => {
           data: { did },
           id: userUuid,
           result: { uuid: userUuid, did, email },
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
           app: {
             service: mockService
           }
@@ -367,7 +429,7 @@ describe('user api service hooks', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce({
-          ...dummyCredentialDto,
+          ...dummyCredentialV2Dto,
           authToken: 'updated auth token'
         });
 
@@ -379,7 +441,7 @@ describe('user api service hooks', () => {
           data: { did },
           id: userUuid,
           result: { uuid: userUuid, did, email },
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
           app: {
             service: mockService
           }
@@ -404,7 +466,7 @@ describe('user api service hooks', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce({
-          ...dummyCredentialDto,
+          ...dummyCredentialV2Dto,
           authToken: 'updated auth token'
         });
 
@@ -416,7 +478,7 @@ describe('user api service hooks', () => {
           data: { did },
           id: userUuid,
           result: { uuid: userUuid, did, email },
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '1.0.0' } },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
           app: {
             service: mockService
           }
@@ -492,11 +554,11 @@ describe('user api service hooks', () => {
           .mockReturnValueOnce(mockCredentialDataService)
           .mockReturnValueOnce(mockIssuerDataService);
 
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+        mockIssueCredential.mockResolvedValueOnce(dummyCredentialV2Dto);
         const ctx = {
           data: { did: `did:unum:${v4()}` },
           id: v4(),
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
           app: {
             service: mockService
           }
@@ -527,7 +589,7 @@ describe('user api service hooks', () => {
           .mockReturnValueOnce(mockCredentialDataService)
           .mockReturnValueOnce(mockIssuerDataService);
 
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+        mockIssueCredential.mockResolvedValueOnce(dummyCredentialV2Dto);
         const userUuid = v4();
         const did = `did:unum:${v4()}`;
         const email = 'test@unum.id';
@@ -536,7 +598,7 @@ describe('user api service hooks', () => {
           data: { did },
           id: userUuid,
           result: { uuid: userUuid, did, email },
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
           app: {
             service: mockService
           }
@@ -559,11 +621,11 @@ describe('user api service hooks', () => {
           .mockReturnValueOnce(mockCredentialDataService)
           .mockReturnValueOnce(mockIssuerDataService);
 
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+        mockIssueCredential.mockResolvedValueOnce(dummyCredentialV2Dto);
         const ctx = {
           data: { did: `did:unum:${v4()}` },
           id: v4(),
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
           app: {
             service: mockService
           }
@@ -597,7 +659,7 @@ describe('user api service hooks', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce({
-          ...dummyCredentialDto,
+          ...dummyCredentialV2Dto,
           authToken: 'updated auth token'
         });
         const userUuid = v4();
@@ -608,7 +670,7 @@ describe('user api service hooks', () => {
           data: { did },
           id: userUuid,
           result: { uuid: userUuid, did, email },
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
           app: {
             service: mockService
           }
@@ -633,7 +695,7 @@ describe('user api service hooks', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce({
-          ...dummyCredentialDto,
+          ...dummyCredentialV2Dto,
           authToken: 'updated auth token'
         });
         const userUuid = v4();
@@ -644,7 +706,7 @@ describe('user api service hooks', () => {
           data: { did },
           id: userUuid,
           result: { uuid: userUuid, did, email },
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
           app: {
             service: mockService
           }

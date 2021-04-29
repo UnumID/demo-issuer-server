@@ -125,17 +125,28 @@ export const issueCredential = async (
   }
 };
 
-export const convertUnumDtoToCredentialEntityOptions = (issuerDto: UnumDto<Credential> | UnumDto<CredentialDeprecated>, version: string): CredentialEntityOptions => ({
-  credentialContext: issuerDto.body['@context'],
-  credentialId: issuerDto.body.id,
-  credentialCredentialSubject: lt(version, '2.0.0') ? (issuerDto.body as CredentialDeprecated).credentialSubject : convertCredentialSubject((issuerDto.body as Credential).credentialSubject),
-  credentialCredentialStatus: issuerDto.body.credentialStatus,
-  credentialIssuer: issuerDto.body.issuer,
-  credentialType: issuerDto.body.type,
-  credentialIssuanceDate: issuerDto.body.issuanceDate,
-  credentialExpirationDate: issuerDto.body.expirationDate,
-  credentialProof: issuerDto.body.proof
-});
+export const convertUnumDtoToCredentialEntityOptions = (issuerDto: UnumDto<Credential> | UnumDto<CredentialDeprecated>, version: string): CredentialEntityOptions => {
+  let credentialCredentialSubject;
+  if (lt(version, '2.0.0')) {
+    credentialCredentialSubject = (issuerDto.body as CredentialDeprecated).credentialSubject;
+  } else {
+    credentialCredentialSubject = (issuerDto.body as Credential).credentialSubject;
+    credentialCredentialSubject = convertCredentialSubject(credentialCredentialSubject);
+  }
+  // const credentialCredentialSubject = lt(version, '2.0.0') ? (issuerDto.body as CredentialDeprecated).credentialSubject : convertCredentialSubject((issuerDto.body as Credential).credentialSubject), ;
+  return {
+    credentialContext: issuerDto.body['@context'],
+    credentialId: issuerDto.body.id,
+    // credentialCredentialSubject: lt(version, '2.0.0') ? (issuerDto.body as CredentialDeprecated).credentialSubject : convertCredentialSubject((issuerDto.body as Credential).credentialSubject),
+    credentialCredentialSubject,
+    credentialCredentialStatus: issuerDto.body.credentialStatus,
+    credentialIssuer: issuerDto.body.issuer,
+    credentialType: issuerDto.body.type,
+    credentialIssuanceDate: issuerDto.body.issuanceDate,
+    credentialExpirationDate: issuerDto.body.expirationDate,
+    credentialProof: issuerDto.body.proof
+  };
+};
 
 export const getDefaultIssuerEntity: UserServiceHook = async (ctx) => {
   const issuerDataService = ctx.app.service('issuerData');
