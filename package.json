@@ -110,7 +110,6 @@
     ]
   },
   "resolutions": {
-    "@unumid/library-crypto": "https://github.com/UnumID/Library-Crypto-TypeScript.git#v1.2.0",
     "@unumid/demo-types": "git+ssh://git@github.com/UnumID/demo-types.git#v2.0.0",
     "@unumid/demo-types-deprecated": "git+ssh://git@github.com/UnumID/demo-types.git#v0.5.0",
     "@unumid/server-sdk": "git+ssh://git@github.com/UnumID/Server-SDK-Typescript.git#2.0.0",
