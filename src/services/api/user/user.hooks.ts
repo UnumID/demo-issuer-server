@@ -126,19 +126,10 @@ export const issueCredential = async (
 };
 
 export const convertUnumDtoToCredentialEntityOptions = (issuerDto: UnumDto<Credential> | UnumDto<CredentialDeprecated>, version: string): CredentialEntityOptions => {
-  let credentialCredentialSubject;
-  if (lt(version, '2.0.0')) {
-    credentialCredentialSubject = (issuerDto.body as CredentialDeprecated).credentialSubject;
-  } else {
-    credentialCredentialSubject = (issuerDto.body as Credential).credentialSubject;
-    credentialCredentialSubject = convertCredentialSubject(credentialCredentialSubject);
-  }
-  // const credentialCredentialSubject = lt(version, '2.0.0') ? (issuerDto.body as CredentialDeprecated).credentialSubject : convertCredentialSubject((issuerDto.body as Credential).credentialSubject), ;
   return {
     credentialContext: issuerDto.body['@context'],
     credentialId: issuerDto.body.id,
-    // credentialCredentialSubject: lt(version, '2.0.0') ? (issuerDto.body as CredentialDeprecated).credentialSubject : convertCredentialSubject((issuerDto.body as Credential).credentialSubject),
-    credentialCredentialSubject,
+    credentialCredentialSubject: lt(version, '2.0.0') ? (issuerDto.body as CredentialDeprecated).credentialSubject : convertCredentialSubject((issuerDto.body as Credential).credentialSubject),
     credentialCredentialStatus: issuerDto.body.credentialStatus,
     credentialIssuer: issuerDto.body.issuer,
     credentialType: issuerDto.body.type,
@@ -188,7 +179,7 @@ export const issueAuthCredential: UserServiceHook = async (ctx) => {
   // set the version value to the default 1.0.0 is not present in the request headers
   let version = '1.0.0';
   if (params.headers?.version) {
-    version = params.headers?.version; // base version
+    version = params.headers?.version;
   }
 
   // issue a DemoAuthCredential using the server sdk
@@ -240,7 +231,7 @@ export const issueKYCCredential: UserServiceHook = async (ctx) => {
   // set the version value to the default 1.0.0 is not present in the request headers
   let version = '1.0.0';
   if (params.headers?.version) {
-    version = params.headers?.version; // base version
+    version = params.headers?.version;
   }
 
   // issue a DemoAuthCredential using the server sdk
