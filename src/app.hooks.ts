@@ -38,9 +38,27 @@ function logResult (ctx: HookContext): HookContext {
   return ctx;
 }
 
+function checkParmasQuery (ctx: HookContext): void {
+  const { params } = ctx;
+
+  if (!params.query || !params.query.version) {
+    return;
+  }
+
+  ctx.params = {
+    ...params,
+    headers: {
+      ...params.headers,
+      version: params.query?.version
+    }
+  };
+
+  logger.info(`Added the version ${params.query.version} from the query params to params.`);
+}
+
 export default {
   before: {
-    all: [log],
+    all: [log, checkParmasQuery],
     find: [],
     get: [],
     create: [],
