@@ -148,6 +148,7 @@ export const getDefaultIssuerEntity: UserServiceHook = async (ctx) => {
     return {
       ...ctx,
       params: {
+        ...ctx.params,
         defaultIssuerEntity
       }
 

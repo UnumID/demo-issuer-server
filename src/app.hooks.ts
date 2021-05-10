@@ -38,9 +38,32 @@ function logResult (ctx: HookContext): HookContext {
   return ctx;
 }
 
+/**
+ * This hook allows for params to be passed via socketio to a feather service through the query params.
+ * ref: https://docs.feathersjs.com/api/socketio.html#params-query
+ * @param ctx
+ */
+function checkParmasQuery (ctx: HookContext): void {
+  const { params } = ctx;
+
+  if (!params.query || !params.query.version) {
+    return;
+  }
+
+  ctx.params = {
+    ...params,
+    headers: {
+      ...params.headers,
+      version: params.query?.version
+    }
+  };
+
+  logger.info(`Added the version ${params.query.version} from the query params to params.`);
+}
+
 export default {
   before: {
-    all: [log],
+    all: [log, checkParmasQuery],
     find: [],
     get: [],
     create: [],
