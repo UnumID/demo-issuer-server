@@ -18,6 +18,6 @@ RUN --mount=type=ssh,id=github npm install
 
 COPY ./ /app/
 
-RUN yarn compile
+RUN npm run compile
 
-CMD ["yarn", "start"]
+CMD ["npm", "run", "start"]
