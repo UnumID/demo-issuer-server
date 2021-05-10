@@ -112,7 +112,7 @@
   "resolutions": {
     "@unumid/demo-types": "git+ssh://git@github.com/UnumID/demo-types.git#v2.0.0",
     "@unumid/demo-types-deprecated": "git+ssh://git@github.com/UnumID/demo-types.git#v0.5.0",
-    "@unumid/server-sdk": "git+ssh://git@github.com/UnumID/Server-SDK-Typescript.git#version",
+    "@unumid/server-sdk": "git+ssh://git@github.com/UnumID/Server-SDK-Typescript.git#2.0.2",
     "@unumid/server-sdk-deprecated": "git+ssh://git@github.com/UnumID/Server-SDK-Typescript.git#1.3.2",
     "@unumid/types": "git+ssh://git@github.com/UnumID/types#2.0.0",
     "@unumid/types-deprecated": "git+ssh://git@github.com/UnumID/types#1.5.1"
