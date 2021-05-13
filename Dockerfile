@@ -14,7 +14,7 @@ COPY package-lock.json /app/
 
 RUN mkdir -p -m 0600 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
 
-RUN --mount=type=ssh,id=github npm install
+RUN --mount=type=ssh,id=github npm ci
 
 COPY ./ /app/
 
