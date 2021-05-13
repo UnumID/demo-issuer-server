@@ -1,11 +1,10 @@
 import {
   Entity,
   Property,
-  wrap,
   OneToMany,
   Collection
 } from '@mikro-orm/core';
-import { DemoUser, DemoUserCreateOptions } from '@unumid/demo-types';
+import { DemoUserCreateOptions } from '@unumid/demo-types';
 
 import { BaseEntity } from './BaseEntity';
 import { PushToken } from './PushToken';
@@ -20,7 +19,7 @@ export class User extends BaseEntity {
   @Property()
   phone?: string;
 
-  @Property()
+  @Property({ hidden: true })
   password: string;
 
   @Property()
@@ -41,20 +40,5 @@ export class User extends BaseEntity {
     this.phone = phone;
     this.password = password;
     this.firstName = firstName;
-  }
-
-  toJSON (ignoreFields?: string[]): DemoUser {
-    const record = wrap(this).toObject(ignoreFields);
-
-    const result = {
-      uuid: record.uuid,
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
-      email: record.email,
-      phone: record.phone,
-      did: record.did,
-      pushTokens: record.pushTokens
-    };
-    return result;
   }
 }
