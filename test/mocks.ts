@@ -1,5 +1,5 @@
-import { Credential as CredentialDeprecated, Issuer } from '@unumid/types-deprecated';
-import { Credential } from '@unumid/types';
+import { Credential as CredentialDeprecated } from '@unumid/types-deprecated';
+import { Credential, Issuer } from '@unumid/types';
 import { UnumDto } from '@unumid/server-sdk';
 import { v4 } from 'uuid';
 
@@ -99,8 +99,8 @@ const now = new Date().toISOString();
 
 export const dummyIssuer: Issuer = {
   uuid: v4(),
-  createdAt: now,
-  updatedAt: now,
+  createdAt: new Date(now),
+  updatedAt: new Date(now),
   did: `did:unum:${v4()}`,
   name: 'test issuer',
   customerUuid: v4(),
