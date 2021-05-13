@@ -26,17 +26,21 @@ export class User extends BaseEntity {
   @Property()
   did?: string;
 
+  @Property()
+  firstName?: string;
+
   @OneToMany({ entity: () => PushToken, mappedBy: 'user', eager: true })
   pushTokens = new Collection<PushToken>(this);
 
   constructor (options: UserEntityOptions) {
     super(options);
 
-    const { email, phone, password } = options;
+    const { email, phone, password, firstName } = options;
 
     this.email = email;
     this.phone = phone;
     this.password = password;
+    this.firstName = firstName;
   }
 
   toJSON (ignoreFields?: string[]): DemoUser {

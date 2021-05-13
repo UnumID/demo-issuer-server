@@ -1,5 +1,5 @@
-import { Credential as CredentialDeprecated, Issuer } from '@unumid/types-deprecated';
-import { Credential } from '@unumid/types';
+import { Credential as CredentialDeprecated } from '@unumid/types-deprecated';
+import { Credential, Issuer } from '@unumid/types';
 import { UnumDto } from '@unumid/server-sdk';
 import { v4 } from 'uuid';
 
@@ -85,20 +85,22 @@ export const dummyCredentialEntity2 = new CredentialEntity(dummyCredentialEntity
 
 export const dummyUser = new User({
   email: 'test@unumid.org',
-  password: 'test'
+  password: 'test',
+  firstName: 'test'
 });
 
 export const dummyUser2 = new User({
   email: 'test2@unumid.org',
-  password: 'test'
+  password: 'test',
+  firstName: 'test'
 });
 
 const now = new Date().toISOString();
 
 export const dummyIssuer: Issuer = {
   uuid: v4(),
-  createdAt: now,
-  updatedAt: now,
+  createdAt: new Date(now),
+  updatedAt: new Date(now),
   did: `did:unum:${v4()}`,
   name: 'test issuer',
   customerUuid: v4(),
