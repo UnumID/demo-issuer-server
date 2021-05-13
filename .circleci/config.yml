@@ -14,9 +14,11 @@ jobs:
           TEST_DB_PORT: '5432'
           TEST_DB_USER: postgres
           TEST_DB_HOST: localhost
-          POSTGRES_PASSWORD: test
           TEST_DB_PASSWORD: test
       - image: circleci/postgres:12.5
+        environment:
+          POSTGRES_PASSWORD: test
+
     steps:
       - checkout
       - restore_cache: # ref: https://circleci.com/docs/2.0/caching/#restoring-cache
