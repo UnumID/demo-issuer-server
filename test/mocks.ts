@@ -85,12 +85,14 @@ export const dummyCredentialEntity2 = new CredentialEntity(dummyCredentialEntity
 
 export const dummyUser = new User({
   email: 'test@unumid.org',
-  password: 'test'
+  password: 'test',
+  firstName: 'test'
 });
 
 export const dummyUser2 = new User({
   email: 'test2@unumid.org',
-  password: 'test'
+  password: 'test',
+  firstName: 'test'
 });
 
 const now = new Date().toISOString();

@@ -7,7 +7,8 @@ import { resetDb } from '../helpers/resetDb';
 describe('User entity', () => {
   const options = {
     email: 'test@unumid.org',
-    password: 'test'
+    password: 'test',
+    firstName: 'test'
   };
 
   const user = new User(options);
@@ -22,9 +23,10 @@ describe('User entity', () => {
       expect(user.updatedAt).toEqual(user.createdAt);
     });
 
-    it('sets the email and password from options', () => {
+    it('sets the email, firstName, and password from options', () => {
       expect(user.email).toEqual(options.email);
       expect(user.password).toEqual(options.password);
+      expect(user.firstName).toEqual(options.firstName);
     });
 
     it('initializes optional did and phone properties to undefined, and pushTokens to an empty array', () => {
