@@ -1,4 +1,4 @@
-import { EntityRepository, MikroORM } from '@mikro-orm/core';
+import { EntityRepository, MikroORM, wrap } from '@mikro-orm/core';
 
 import { User } from '../../src/entities/User';
 import mikroOrmConfig from '../../src/mikro-orm.config';
@@ -73,6 +73,30 @@ describe('User entity', () => {
       expect(savedUser.did).toBeNull();
       expect(savedUser.phone).toBeNull();
       expect(savedUser.pushTokens.getItems()).toEqual([]);
+    });
+
+    it('serializes to json correctly', async () => {
+      const user2 = new User(options);
+      await userRepository.persistAndFlush(user2);
+      orm.em.clear();
+
+      const savedUser = await userRepository.findOneOrFail(user2.uuid, ['pushTokens']);
+
+      const users = await userRepository.findAll();
+      console.log('users', users);
+      const savedUserObj = wrap(savedUser).toPOJO();
+      const expected = {
+        uuid: savedUserObj.uuid,
+        createdAt: savedUserObj.createdAt,
+        updatedAt: savedUserObj.updatedAt,
+        email: savedUserObj.email,
+        phone: savedUserObj.phone,
+        firstName: savedUserObj.firstName,
+        did: savedUserObj.did,
+        pushTokens: savedUserObj.pushTokens
+      };
+
+      expect(wrap(savedUser).toJSON()).toEqual(expected);
     });
   });
 });
