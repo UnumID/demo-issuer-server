@@ -186,12 +186,12 @@ export const convertUnumDtoToCredentialEntityOptionsV3 = (issuerDto: UnumDto<Cre
   };
 
   return {
-    credentialContext: issuerDto.body.context,
+    credentialContext: ['https://www.w3.org/2018/credentials/v1', ...issuerDto.body.context],
     credentialId: issuerDto.body.id,
     credentialCredentialSubject: convertCredentialSubject(issuerDto.body.credentialSubject),
     credentialCredentialStatus: (issuerDto.body.credentialStatus as CredentialStatus),
     credentialIssuer: issuerDto.body.issuer,
-    credentialType: issuerDto.body.type,
+    credentialType: ['VerifiableCredential', ...issuerDto.body.type],
     credentialIssuanceDate: issuerDto.body.issuanceDate as Date,
     credentialExpirationDate: issuerDto.body.expirationDate,
     // credentialProof: issuerDto.body.proof as ProofPb
