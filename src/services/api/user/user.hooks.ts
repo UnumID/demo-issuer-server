@@ -97,7 +97,7 @@ export const issueCredential = async (
   credentialSubject: CredentialSubject,
   credentialType: string,
   version: string
-): Promise<UnumDto<Credential> | UnumDto<CredentialDeprecatedV1> | UnumDto<CredentialPb>> => {
+): Promise<UnumDto<CredentialDeprecatedV2> | UnumDto<CredentialDeprecatedV1>> => {
   let authCredentialResponse;
 
   try {
@@ -111,19 +111,9 @@ export const issueCredential = async (
       );
 
       return authCredentialResponse as UnumDto<CredentialDeprecatedV1>;
-    } else if (lt(version, '3.0.0')) {
-      authCredentialResponse = await sdkIssueCredentialDeprecatedV2(
-        formatBearerToken(issuerEntity.authToken),
-        credentialType,
-        issuerEntity.issuerDid,
-        credentialSubject,
-        issuerEntity.privateKey
-      );
-
-      return authCredentialResponse as UnumDto<CredentialDeprecatedV2>;
     }
 
-    authCredentialResponse = await sdkIssueCredential(
+    authCredentialResponse = await sdkIssueCredentialDeprecatedV2(
       formatBearerToken(issuerEntity.authToken),
       credentialType,
       issuerEntity.issuerDid,
@@ -131,7 +121,7 @@ export const issueCredential = async (
       issuerEntity.privateKey
     );
 
-    return authCredentialResponse as UnumDto<CredentialPb>;
+    return authCredentialResponse as UnumDto<CredentialDeprecatedV2>;
   } catch (e) {
     logger.error('issueCredential caught an error thrown by the server sdk', e);
     throw e;
@@ -230,6 +220,68 @@ export const getDefaultIssuerEntity: UserServiceHook = async (ctx) => {
 };
 
 export const issueAuthCredential: UserServiceHook = async (ctx) => {
+  const { params } = ctx;
+
+  if (lt(params.headers?.version, '3.0.0')) {
+    return issueAuthCredentialV2(ctx);
+  } else {
+    return issueAuthCredentialV3(ctx);
+  }
+};
+
+export const issueAuthCredentialV2: UserServiceHook = async (ctx) => {
+  const { id, data, result, params } = ctx;
+  const defaultIssuerEntity = params.defaultIssuerEntity as IssuerEntity;
+
+  if (!data || !id || !result) {
+    throw new BadRequest();
+  }
+
+  // only run this hook if the did is being updated
+  const { did } = data;
+  if (!did) {
+    return ctx;
+  }
+
+  if (!defaultIssuerEntity) {
+    throw new GeneralError('Error in issuerAuthCredential hook: defaultIssuerEntity param is not set. Did you forget to run the getDefaultIssuerEntity hook first?');
+  }
+
+  // set the version value to the default 1.0.0 is not present in the request headers
+  let version = '1.0.0';
+  if (params.headers?.version) {
+    version = params.headers?.version;
+  }
+
+  // issue a DemoAuthCredential using the server sdk
+  const authCredentialSubject = buildAuthCredentialSubject(did, id as string, result.email);
+  const issuerDto = await issueCredential(defaultIssuerEntity, authCredentialSubject, 'DemoAuthCredential', version);
+
+  // store the issued credential
+  const credentialDataService = ctx.app.service('credentialData') as MikroOrmService<CredentialEntity>;
+  const credentialEntityOptions = convertUnumDtoToCredentialEntityOptions(issuerDto, version);
+  try {
+    await credentialDataService.create(credentialEntityOptions);
+  } catch (e) {
+    logger.error('issueAuthCredential hook caught an error thrown by credentialDataService.create', e);
+    throw e;
+  }
+
+  // update the default issuer's auth token if it has been reissued
+  if (issuerDto.authToken !== defaultIssuerEntity.authToken) {
+    const issuerDataService = ctx.app.service('issuerData');
+    try {
+      await issuerDataService.patch(defaultIssuerEntity.uuid, { authToken: issuerDto.authToken });
+    } catch (e) {
+      logger.error('issueAuthCredential hook caught an error thrown by issuerDataService.patch', e);
+      throw e;
+    }
+  }
+
+  return ctx;
+};
+
+export const issueAuthCredentialV3: UserServiceHook = async (ctx) => {
   const { id, data, result, params } = ctx;
   const defaultIssuerEntity = params.defaultIssuerEntity as IssuerEntity;
 
@@ -340,7 +392,8 @@ export const validateRequest: UserServiceHook = async (ctx) => {
   const { params } = ctx;
 
   if (!params.headers?.version) {
-    (params.headers as any).version = '1.0.0'; // base version
+    // (params.headers as any).version = '1.0.0'; // base version
+    throw new BadRequest('Version header required.');
   }
 
   logger.info(`User request made with version ${params.headers?.version}`);
