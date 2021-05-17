@@ -398,10 +398,10 @@ export const issueKYCCredentialV2: UserServiceHook = async (ctx) => {
 };
 
 export const issueKYCCredentialV3: UserServiceHook = async (ctx) => {
-  const { id, data, params } = ctx;
+  const { id, data, params, result } = ctx;
   const defaultIssuerEntity = params.defaultIssuerEntity as IssuerEntity;
 
-  if (!data || !id) {
+  if (!data || !id || !result) {
     throw new BadRequest();
   }
 
@@ -422,7 +422,7 @@ export const issueKYCCredentialV3: UserServiceHook = async (ctx) => {
   }
 
   // issue a DemoAuthCredential using the server sdk
-  const KYCCredentialSubject = buildKYCCredentialSubject(did);
+  const KYCCredentialSubject = buildKYCCredentialSubject(did, result.firstName as string || 'Richard');
   // const issuerDto = await issueCredential(defaultIssuerEntity, KYCCredentialSubject, 'KYCCredential', version);
   const issuerDto = await issueCredentialV3(defaultIssuerEntity, KYCCredentialSubject, 'KYCCredential', version);
 
