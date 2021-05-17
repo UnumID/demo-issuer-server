@@ -59,9 +59,9 @@ export const buildAuthCredentialSubject = (did: string, userUuid: string, userEm
   userEmail
 });
 
-export const buildKYCCredentialSubject = (did: string): KYCCredentialSubject => ({
+export const buildKYCCredentialSubject = (did: string, firstName: string): KYCCredentialSubject => ({
   id: did,
-  firstName: 'Richard',
+  firstName,
   lastName: 'Hendricks',
   ssn4: 4321,
   contactInformation: {
@@ -335,7 +335,7 @@ export const issueAuthCredentialV3: UserServiceHook = async (ctx) => {
 };
 
 export const issueKYCCredential: UserServiceHook = async (ctx) => {
-  const { id, data, params } = ctx;
+  const { params } = ctx;
 
   if (lt(params.headers?.version, '3.0.0')) {
     return issueKYCCredentialV2(ctx);
@@ -345,10 +345,10 @@ export const issueKYCCredential: UserServiceHook = async (ctx) => {
 };
 
 export const issueKYCCredentialV2: UserServiceHook = async (ctx) => {
-  const { id, data, params } = ctx;
+  const { id, data, params, result } = ctx;
   const defaultIssuerEntity = params.defaultIssuerEntity as IssuerEntity;
 
-  if (!data || !id) {
+  if (!data || !id || !result) {
     throw new BadRequest();
   }
 
@@ -369,7 +369,7 @@ export const issueKYCCredentialV2: UserServiceHook = async (ctx) => {
   }
 
   // issue a DemoAuthCredential using the server sdk
-  const KYCCredentialSubject = buildKYCCredentialSubject(did);
+  const KYCCredentialSubject = buildKYCCredentialSubject(did, result.firstName as string || 'Richard');
   const issuerDto = await issueCredential(defaultIssuerEntity, KYCCredentialSubject, 'KYCCredential', version);
 
   // store the issued credential

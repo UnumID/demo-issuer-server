@@ -16,7 +16,12 @@ import {
   issueKYCCredential,
   formatBearerToken
 } from '../../../../src/services/api/user/user.hooks';
-import { dummyCredentialDtoDeprecated as dummyCredentialDto, dummyCredentialEntityOptions, dummyIssuerEntity } from '../../../mocks';
+import {
+  dummyCredentialDtoDeprecated as dummyCredentialDto,
+  dummyCredentialEntityOptions,
+  dummyIssuerEntity,
+  dummyUser
+} from '../../../mocks';
 
 jest.mock('@unumid/server-sdk-deprecated-v1');
 jest.spyOn(logger, 'error');
@@ -47,10 +52,11 @@ describe('user api service hooks version 1.0.0', () => {
     describe('buildKYCCredentialSubject', () => {
       it('builds the CredentialSubject for a KYCCredential with the provided did', () => {
         const did = `did:unum:${v4}`;
-        const kycCredential = buildKYCCredentialSubject(did);
+        const firstName = 'Gizmo';
+        const kycCredential = buildKYCCredentialSubject(did, firstName);
         const expected = {
           id: did,
-          firstName: 'Richard',
+          firstName,
           lastName: 'Hendricks',
           ssn4: 4321,
           contactInformation: {
@@ -201,12 +207,11 @@ describe('user api service hooks version 1.0.0', () => {
       });
 
       it('throws if the defaultIssuerEntity param has not been set', async () => {
-        const userUuid = v4();
         const did = `did:unum:${v4()}`;
         const ctx = {
           data: { did },
-          result: { uuid: userUuid, email: 'test@unum.id', did },
-          id: userUuid,
+          result: dummyUser,
+          id: dummyUser.uuid,
           params: {}
         } as unknown as HookContext;
 
@@ -220,12 +225,10 @@ describe('user api service hooks version 1.0.0', () => {
       });
 
       it('exits early if the did is not being updated', async () => {
-        const userUuid = v4();
-        const did = `did:unum:${v4()}`;
         const ctx = {
           data: { email: 'test@unumid.org' },
-          id: userUuid,
-          result: { did, uuid: userUuid, email: 'test@unumid.org' },
+          id: dummyUser.uuid,
+          result: dummyUser,
           params: { defaultIssuerEntity: dummyIssuerEntity }
         } as unknown as HookContext;
 
@@ -247,13 +250,11 @@ describe('user api service hooks version 1.0.0', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
-        const userUuid = v4();
         const did = `did:unum:${v4()}`;
-        const userEmail = 'test@unum.id';
         const ctx = {
           data: { did },
-          id: userUuid,
-          result: { uuid: userUuid, did, email: userEmail },
+          id: dummyUser.uuid,
+          result: dummyUser,
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
@@ -267,7 +268,7 @@ describe('user api service hooks version 1.0.0', () => {
           formatBearerToken(dummyIssuerEntity.authToken),
           'DemoAuthCredential',
           dummyIssuerEntity.issuerDid,
-          buildAuthCredentialSubject(ctx.data.did, ctx.id as string, userEmail),
+          buildAuthCredentialSubject(ctx.data.did, ctx.id as string, dummyUser.email),
           dummyIssuerEntity.privateKey
         );
       });
@@ -286,13 +287,12 @@ describe('user api service hooks version 1.0.0', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
-        const userUuid = v4();
         const did = `did:unum:${v4()}`;
-        const email = 'test@unum.id';
+
         const ctx = {
           data: { did },
-          id: userUuid,
-          result: { uuid: userUuid, did, email },
+          id: dummyUser.uuid,
+          result: dummyUser,
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
@@ -318,14 +318,12 @@ describe('user api service hooks version 1.0.0', () => {
 
         mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
 
-        const userUuid = v4();
         const did = `did:unum:${v4()}`;
-        const email = 'test@unum.id';
 
         const ctx = {
           data: { did },
-          id: userUuid,
-          result: { uuid: userUuid, did, email },
+          id: dummyUser.uuid,
+          result: dummyUser,
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
@@ -364,14 +362,12 @@ describe('user api service hooks version 1.0.0', () => {
           authToken: 'updated auth token'
         });
 
-        const userUuid = v4();
         const did = `did:unum:${v4()}`;
-        const email = 'test@unum.id';
 
         const ctx = {
           data: { did },
-          id: userUuid,
-          result: { uuid: userUuid, did, email },
+          id: dummyUser.uuid,
+          result: dummyUser,
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
@@ -401,14 +397,12 @@ describe('user api service hooks version 1.0.0', () => {
           authToken: 'updated auth token'
         });
 
-        const userUuid = v4();
         const did = `did:unum:${v4()}`;
-        const email = 'test@unum.id';
 
         const ctx = {
           data: { did },
-          id: userUuid,
-          result: { uuid: userUuid, did, email },
+          id: dummyUser.uuid,
+          result: dummyUser,
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
@@ -436,14 +430,12 @@ describe('user api service hooks version 1.0.0', () => {
       });
 
       it('throws if the defaultIssuerEntity param has not been set', async () => {
-        const userUuid = v4();
         const did = `did:unum:${v4()}`;
-        const email = 'test@unum.id';
 
         const ctx = {
           data: { did },
-          id: userUuid,
-          result: { uuid: userUuid, did, email },
+          id: dummyUser.uuid,
+          result: dummyUser,
           params: {}
         } as unknown as HookContext;
 
@@ -457,14 +449,12 @@ describe('user api service hooks version 1.0.0', () => {
       });
 
       it('exits early if the did is not being updated', async () => {
-        const userUuid = v4();
-        const did = `did:unum:${v4()}`;
         const email = 'test@unum.id';
 
         const ctx = {
           data: { email },
-          id: userUuid,
-          result: { uuid: userUuid, did, email },
+          id: dummyUser.uuid,
+          result: dummyUser,
           params: { defaultIssuerEntity: dummyIssuerEntity }
         } as unknown as HookContext;
 
@@ -486,9 +476,11 @@ describe('user api service hooks version 1.0.0', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+
         const ctx = {
           data: { did: `did:unum:${v4()}` },
-          id: v4(),
+          id: dummyUser.uuid,
+          result: dummyUser,
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
@@ -502,7 +494,7 @@ describe('user api service hooks version 1.0.0', () => {
           formatBearerToken(dummyIssuerEntity.authToken),
           'KYCCredential',
           dummyIssuerEntity.issuerDid,
-          buildKYCCredentialSubject(ctx.data.did),
+          buildKYCCredentialSubject(ctx.data.did, dummyUser.firstName),
           dummyIssuerEntity.privateKey
         );
       });
@@ -521,14 +513,12 @@ describe('user api service hooks version 1.0.0', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
-        const userUuid = v4();
         const did = `did:unum:${v4()}`;
-        const email = 'test@unum.id';
 
         const ctx = {
           data: { did },
-          id: userUuid,
-          result: { uuid: userUuid, did, email },
+          id: dummyUser.uuid,
+          result: dummyUser,
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
@@ -553,10 +543,12 @@ describe('user api service hooks version 1.0.0', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+
         const ctx = {
           data: { did: `did:unum:${v4()}` },
-          id: v4(),
+          id: dummyUser.uuid,
           params: { defaultIssuerEntity: dummyIssuerEntity },
+          result: dummyUser,
           app: {
             service: mockService
           }
@@ -593,14 +585,13 @@ describe('user api service hooks version 1.0.0', () => {
           ...dummyCredentialDto,
           authToken: 'updated auth token'
         });
-        const userUuid = v4();
+
         const did = `did:unum:${v4()}`;
-        const email = 'test@unum.id';
 
         const ctx = {
           data: { did },
-          id: userUuid,
-          result: { uuid: userUuid, did, email },
+          id: dummyUser.uuid,
+          result: dummyUser,
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
@@ -629,14 +620,13 @@ describe('user api service hooks version 1.0.0', () => {
           ...dummyCredentialDto,
           authToken: 'updated auth token'
         });
-        const userUuid = v4();
+
         const did = `did:unum:${v4()}`;
-        const email = 'test@unum.id';
 
         const ctx = {
           data: { did },
-          id: userUuid,
-          result: { uuid: userUuid, did, email },
+          id: dummyUser.uuid,
+          result: dummyUser,
           params: { defaultIssuerEntity: dummyIssuerEntity },
           app: {
             service: mockService
