@@ -336,6 +336,69 @@ export const issueAuthCredentialV3: UserServiceHook = async (ctx) => {
 
 export const issueKYCCredential: UserServiceHook = async (ctx) => {
   const { id, data, params } = ctx;
+
+  if (lt(params.headers?.version, '3.0.0')) {
+    return issueKYCCredentialV2(ctx);
+  } else {
+    return issueKYCCredentialV3(ctx);
+  }
+};
+
+export const issueKYCCredentialV2: UserServiceHook = async (ctx) => {
+  const { id, data, params } = ctx;
+  const defaultIssuerEntity = params.defaultIssuerEntity as IssuerEntity;
+
+  if (!data || !id) {
+    throw new BadRequest();
+  }
+
+  // only run this hook if the did is being updated
+  const { did } = data;
+  if (!did) {
+    return ctx;
+  }
+
+  if (!defaultIssuerEntity) {
+    throw new GeneralError('Error in issueKYCCredential hook: defaultIssuerEntity param is not set. Did you forget to run the getDefaultIssuerEntity hook first?');
+  }
+
+  // set the version value to the default 1.0.0 is not present in the request headers
+  let version = '1.0.0';
+  if (params.headers?.version) {
+    version = params.headers?.version;
+  }
+
+  // issue a DemoAuthCredential using the server sdk
+  const KYCCredentialSubject = buildKYCCredentialSubject(did);
+  const issuerDto = await issueCredential(defaultIssuerEntity, KYCCredentialSubject, 'KYCCredential', version);
+
+  // store the issued credential
+  const credentialDataService = ctx.app.service('credentialData') as MikroOrmService<CredentialEntity>;
+  const credentialEntityOptions = convertUnumDtoToCredentialEntityOptions(issuerDto, version);
+
+  try {
+    await credentialDataService.create(credentialEntityOptions);
+  } catch (e) {
+    logger.error('issueKYCCredential hook caught an error thrown by credentialDataService.create', e);
+    throw e;
+  }
+
+  // update the default issuer's auth token if it has been reissued
+  if (issuerDto.authToken !== defaultIssuerEntity.authToken) {
+    const issuerDataService = ctx.app.service('issuerData');
+    try {
+      await issuerDataService.patch(defaultIssuerEntity.uuid, { authToken: issuerDto.authToken });
+    } catch (e) {
+      logger.error('issueKYCCredential hook caught an error thrown by issuerDataService.patch', e);
+      throw e;
+    }
+  }
+
+  return ctx;
+};
+
+export const issueKYCCredentialV3: UserServiceHook = async (ctx) => {
+  const { id, data, params } = ctx;
   const defaultIssuerEntity = params.defaultIssuerEntity as IssuerEntity;
 
   if (!data || !id) {
