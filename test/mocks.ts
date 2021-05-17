@@ -1,4 +1,4 @@
-import { Credential as CredentialDeprecated } from '@unumid/types-deprecated';
+import { Credential as CredentialDeprecated } from '@unumid/types-deprecated-v1';
 import { Credential, Issuer } from '@unumid/types';
 import { UnumDto } from '@unumid/server-sdk';
 import { v4 } from 'uuid';

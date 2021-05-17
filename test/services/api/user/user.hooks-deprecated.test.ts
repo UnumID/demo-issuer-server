@@ -1,6 +1,6 @@
 import { GeneralError } from '@feathersjs/errors';
 import { HookContext } from '@feathersjs/feathers';
-import { issueCredential as sdkIssueCredential } from '@unumid/server-sdk-deprecated';
+import { issueCredential as sdkIssueCredential } from '@unumid/server-sdk-deprecated-v1';
 import { v4 } from 'uuid';
 
 import logger from '../../../../src/logger';
@@ -18,7 +18,7 @@ import {
 } from '../../../../src/services/api/user/user.hooks';
 import { dummyCredentialDtoDeprecated as dummyCredentialDto, dummyCredentialEntityOptions, dummyIssuerEntity } from '../../../mocks';
 
-jest.mock('@unumid/server-sdk-deprecated');
+jest.mock('@unumid/server-sdk-deprecated-v1');
 jest.spyOn(logger, 'error');
 const mockIssueCredential = sdkIssueCredential as jest.Mock;
 
