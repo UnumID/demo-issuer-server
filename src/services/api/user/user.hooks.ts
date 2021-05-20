@@ -338,11 +338,13 @@ export const issueAuthCredentialV3: UserServiceHook = async (ctx) => {
 export const issueKYCCredential: UserServiceHook = async (ctx) => {
   const { params } = ctx;
 
-  if (lt(params.headers?.version, '3.0.0')) {
-    return issueKYCCredentialV2(ctx);
-  } else {
-    return issueKYCCredentialV3(ctx);
-  }
+  // if (lt(params.headers?.version, '3.0.0')) {
+  //   return issueKYCCredentialV2(ctx);
+  // } else {
+  //   return issueKYCCredentialV3(ctx);
+  // }
+
+  return issueKYCCredentialV3(ctx);
 };
 
 export const issueKYCCredentialV2: UserServiceHook = async (ctx) => {
