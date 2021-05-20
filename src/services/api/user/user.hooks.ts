@@ -455,8 +455,8 @@ export const validateRequest: UserServiceHook = async (ctx) => {
   const { params } = ctx;
 
   if (!params.headers?.version) {
-    (params.headers as any).version = '1.0.0'; // base version
-    // throw new BadRequest('Version header required.');
+    // (params.headers as any).version = '1.0.0'; // base version
+    throw new BadRequest('Version header required.');
   }
 
   logger.info(`User request made with version ${params.headers?.version}`);
