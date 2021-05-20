@@ -222,11 +222,12 @@ export const getDefaultIssuerEntity: UserServiceHook = async (ctx) => {
 export const issueAuthCredential: UserServiceHook = async (ctx) => {
   const { params } = ctx;
 
-  if (lt(params.headers?.version, '3.0.0')) {
-    return issueAuthCredentialV2(ctx);
-  } else {
-    return issueAuthCredentialV3(ctx);
-  }
+  // if (lt(params.headers?.version, '3.0.0')) {
+  //   return issueAuthCredentialV2(ctx);
+  // } else {
+  //   return issueAuthCredentialV3(ctx);
+  // }
+  return issueAuthCredentialV3(ctx);
 };
 
 export const issueAuthCredentialV2: UserServiceHook = async (ctx) => {
@@ -456,10 +457,11 @@ export const validateRequest: UserServiceHook = async (ctx) => {
 
   if (!params.headers?.version) {
     // (params.headers as any).version = '1.0.0'; // base version
-    throw new BadRequest('Version header required.');
+    // throw new BadRequest('Version header required.');
+    logger.info(`User request made without version ${params.headers?.version}`);
+  } else {
+    logger.info(`User request made with version ${params.headers?.version}`);
   }
-
-  logger.info(`User request made with version ${params.headers?.version}`);
 
   return ctx;
 };
