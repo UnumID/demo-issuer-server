@@ -474,7 +474,8 @@ export const validateRequest: UserServiceHook = async (ctx) => {
 
 export const hooks = {
   before: {
-    all: [validateRequest, getDefaultIssuerEntity]
+    // all: [validateRequest, getDefaultIssuerEntity],
+    all: [validateRequest]
   },
   after: {
     patch: [getDefaultIssuerEntity, issueAuthCredential, issueKYCCredential]
