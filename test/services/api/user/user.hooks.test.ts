@@ -1,6 +1,7 @@
 import { GeneralError } from '@feathersjs/errors';
 import { HookContext } from '@feathersjs/feathers';
-import { issueCredential as sdkIssueCredentialDeprecated } from '@unumid/server-sdk-deprecated-v1';
+import { issueCredential as sdkIssueCredentialDeprecatedV1 } from '@unumid/server-sdk-deprecated-v1';
+import { issueCredential as sdkIssueCredentialDeprecatedV2 } from '@unumid/server-sdk-deprecated-v2';
 import { issueCredential as sdkIssueCredential } from '@unumid/server-sdk';
 import { v4 } from 'uuid';
 
@@ -10,7 +11,7 @@ import {
   hooks,
   buildAuthCredentialSubject,
   buildKYCCredentialSubject,
-  issueCredential,
+  issueCredentialV3 as issueCredential,
   convertUnumDtoToCredentialEntityOptions,
   getDefaultIssuerEntity,
   issueAuthCredential,
@@ -19,7 +20,6 @@ import {
 } from '../../../../src/services/api/user/user.hooks';
 import {
   dummyCredentialDto,
-  dummyCredentialDtoDeprecated,
   dummyCredentialEntityOptions,
   dummyCredentialSubject,
   dummyIssuerEntity,
@@ -28,8 +28,28 @@ import {
 
 jest.spyOn(logger, 'error');
 
+// jest.mock('@unumid/server-sdk-deprecated-v1');
+// jest.mock('@unumid/server-sdk-deprecated-v1', () => {
+//   const actual = jest.requireActual('@unumid/server-sdk-deprecated-v1');
+//   return {
+//     ...actual,
+//     issueCredential: jest.fn() // this is the only exported function we actually want to mock
+//   };
+// });
+// const mockIssueCredentialDeprecatedV1 = sdkIssueCredentialDeprecatedV1 as jest.Mock;
 jest.mock('@unumid/server-sdk-deprecated-v1');
-const mockIssueCredentialDeprecated = sdkIssueCredentialDeprecated as jest.Mock;
+const mockIssueCredentialDeprecatedV1 = sdkIssueCredentialDeprecatedV1 as jest.Mock;
+
+// jest.mock('@unumid/server-sdk-deprecated-v2', () => {
+//   const actual = jest.requireActual('@unumid/server-sdk-deprecated-v2');
+//   return {
+//     ...actual,
+//     issueCredential: jest.fn() // this is the only exported function we actually want to mock
+//   };
+// });
+// const mockIssueCredentialDeprecatedV2 = sdkIssueCredentialDeprecatedV2 as jest.Mock;
+jest.mock('@unumid/server-sdk-deprecated-v2');
+const mockIssueCredentialDeprecatedV2 = sdkIssueCredentialDeprecatedV2 as jest.Mock;
 
 // jest.mock('@unumid/server-sdk');
 jest.mock('@unumid/server-sdk', () => {
@@ -42,7 +62,7 @@ jest.mock('@unumid/server-sdk', () => {
 
 const mockIssueCredential = sdkIssueCredential as jest.Mock;
 
-describe('user api service hooks version 2.0.0', () => {
+describe('user api service hooks version 3.0.0', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -102,18 +122,17 @@ describe('user api service hooks version 2.0.0', () => {
       });
     });
 
-    // Note: can remove once not supporting v1.0.0 anymore. Leaving here in none-deprecated tests to show the functional differences of v1 vs v2.
-    describe('issueCredential version 1.0.0', () => {
+    describe('issueCredential version 3.0.0', () => {
       const did = `did:unum:${v4}`;
       const userUuid = v4();
       const credentialType = 'DemoAuthCredential';
       const userEmail = 'test@unum.id';
       const credentialSubject = buildAuthCredentialSubject(did, userUuid, userEmail);
-      const version = '1.0.0';
+      const version = '3.0.0';
 
       it('issues a credential using the server sdk', async () => {
         await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
-        expect(mockIssueCredentialDeprecated).toBeCalledWith(
+        expect(mockIssueCredentialDeprecatedV2).toBeCalledWith(
           formatBearerToken(dummyIssuerEntity.authToken),
           credentialType,
           dummyIssuerEntity.issuerDid,
@@ -123,14 +142,14 @@ describe('user api service hooks version 2.0.0', () => {
       });
 
       it('returns the response from the sdk', async () => {
-        mockIssueCredentialDeprecated.mockResolvedValueOnce(dummyCredentialDtoDeprecated);
+        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
         const received = await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
-        expect(received).toEqual(dummyCredentialDtoDeprecated);
+        expect(received).toEqual(dummyCredentialDto);
       });
 
       it('catches, logs and re-throws errors thrown by the sdk', async () => {
         const err = new Error('sdk error');
-        mockIssueCredentialDeprecated.mockRejectedValueOnce(err);
+        mockIssueCredential.mockRejectedValueOnce(err);
 
         try {
           await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
@@ -142,13 +161,13 @@ describe('user api service hooks version 2.0.0', () => {
       });
     });
 
-    describe('issueCredential version 2.0.0', () => {
+    describe('issueCredential version 3.0.0', () => {
       const did = `did:unum:${v4}`;
       const userUuid = v4();
       const credentialType = 'DemoAuthCredential';
       const userEmail = 'test@unum.id';
       const credentialSubject = buildAuthCredentialSubject(did, userUuid, userEmail);
-      const version = '2.0.0';
+      const version = '3.0.0';
 
       it('issues a credential using the server sdk', async () => {
         await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
@@ -181,28 +200,8 @@ describe('user api service hooks version 2.0.0', () => {
       });
     });
 
-    // Note: can remove once not supporting v1.0.0 anymore. Leaving here in none-deprecated tests to show the functional differences of v1 vs v2.
-    describe('convertUnumDtoToCredentialEntityOptions version 1.0.0', () => {
-      const version = '1.0.0';
-      it('converts an IssuerDto containing a Credential to a CredentialEntityOptions object', () => {
-        const received = convertUnumDtoToCredentialEntityOptions(dummyCredentialDtoDeprecated, version);
-        const expected = {
-          credentialContext: dummyCredentialDtoDeprecated.body['@context'],
-          credentialId: dummyCredentialDtoDeprecated.body.id,
-          credentialCredentialSubject: dummyCredentialDtoDeprecated.body.credentialSubject,
-          credentialCredentialStatus: dummyCredentialDtoDeprecated.body.credentialStatus,
-          credentialIssuer: dummyCredentialDtoDeprecated.body.issuer,
-          credentialType: dummyCredentialDtoDeprecated.body.type,
-          credentialIssuanceDate: dummyCredentialDtoDeprecated.body.issuanceDate,
-          credentialExpirationDate: dummyCredentialDtoDeprecated.body.expirationDate,
-          credentialProof: dummyCredentialDtoDeprecated.body.proof
-        };
-        expect(received).toEqual(expected);
-      });
-    });
-
-    describe('convertUnumDtoToCredentialEntityOptions version 2.0.0', () => {
-      const version = '2.0.0';
+    describe('convertUnumDtoToCredentialEntityOptions version 3.0.0', () => {
+      const version = '3.0.0';
       it('converts an IssuerDto containing a Credential to a CredentialEntityOptions object', () => {
         const received = convertUnumDtoToCredentialEntityOptions(dummyCredentialDto, version);
         const expected = {
@@ -285,7 +284,7 @@ describe('user api service hooks version 2.0.0', () => {
           data: { did },
           result: dummyUser,
           id: dummyUser.uuid,
-          params: {}
+          params: { headers: { version: '3.0.0' } }
         } as unknown as HookContext;
 
         try {
@@ -302,7 +301,7 @@ describe('user api service hooks version 2.0.0', () => {
           data: { email: 'test@unumid.org' },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } }
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } }
         } as unknown as HookContext;
 
         await issueAuthCredential(ctx);
@@ -328,7 +327,7 @@ describe('user api service hooks version 2.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
           app: {
             service: mockService
           }
@@ -365,7 +364,7 @@ describe('user api service hooks version 2.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
           app: {
             service: mockService
           }
@@ -396,7 +395,7 @@ describe('user api service hooks version 2.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
           app: {
             service: mockService
           }
@@ -441,7 +440,7 @@ describe('user api service hooks version 2.0.0', () => {
           data: { did },
           id: userUuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
           app: {
             service: mockService
           }
@@ -476,7 +475,7 @@ describe('user api service hooks version 2.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
           app: {
             service: mockService
           }
@@ -509,7 +508,7 @@ describe('user api service hooks version 2.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: {}
+          params: { headers: { version: '3.0.0' } }
         } as unknown as HookContext;
 
         try {
@@ -528,7 +527,7 @@ describe('user api service hooks version 2.0.0', () => {
           data: { email },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity }
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } }
         } as unknown as HookContext;
 
         await issueKYCCredential(ctx);
@@ -555,7 +554,7 @@ describe('user api service hooks version 2.0.0', () => {
           data: { did },
           result: dummyUser,
           id: dummyUser.uuid,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
           app: {
             service: mockService
           }
@@ -592,7 +591,7 @@ describe('user api service hooks version 2.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
           app: {
             service: mockService
           }
@@ -622,7 +621,7 @@ describe('user api service hooks version 2.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
           app: {
             service: mockService
           }
@@ -666,7 +665,7 @@ describe('user api service hooks version 2.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
           app: {
             service: mockService
           }
@@ -701,7 +700,7 @@ describe('user api service hooks version 2.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '2.0.0' } },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
           app: {
             service: mockService
           }

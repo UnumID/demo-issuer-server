@@ -166,10 +166,10 @@ export const dummyCredentialDtoDeprecatedV2: UnumDto<CredentialDeprecatedV2> = {
   authToken: dummyIssuerEntityOptions.authToken
 };
 
-export const dummyCredentialDto: UnumDto<Credential> = {
+export const dummyCredentialDto: UnumDto<CredentialPb> = {
   body: {
-    ...dummyCredential,
-    credentialSubject: JSON.stringify(dummyCredential.credentialSubject)
+    ...dummyCredentialV3,
+    credentialSubject: dummyCredentialV3.credentialSubject
   },
   authToken: dummyIssuerEntityOptions.authToken
 };
