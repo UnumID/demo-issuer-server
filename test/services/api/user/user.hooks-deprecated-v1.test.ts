@@ -212,7 +212,7 @@ describe('user api service hooks version 1.0.0', () => {
           data: { did },
           result: dummyUser,
           id: dummyUser.uuid,
-          params: {}
+          params: { headers: { version: '1.0.0' } }
         } as unknown as HookContext;
 
         try {
@@ -229,7 +229,7 @@ describe('user api service hooks version 1.0.0', () => {
           data: { email: 'test@unumid.org' },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity }
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '1.0.0' } }
         } as unknown as HookContext;
 
         await issueAuthCredential(ctx);
@@ -255,7 +255,7 @@ describe('user api service hooks version 1.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '1.0.0' } },
           app: {
             service: mockService
           }
@@ -293,7 +293,7 @@ describe('user api service hooks version 1.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '1.0.0' } },
           app: {
             service: mockService
           }
@@ -324,7 +324,7 @@ describe('user api service hooks version 1.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '1.0.0' } },
           app: {
             service: mockService
           }
@@ -368,7 +368,7 @@ describe('user api service hooks version 1.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '1.0.0' } },
           app: {
             service: mockService
           }
@@ -403,7 +403,7 @@ describe('user api service hooks version 1.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '1.0.0' } },
           app: {
             service: mockService
           }
@@ -436,7 +436,7 @@ describe('user api service hooks version 1.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: {}
+          params: { headers: { version: '1.0.0' } }
         } as unknown as HookContext;
 
         try {
@@ -455,7 +455,7 @@ describe('user api service hooks version 1.0.0', () => {
           data: { email },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity }
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '1.0.0' } }
         } as unknown as HookContext;
 
         await issueKYCCredential(ctx);
@@ -481,7 +481,7 @@ describe('user api service hooks version 1.0.0', () => {
           data: { did: `did:unum:${v4()}` },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '1.0.0' } },
           app: {
             service: mockService
           }
@@ -519,7 +519,7 @@ describe('user api service hooks version 1.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '1.0.0' } },
           app: {
             service: mockService
           }
@@ -547,7 +547,7 @@ describe('user api service hooks version 1.0.0', () => {
         const ctx = {
           data: { did: `did:unum:${v4()}` },
           id: dummyUser.uuid,
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '1.0.0' } },
           result: dummyUser,
           app: {
             service: mockService
@@ -592,7 +592,7 @@ describe('user api service hooks version 1.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '1.0.0' } },
           app: {
             service: mockService
           }
@@ -627,7 +627,7 @@ describe('user api service hooks version 1.0.0', () => {
           data: { did },
           id: dummyUser.uuid,
           result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity },
+          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '1.0.0' } },
           app: {
             service: mockService
           }

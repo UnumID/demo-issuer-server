@@ -222,12 +222,12 @@ export const getDefaultIssuerEntity: UserServiceHook = async (ctx) => {
 export const issueAuthCredential: UserServiceHook = async (ctx) => {
   const { params } = ctx;
 
-  // if (lt(params.headers?.version, '3.0.0')) {
-  //   return issueAuthCredentialV2(ctx);
-  // } else {
-  //   return issueAuthCredentialV3(ctx);
-  // }
-  return issueAuthCredentialV3(ctx);
+  if (lt(params.headers?.version, '3.0.0')) {
+    return issueAuthCredentialV2(ctx);
+  } else {
+    return issueAuthCredentialV3(ctx);
+  }
+  // return issueAuthCredentialV3(ctx);
 };
 
 export const issueAuthCredentialV2: UserServiceHook = async (ctx) => {
@@ -253,6 +253,10 @@ export const issueAuthCredentialV2: UserServiceHook = async (ctx) => {
   if (params.headers?.version) {
     version = params.headers?.version;
   }
+
+  // if (lt(version, '2.0.0')) {
+  //   throw new BadRequest('Only version 2.0.0+ supported.');
+  // }
 
   // issue a DemoAuthCredential using the server sdk
   const authCredentialSubject = buildAuthCredentialSubject(did, id as string, result.email);
@@ -338,13 +342,13 @@ export const issueAuthCredentialV3: UserServiceHook = async (ctx) => {
 export const issueKYCCredential: UserServiceHook = async (ctx) => {
   const { params } = ctx;
 
-  // if (lt(params.headers?.version, '3.0.0')) {
-  //   return issueKYCCredentialV2(ctx);
-  // } else {
-  //   return issueKYCCredentialV3(ctx);
-  // }
+  if (lt(params.headers?.version, '3.0.0')) {
+    return issueKYCCredentialV2(ctx);
+  } else {
+    return issueKYCCredentialV3(ctx);
+  }
 
-  return issueKYCCredentialV3(ctx);
+  // return issueKYCCredentialV3(ctx);
 };
 
 export const issueKYCCredentialV2: UserServiceHook = async (ctx) => {
@@ -470,7 +474,7 @@ export const validateRequest: UserServiceHook = async (ctx) => {
 
 export const hooks = {
   before: {
-    all: [validateRequest]
+    all: [validateRequest, getDefaultIssuerEntity]
   },
   after: {
     patch: [getDefaultIssuerEntity, issueAuthCredential, issueKYCCredential]
