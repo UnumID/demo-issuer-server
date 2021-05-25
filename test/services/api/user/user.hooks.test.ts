@@ -1,7 +1,5 @@
 import { GeneralError } from '@feathersjs/errors';
 import { HookContext } from '@feathersjs/feathers';
-import { issueCredential as sdkIssueCredentialDeprecatedV1 } from '@unumid/server-sdk-deprecated-v1';
-import { issueCredential as sdkIssueCredentialDeprecatedV2 } from '@unumid/server-sdk-deprecated-v2';
 import { issueCredential as sdkIssueCredential } from '@unumid/server-sdk';
 import { v4 } from 'uuid';
 
@@ -28,30 +26,6 @@ import {
 
 jest.spyOn(logger, 'error');
 
-// jest.mock('@unumid/server-sdk-deprecated-v1');
-// jest.mock('@unumid/server-sdk-deprecated-v1', () => {
-//   const actual = jest.requireActual('@unumid/server-sdk-deprecated-v1');
-//   return {
-//     ...actual,
-//     issueCredential: jest.fn() // this is the only exported function we actually want to mock
-//   };
-// });
-// const mockIssueCredentialDeprecatedV1 = sdkIssueCredentialDeprecatedV1 as jest.Mock;
-jest.mock('@unumid/server-sdk-deprecated-v1');
-const mockIssueCredentialDeprecatedV1 = sdkIssueCredentialDeprecatedV1 as jest.Mock;
-
-// jest.mock('@unumid/server-sdk-deprecated-v2', () => {
-//   const actual = jest.requireActual('@unumid/server-sdk-deprecated-v2');
-//   return {
-//     ...actual,
-//     issueCredential: jest.fn() // this is the only exported function we actually want to mock
-//   };
-// });
-// const mockIssueCredentialDeprecatedV2 = sdkIssueCredentialDeprecatedV2 as jest.Mock;
-jest.mock('@unumid/server-sdk-deprecated-v2');
-const mockIssueCredentialDeprecatedV2 = sdkIssueCredentialDeprecatedV2 as jest.Mock;
-
-// jest.mock('@unumid/server-sdk');
 jest.mock('@unumid/server-sdk', () => {
   const actual = jest.requireActual('@unumid/server-sdk');
   return {
@@ -132,7 +106,7 @@ describe('user api service hooks version 3.0.0', () => {
 
       it('issues a credential using the server sdk', async () => {
         await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
-        expect(mockIssueCredentialDeprecatedV2).toBeCalledWith(
+        expect(mockIssueCredential).toBeCalledWith(
           formatBearerToken(dummyIssuerEntity.authToken),
           credentialType,
           dummyIssuerEntity.issuerDid,

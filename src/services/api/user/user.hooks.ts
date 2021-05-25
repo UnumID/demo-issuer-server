@@ -186,12 +186,12 @@ export const convertUnumDtoToCredentialEntityOptionsV3 = (issuerDto: UnumDto<Cre
   };
 
   return {
-    credentialContext: ['https://www.w3.org/2018/credentials/v1', ...issuerDto.body.context],
+    credentialContext: (issuerDto.body.context as ['https://www.w3.org/2018/credentials/v1', ...string[]]), // the proto type def can not have constants, but the value is ensured prior to sending to saas for encrypted persistence.
     credentialId: issuerDto.body.id,
     credentialCredentialSubject: convertCredentialSubject(issuerDto.body.credentialSubject),
     credentialCredentialStatus: (issuerDto.body.credentialStatus as CredentialStatus),
     credentialIssuer: issuerDto.body.issuer,
-    credentialType: ['VerifiableCredential', ...issuerDto.body.type],
+    credentialType: (issuerDto.body.type as ['VerifiableCredential', ...string[]]), // the proto type def can not have constants, but the value is ensured prior to sending to saas for encrypted persistence.
     credentialIssuanceDate: issuerDto.body.issuanceDate as Date,
     credentialExpirationDate: issuerDto.body.expirationDate,
     // credentialProof: issuerDto.body.proof as ProofPb
@@ -423,7 +423,7 @@ export const issueKYCCredentialV3: UserServiceHook = async (ctx) => {
   }
 
   // set the version value to the default 1.0.0 is not present in the request headers
-  let version = '1.0.0';
+  let version = '3.0.0';
   if (params.headers?.version) {
     version = params.headers?.version;
   }
