@@ -18,8 +18,8 @@ import {
   formatBearerToken
 } from '../../../../src/services/api/user/user.hooks';
 import {
-  dummyCredentialDto,
   dummyCredentialDtoDeprecated,
+  dummyCredentialDtoDeprecatedV2,
   dummyCredentialEntityOptions,
   dummyCredentialSubject,
   dummyIssuerEntity,
@@ -161,9 +161,9 @@ describe('user api service hooks version 2.0.0', () => {
       });
 
       it('returns the response from the sdk', async () => {
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDtoDeprecatedV2);
         const received = await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
-        expect(received).toEqual(dummyCredentialDto);
+        expect(received).toEqual(dummyCredentialDtoDeprecatedV2);
       });
 
       it('catches, logs and re-throws errors thrown by the sdk', async () => {
@@ -203,17 +203,17 @@ describe('user api service hooks version 2.0.0', () => {
     describe('convertUnumDtoToCredentialEntityOptions version 2.0.0', () => {
       const version = '2.0.0';
       it('converts an IssuerDto containing a Credential to a CredentialEntityOptions object', () => {
-        const received = convertUnumDtoToCredentialEntityOptions(dummyCredentialDto, version);
+        const received = convertUnumDtoToCredentialEntityOptions(dummyCredentialDtoDeprecatedV2, version);
         const expected = {
-          credentialContext: dummyCredentialDto.body['@context'],
-          credentialId: dummyCredentialDto.body.id,
+          credentialContext: dummyCredentialDtoDeprecatedV2.body['@context'],
+          credentialId: dummyCredentialDtoDeprecatedV2.body.id,
           credentialCredentialSubject: dummyCredentialSubject,
-          credentialCredentialStatus: dummyCredentialDto.body.credentialStatus,
-          credentialIssuer: dummyCredentialDto.body.issuer,
-          credentialType: dummyCredentialDto.body.type,
-          credentialIssuanceDate: dummyCredentialDto.body.issuanceDate,
-          credentialExpirationDate: dummyCredentialDto.body.expirationDate,
-          credentialProof: dummyCredentialDto.body.proof
+          credentialCredentialStatus: dummyCredentialDtoDeprecatedV2.body.credentialStatus,
+          credentialIssuer: dummyCredentialDtoDeprecatedV2.body.issuer,
+          credentialType: dummyCredentialDtoDeprecatedV2.body.type,
+          credentialIssuanceDate: dummyCredentialDtoDeprecatedV2.body.issuanceDate,
+          credentialExpirationDate: dummyCredentialDtoDeprecatedV2.body.expirationDate,
+          credentialProof: dummyCredentialDtoDeprecatedV2.body.proof
         };
         expect(received).toEqual(expected);
       });
@@ -321,7 +321,7 @@ describe('user api service hooks version 2.0.0', () => {
           .mockReturnValueOnce(mockCredentialDataService)
           .mockReturnValueOnce(mockIssuerDataService);
 
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDtoDeprecatedV2);
         const did = `did:unum:${v4()}`;
         const ctx = {
           data: { did },
@@ -358,7 +358,7 @@ describe('user api service hooks version 2.0.0', () => {
           .mockReturnValueOnce(mockCredentialDataService)
           .mockReturnValueOnce(mockIssuerDataService);
 
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDtoDeprecatedV2);
         const did = `did:unum:${v4()}`;
         const ctx = {
           data: { did },
@@ -387,7 +387,7 @@ describe('user api service hooks version 2.0.0', () => {
           .mockReturnValueOnce(mockCredentialDataService)
           .mockReturnValueOnce(mockIssuerDataService);
 
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDtoDeprecatedV2);
 
         const did = `did:unum:${v4()}`;
 
@@ -429,7 +429,7 @@ describe('user api service hooks version 2.0.0', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce({
-          ...dummyCredentialDto,
+          ...dummyCredentialDtoDeprecatedV2,
           authToken: 'updated auth token'
         });
 
@@ -465,7 +465,7 @@ describe('user api service hooks version 2.0.0', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce({
-          ...dummyCredentialDto,
+          ...dummyCredentialDtoDeprecatedV2,
           authToken: 'updated auth token'
         });
 
@@ -547,7 +547,7 @@ describe('user api service hooks version 2.0.0', () => {
           .mockReturnValueOnce(mockCredentialDataService)
           .mockReturnValueOnce(mockIssuerDataService);
 
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDtoDeprecatedV2);
         const did = `did:unum:${v4()}`;
 
         const ctx = {
@@ -585,7 +585,7 @@ describe('user api service hooks version 2.0.0', () => {
           .mockReturnValueOnce(mockCredentialDataService)
           .mockReturnValueOnce(mockIssuerDataService);
 
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDtoDeprecatedV2);
         const did = `did:unum:${v4()}`;
         const ctx = {
           data: { did },
@@ -614,7 +614,7 @@ describe('user api service hooks version 2.0.0', () => {
           .mockReturnValueOnce(mockCredentialDataService)
           .mockReturnValueOnce(mockIssuerDataService);
 
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDtoDeprecatedV2);
         const did = `did:unum:${v4()}`;
 
         const ctx = {
@@ -655,7 +655,7 @@ describe('user api service hooks version 2.0.0', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce({
-          ...dummyCredentialDto,
+          ...dummyCredentialDtoDeprecatedV2,
           authToken: 'updated auth token'
         });
 
@@ -690,7 +690,7 @@ describe('user api service hooks version 2.0.0', () => {
           .mockReturnValueOnce(mockIssuerDataService);
 
         mockIssueCredential.mockResolvedValueOnce({
-          ...dummyCredentialDto,
+          ...dummyCredentialDtoDeprecatedV2,
           authToken: 'updated auth token'
         });
 
