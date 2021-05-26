@@ -194,7 +194,10 @@ describe('user api service hooks version 2.0.0', () => {
           credentialType: dummyCredentialDtoDeprecated.body.type,
           credentialIssuanceDate: dummyCredentialDtoDeprecated.body.issuanceDate,
           credentialExpirationDate: dummyCredentialDtoDeprecated.body.expirationDate,
-          credentialProof: dummyCredentialDtoDeprecated.body.proof
+          credentialProof: {
+            ...dummyCredentialDtoDeprecatedV2.body.proof,
+            created: new Date(dummyCredentialDtoDeprecatedV2.body.proof.created)
+          }
         };
         expect(received).toEqual(expected);
       });
@@ -213,7 +216,10 @@ describe('user api service hooks version 2.0.0', () => {
           credentialType: dummyCredentialDtoDeprecatedV2.body.type,
           credentialIssuanceDate: dummyCredentialDtoDeprecatedV2.body.issuanceDate,
           credentialExpirationDate: dummyCredentialDtoDeprecatedV2.body.expirationDate,
-          credentialProof: dummyCredentialDtoDeprecatedV2.body.proof
+          credentialProof: {
+            ...dummyCredentialDtoDeprecatedV2.body.proof,
+            created: new Date(dummyCredentialDtoDeprecatedV2.body.proof.created)
+          }
         };
         expect(received).toEqual(expected);
       });
@@ -371,7 +377,15 @@ describe('user api service hooks version 2.0.0', () => {
         } as unknown as HookContext;
 
         await issueAuthCredential(ctx);
-        expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptions);
+        const expected = {
+          ...dummyCredentialEntityOptions,
+          credentialProof: {
+            ...dummyCredentialEntityOptions.credentialProof,
+            created: new Date(dummyCredentialEntityOptions.credentialProof.created)
+          }
+        };
+
+        expect(mockCredentialDataService.create).toBeCalledWith(expected);
       });
 
       it('catches, logs and re-throws errors storing the credential', async () => {
@@ -603,7 +617,7 @@ describe('user api service hooks version 2.0.0', () => {
           ...dummyCredentialEntityOptions,
           credentialProof: {
             ...dummyCredentialEntityOptions.credentialProof,
-            created: dummyCredentialEntityOptions.credentialProof.created.toString()
+            created: new Date(dummyCredentialEntityOptions.credentialProof.created)
           }
         };
 

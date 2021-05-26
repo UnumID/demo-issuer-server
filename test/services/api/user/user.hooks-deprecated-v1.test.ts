@@ -141,7 +141,10 @@ describe('user api service hooks version 1.0.0', () => {
           credentialType: dummyCredentialDto.body.type,
           credentialIssuanceDate: dummyCredentialDto.body.issuanceDate,
           credentialExpirationDate: dummyCredentialDto.body.expirationDate,
-          credentialProof: dummyCredentialDto.body.proof
+          credentialProof: {
+            ...dummyCredentialDto.body.proof,
+            created: new Date(dummyCredentialDto.body.proof.created)
+          }
         };
         expect(received).toEqual(expected);
       });
@@ -305,7 +308,7 @@ describe('user api service hooks version 1.0.0', () => {
           ...dummyCredentialEntityOptions,
           credentialProof: {
             ...dummyCredentialEntityOptions.credentialProof,
-            created: dummyCredentialEntityOptions.credentialProof.created.toString()
+            created: new Date(dummyCredentialEntityOptions.credentialProof.created)
           }
         };
 
@@ -541,7 +544,7 @@ describe('user api service hooks version 1.0.0', () => {
           ...dummyCredentialEntityOptions,
           credentialProof: {
             ...dummyCredentialEntityOptions.credentialProof,
-            created: dummyCredentialEntityOptions.credentialProof.created.toString()
+            created: new Date(dummyCredentialEntityOptions.credentialProof.created)
           }
         };
 
