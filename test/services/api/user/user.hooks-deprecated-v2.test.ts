@@ -598,7 +598,16 @@ describe('user api service hooks version 2.0.0', () => {
         } as unknown as HookContext;
 
         await issueKYCCredential(ctx);
-        expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptions);
+
+        const expected = {
+          ...dummyCredentialEntityOptions,
+          credentialProof: {
+            ...dummyCredentialEntityOptions.credentialProof,
+            created: dummyCredentialEntityOptions.credentialProof.created.toString()
+          }
+        };
+
+        expect(mockCredentialDataService.create).toBeCalledWith(expected);
       });
 
       it('catches, logs and re-throws errors storing the credential', async () => {

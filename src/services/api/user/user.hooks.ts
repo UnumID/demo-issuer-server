@@ -153,9 +153,9 @@ export const issueCredentialV3 = async (
 };
 
 export const convertUnumDtoToCredentialEntityOptions = (issuerDto: UnumDto<CredentialDeprecatedV2> | UnumDto<CredentialDeprecatedV1>, version: string): CredentialEntityOptions => {
-  const proof: Proof = {
+  const proof: ProofPb = {
     ...issuerDto.body.proof,
-    created: (issuerDto.body.proof as Proof).created
+    created: new Date((issuerDto.body.proof as Proof).created)
   };
 
   // const context = (issuerDto.body as CredentialDeprecatedV2)['@context'] ? (issuerDto.body as CredentialDeprecatedV2)['@context'] : (issuerDto.body as CredentialPb).context;
@@ -176,9 +176,10 @@ export const convertUnumDtoToCredentialEntityOptions = (issuerDto: UnumDto<Crede
 };
 
 export const convertUnumDtoToCredentialEntityOptionsV3 = (issuerDto: UnumDto<CredentialPb>, version: string): CredentialEntityOptions => {
-  const proof: Proof = {
+  const proof: ProofPb = {
     ...issuerDto.body.proof,
-    created: (issuerDto.body.proof as Proof).created,
+    created: issuerDto.body.proof?.created,
+    // // created: (issuerDto.body.proof as Proof).created.toISOString(),
     signatureValue: (issuerDto.body.proof?.signatureValue as string),
     type: issuerDto.body.proof?.type as string,
     verificationMethod: issuerDto.body.proof?.verificationMethod as string,

@@ -300,7 +300,17 @@ describe('user api service hooks version 1.0.0', () => {
         } as unknown as HookContext;
 
         await issueAuthCredential(ctx);
-        expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptions);
+
+        const expected = {
+          ...dummyCredentialEntityOptions,
+          credentialProof: {
+            ...dummyCredentialEntityOptions.credentialProof,
+            created: dummyCredentialEntityOptions.credentialProof.created.toString()
+          }
+        };
+
+        expect(mockCredentialDataService.create).toBeCalledWith(expected);
+        // expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptions);
       });
 
       it('catches, logs and re-throws errors storing the credential', async () => {
@@ -526,7 +536,17 @@ describe('user api service hooks version 1.0.0', () => {
         } as unknown as HookContext;
 
         await issueKYCCredential(ctx);
-        expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptions);
+
+        const expected = {
+          ...dummyCredentialEntityOptions,
+          credentialProof: {
+            ...dummyCredentialEntityOptions.credentialProof,
+            created: dummyCredentialEntityOptions.credentialProof.created.toString()
+          }
+        };
+
+        expect(mockCredentialDataService.create).toBeCalledWith(expected);
+        // expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptions);
       });
 
       it('catches, logs and re-throws errors storing the credential', async () => {

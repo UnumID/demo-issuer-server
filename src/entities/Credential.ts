@@ -14,8 +14,8 @@ export interface CredentialEntityOptions extends Partial<BaseEntity> {
   // credentialType: string[];
   credentialIssuanceDate: Date;
   credentialExpirationDate?: Date;
-  // credentialProof: ProofPb;
-  credentialProof: Proof;
+  credentialProof: ProofPb;
+  // credentialProof: Proof;
 }
 
 @Entity({ tableName: 'Credential' })
@@ -47,8 +47,8 @@ export class CredentialEntity extends BaseEntity {
   credentialExpirationDate?: Date;
 
   @Property()
-  // credentialProof: ProofPb;
-  credentialProof: Proof;
+  credentialProof: ProofPb;
+  // credentialProof: Proof;
 
   constructor (options: CredentialEntityOptions) {
     super(options);
