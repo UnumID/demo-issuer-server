@@ -179,7 +179,6 @@ export const convertUnumDtoToCredentialEntityOptionsV3 = (issuerDto: UnumDto<Cre
   const proof: ProofPb = {
     ...issuerDto.body.proof,
     created: issuerDto.body.proof?.created,
-    // // created: (issuerDto.body.proof as Proof).created.toISOString(),
     signatureValue: (issuerDto.body.proof?.signatureValue as string),
     type: issuerDto.body.proof?.type as string,
     verificationMethod: issuerDto.body.proof?.verificationMethod as string,
@@ -195,7 +194,6 @@ export const convertUnumDtoToCredentialEntityOptionsV3 = (issuerDto: UnumDto<Cre
     credentialType: (issuerDto.body.type as ['VerifiableCredential', ...string[]]), // the proto type def can not have constants, but the value is ensured prior to sending to saas for encrypted persistence.
     credentialIssuanceDate: issuerDto.body.issuanceDate as Date,
     credentialExpirationDate: issuerDto.body.expirationDate,
-    // credentialProof: issuerDto.body.proof as ProofPb
     credentialProof: proof
   };
 };
@@ -228,7 +226,6 @@ export const issueAuthCredential: UserServiceHook = async (ctx) => {
   } else {
     return issueAuthCredentialV3(ctx);
   }
-  // return issueAuthCredentialV3(ctx);
 };
 
 export const issueAuthCredentialV2: UserServiceHook = async (ctx) => {
@@ -254,10 +251,6 @@ export const issueAuthCredentialV2: UserServiceHook = async (ctx) => {
   if (params.headers?.version) {
     version = params.headers?.version;
   }
-
-  // if (lt(version, '2.0.0')) {
-  //   throw new BadRequest('Only version 2.0.0+ supported.');
-  // }
 
   // issue a DemoAuthCredential using the server sdk
   const authCredentialSubject = buildAuthCredentialSubject(did, id as string, result.email);
@@ -348,8 +341,6 @@ export const issueKYCCredential: UserServiceHook = async (ctx) => {
   } else {
     return issueKYCCredentialV3(ctx);
   }
-
-  // return issueKYCCredentialV3(ctx);
 };
 
 export const issueKYCCredentialV2: UserServiceHook = async (ctx) => {
@@ -475,7 +466,6 @@ export const validateRequest: UserServiceHook = async (ctx) => {
 
 export const hooks = {
   before: {
-    // all: [validateRequest, getDefaultIssuerEntity],
     all: [validateRequest]
   },
   after: {
