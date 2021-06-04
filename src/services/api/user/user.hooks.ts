@@ -158,11 +158,9 @@ export const convertUnumDtoToCredentialEntityOptions = (issuerDto: UnumDto<Crede
     created: new Date((issuerDto.body.proof as Proof).created)
   };
 
-  // const context = (issuerDto.body as CredentialDeprecatedV2)['@context'] ? (issuerDto.body as CredentialDeprecatedV2)['@context'] : (issuerDto.body as CredentialPb).context;
   const context = issuerDto.body['@context'];
 
   return {
-    // credentialContext: lt(version, '3.0.0') ? (issuerDto.body as CredentialDeprecatedV2)['@context'] : (issuerDto.body as CredentialPb).context,
     credentialContext: context,
     credentialId: issuerDto.body.id,
     credentialCredentialSubject: lt(version, '2.0.0') ? (issuerDto.body as CredentialDeprecatedV1).credentialSubject : convertCredentialSubject((issuerDto.body as CredentialDeprecatedV2).credentialSubject),
@@ -454,9 +452,7 @@ export const validateRequest: UserServiceHook = async (ctx) => {
   const { params } = ctx;
 
   if (!params.headers?.version) {
-    // (params.headers as any).version = '1.0.0'; // base version
-    // throw new BadRequest('Version header required.');
-    logger.info(`User request made without version ${params.headers?.version}`);
+    logger.info('User request made without version');
   } else {
     logger.info(`User request made with version ${params.headers?.version}`);
   }

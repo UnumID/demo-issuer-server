@@ -4,18 +4,15 @@ import { CredentialSubject, Proof, ProofPb } from '@unumid/types';
 import { BaseEntity } from './BaseEntity';
 
 export interface CredentialEntityOptions extends Partial<BaseEntity> {
-  // credentialContext: string[];
   credentialContext: ['https://www.w3.org/2018/credentials/v1', ...string[]];
   credentialId: string;
   credentialCredentialSubject: CredentialSubject;
   credentialCredentialStatus: { id: string; type: string };
   credentialIssuer: string;
   credentialType: ['VerifiableCredential', ...string[]];
-  // credentialType: string[];
   credentialIssuanceDate: Date;
   credentialExpirationDate?: Date;
   credentialProof: ProofPb;
-  // credentialProof: Proof;
 }
 
 @Entity({ tableName: 'Credential' })
@@ -28,11 +25,9 @@ export class CredentialEntity extends BaseEntity {
 
   @Property()
   credentialType: ['VerifiableCredential', ...string[]];
-  // credentialType: string[];
 
   @Property()
   credentialContext: ['https://www.w3.org/2018/credentials/v1', ...string[]];
-  // credentialContext: string[];
 
   @Property()
   credentialCredentialStatus: { id: string, type: string; };
@@ -48,7 +43,6 @@ export class CredentialEntity extends BaseEntity {
 
   @Property()
   credentialProof: ProofPb;
-  // credentialProof: Proof;
 
   constructor (options: CredentialEntityOptions) {
     super(options);
