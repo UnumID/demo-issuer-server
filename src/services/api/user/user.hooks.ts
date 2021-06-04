@@ -1,9 +1,11 @@
 import { BadRequest, GeneralError } from '@feathersjs/errors';
 import { Hook } from '@feathersjs/feathers';
-import { convertCredentialSubject, issueCredential as sdkIssueCredential } from '@unumid/server-sdk';
-import { issueCredential as sdkIssueCredentialDeprecated, UnumDto } from '@unumid/server-sdk-deprecated';
-import { Credential, CredentialSubject } from '@unumid/types';
-import { Credential as CredentialDeprecated } from '@unumid/types-deprecated';
+import { convertCredentialSubject, issueCredential as sdkIssueCredential, UnumDto } from '@unumid/server-sdk';
+import { issueCredential as sdkIssueCredentialDeprecatedV2 } from '@unumid/server-sdk-deprecated-v2';
+import { issueCredential as sdkIssueCredentialDeprecatedV1 } from '@unumid/server-sdk-deprecated-v1';
+import { Credential, CredentialPb, CredentialSubject, Proof, ProofPb } from '@unumid/types';
+import { Credential as CredentialDeprecatedV2 } from '@unumid/types-deprecated-v2';
+import { Credential as CredentialDeprecatedV1 } from '@unumid/types-deprecated-v1';
 import { Service as MikroOrmService } from 'feathers-mikro-orm';
 
 import { User } from '../../../entities/User';
@@ -11,6 +13,7 @@ import { CredentialEntity, CredentialEntityOptions } from '../../../entities/Cre
 import logger from '../../../logger';
 import { IssuerEntity } from '../../../entities/Issuer';
 import { lt } from 'semver';
+import { CredentialStatus } from '@unumid/types/build/protos/credential';
 
 interface AuthCredentialSubject extends CredentialSubject {
   isAuthorized: true;
@@ -94,12 +97,12 @@ export const issueCredential = async (
   credentialSubject: CredentialSubject,
   credentialType: string,
   version: string
-): Promise<UnumDto<Credential> | UnumDto<CredentialDeprecated>> => {
+): Promise<UnumDto<CredentialDeprecatedV2> | UnumDto<CredentialDeprecatedV1>> => {
   let authCredentialResponse;
 
   try {
     if (lt(version, '2.0.0')) {
-      authCredentialResponse = await sdkIssueCredentialDeprecated(
+      authCredentialResponse = await sdkIssueCredentialDeprecatedV1(
         formatBearerToken(issuerEntity.authToken),
         credentialType,
         issuerEntity.issuerDid,
@@ -107,9 +110,33 @@ export const issueCredential = async (
         issuerEntity.privateKey
       );
 
-      return authCredentialResponse as UnumDto<CredentialDeprecated>;
+      return authCredentialResponse as UnumDto<CredentialDeprecatedV1>;
     }
 
+    authCredentialResponse = await sdkIssueCredentialDeprecatedV2(
+      formatBearerToken(issuerEntity.authToken),
+      credentialType,
+      issuerEntity.issuerDid,
+      credentialSubject,
+      issuerEntity.privateKey
+    );
+
+    return authCredentialResponse as UnumDto<CredentialDeprecatedV2>;
+  } catch (e) {
+    logger.error('issueCredential caught an error thrown by the server sdk', e);
+    throw e;
+  }
+};
+
+export const issueCredentialV3 = async (
+  issuerEntity: IssuerEntity,
+  credentialSubject: CredentialSubject,
+  credentialType: string,
+  version: string
+): Promise<UnumDto<CredentialPb>> => {
+  let authCredentialResponse;
+
+  try {
     authCredentialResponse = await sdkIssueCredential(
       formatBearerToken(issuerEntity.authToken),
       credentialType,
@@ -118,24 +145,54 @@ export const issueCredential = async (
       issuerEntity.privateKey
     );
 
-    return authCredentialResponse as UnumDto<Credential>;
+    return authCredentialResponse as UnumDto<CredentialPb>;
   } catch (e) {
     logger.error('issueCredential caught an error thrown by the server sdk', e);
     throw e;
   }
 };
 
-export const convertUnumDtoToCredentialEntityOptions = (issuerDto: UnumDto<Credential> | UnumDto<CredentialDeprecated>, version: string): CredentialEntityOptions => {
+export const convertUnumDtoToCredentialEntityOptions = (issuerDto: UnumDto<CredentialDeprecatedV2> | UnumDto<CredentialDeprecatedV1>, version: string): CredentialEntityOptions => {
+  const proof: ProofPb = {
+    ...issuerDto.body.proof,
+    created: new Date((issuerDto.body.proof as Proof).created)
+  };
+
+  const context = issuerDto.body['@context'];
+
   return {
-    credentialContext: issuerDto.body['@context'],
+    credentialContext: context,
     credentialId: issuerDto.body.id,
-    credentialCredentialSubject: lt(version, '2.0.0') ? (issuerDto.body as CredentialDeprecated).credentialSubject : convertCredentialSubject((issuerDto.body as Credential).credentialSubject),
+    credentialCredentialSubject: lt(version, '2.0.0') ? (issuerDto.body as CredentialDeprecatedV1).credentialSubject : convertCredentialSubject((issuerDto.body as CredentialDeprecatedV2).credentialSubject),
     credentialCredentialStatus: issuerDto.body.credentialStatus,
     credentialIssuer: issuerDto.body.issuer,
     credentialType: issuerDto.body.type,
     credentialIssuanceDate: issuerDto.body.issuanceDate,
     credentialExpirationDate: issuerDto.body.expirationDate,
-    credentialProof: issuerDto.body.proof
+    credentialProof: proof
+  };
+};
+
+export const convertUnumDtoToCredentialEntityOptionsV3 = (issuerDto: UnumDto<CredentialPb>, version: string): CredentialEntityOptions => {
+  const proof: ProofPb = {
+    ...issuerDto.body.proof,
+    created: issuerDto.body.proof?.created,
+    signatureValue: (issuerDto.body.proof?.signatureValue as string),
+    type: issuerDto.body.proof?.type as string,
+    verificationMethod: issuerDto.body.proof?.verificationMethod as string,
+    proofPurpose: issuerDto.body.proof?.proofPurpose as string
+  };
+
+  return {
+    credentialContext: (issuerDto.body.context as ['https://www.w3.org/2018/credentials/v1', ...string[]]), // the proto type def can not have constants, but the value is ensured prior to sending to saas for encrypted persistence.
+    credentialId: issuerDto.body.id,
+    credentialCredentialSubject: convertCredentialSubject(issuerDto.body.credentialSubject),
+    credentialCredentialStatus: (issuerDto.body.credentialStatus as CredentialStatus),
+    credentialIssuer: issuerDto.body.issuer,
+    credentialType: (issuerDto.body.type as ['VerifiableCredential', ...string[]]), // the proto type def can not have constants, but the value is ensured prior to sending to saas for encrypted persistence.
+    credentialIssuanceDate: issuerDto.body.issuanceDate as Date,
+    credentialExpirationDate: issuerDto.body.expirationDate,
+    credentialProof: proof
   };
 };
 
@@ -160,6 +217,16 @@ export const getDefaultIssuerEntity: UserServiceHook = async (ctx) => {
 };
 
 export const issueAuthCredential: UserServiceHook = async (ctx) => {
+  const { params } = ctx;
+
+  if (lt(params.headers?.version, '3.0.0')) {
+    return issueAuthCredentialV2(ctx);
+  } else {
+    return issueAuthCredentialV3(ctx);
+  }
+};
+
+export const issueAuthCredentialV2: UserServiceHook = async (ctx) => {
   const { id, data, result, params } = ctx;
   const defaultIssuerEntity = params.defaultIssuerEntity as IssuerEntity;
 
@@ -211,7 +278,70 @@ export const issueAuthCredential: UserServiceHook = async (ctx) => {
   return ctx;
 };
 
+export const issueAuthCredentialV3: UserServiceHook = async (ctx) => {
+  const { id, data, result, params } = ctx;
+  const defaultIssuerEntity = params.defaultIssuerEntity as IssuerEntity;
+
+  if (!data || !id || !result) {
+    throw new BadRequest();
+  }
+
+  // only run this hook if the did is being updated
+  const { did } = data;
+  if (!did) {
+    return ctx;
+  }
+
+  if (!defaultIssuerEntity) {
+    throw new GeneralError('Error in issuerAuthCredential hook: defaultIssuerEntity param is not set. Did you forget to run the getDefaultIssuerEntity hook first?');
+  }
+
+  // set the version value to the default 1.0.0 is not present in the request headers
+  let version = '1.0.0';
+  if (params.headers?.version) {
+    version = params.headers?.version;
+  }
+
+  // issue a DemoAuthCredential using the server sdk
+  const authCredentialSubject = buildAuthCredentialSubject(did, id as string, result.email);
+  // const issuerDto = await issueCredential(defaultIssuerEntity, authCredentialSubject, 'DemoAuthCredential', version);
+  const issuerDto = await issueCredentialV3(defaultIssuerEntity, authCredentialSubject, 'DemoAuthCredential', version);
+
+  // store the issued credential
+  const credentialDataService = ctx.app.service('credentialData') as MikroOrmService<CredentialEntity>;
+  const credentialEntityOptions = convertUnumDtoToCredentialEntityOptionsV3(issuerDto, version);
+  try {
+    await credentialDataService.create(credentialEntityOptions);
+  } catch (e) {
+    logger.error('issueAuthCredential hook caught an error thrown by credentialDataService.create', e);
+    throw e;
+  }
+
+  // update the default issuer's auth token if it has been reissued
+  if (issuerDto.authToken !== defaultIssuerEntity.authToken) {
+    const issuerDataService = ctx.app.service('issuerData');
+    try {
+      await issuerDataService.patch(defaultIssuerEntity.uuid, { authToken: issuerDto.authToken });
+    } catch (e) {
+      logger.error('issueAuthCredential hook caught an error thrown by issuerDataService.patch', e);
+      throw e;
+    }
+  }
+
+  return ctx;
+};
+
 export const issueKYCCredential: UserServiceHook = async (ctx) => {
+  const { params } = ctx;
+
+  if (lt(params.headers?.version, '3.0.0')) {
+    return issueKYCCredentialV2(ctx);
+  } else {
+    return issueKYCCredentialV3(ctx);
+  }
+};
+
+export const issueKYCCredentialV2: UserServiceHook = async (ctx) => {
   const { id, data, params, result } = ctx;
   const defaultIssuerEntity = params.defaultIssuerEntity as IssuerEntity;
 
@@ -242,6 +372,61 @@ export const issueKYCCredential: UserServiceHook = async (ctx) => {
   // store the issued credential
   const credentialDataService = ctx.app.service('credentialData') as MikroOrmService<CredentialEntity>;
   const credentialEntityOptions = convertUnumDtoToCredentialEntityOptions(issuerDto, version);
+
+  try {
+    await credentialDataService.create(credentialEntityOptions);
+  } catch (e) {
+    logger.error('issueKYCCredential hook caught an error thrown by credentialDataService.create', e);
+    throw e;
+  }
+
+  // update the default issuer's auth token if it has been reissued
+  if (issuerDto.authToken !== defaultIssuerEntity.authToken) {
+    const issuerDataService = ctx.app.service('issuerData');
+    try {
+      await issuerDataService.patch(defaultIssuerEntity.uuid, { authToken: issuerDto.authToken });
+    } catch (e) {
+      logger.error('issueKYCCredential hook caught an error thrown by issuerDataService.patch', e);
+      throw e;
+    }
+  }
+
+  return ctx;
+};
+
+export const issueKYCCredentialV3: UserServiceHook = async (ctx) => {
+  const { id, data, params, result } = ctx;
+  const defaultIssuerEntity = params.defaultIssuerEntity as IssuerEntity;
+
+  if (!data || !id || !result) {
+    throw new BadRequest();
+  }
+
+  // only run this hook if the did is being updated
+  const { did } = data;
+  if (!did) {
+    return ctx;
+  }
+
+  if (!defaultIssuerEntity) {
+    throw new GeneralError('Error in issueKYCCredential hook: defaultIssuerEntity param is not set. Did you forget to run the getDefaultIssuerEntity hook first?');
+  }
+
+  // set the version value to the default 1.0.0 is not present in the request headers
+  let version = '3.0.0';
+  if (params.headers?.version) {
+    version = params.headers?.version;
+  }
+
+  // issue a DemoAuthCredential using the server sdk
+  const KYCCredentialSubject = buildKYCCredentialSubject(did, result.firstName as string || 'Richard');
+  // const issuerDto = await issueCredential(defaultIssuerEntity, KYCCredentialSubject, 'KYCCredential', version);
+  const issuerDto = await issueCredentialV3(defaultIssuerEntity, KYCCredentialSubject, 'KYCCredential', version);
+
+  // store the issued credential
+  const credentialDataService = ctx.app.service('credentialData') as MikroOrmService<CredentialEntity>;
+  // const credentialEntityOptions = convertUnumDtoToCredentialEntityOptions(issuerDto, version);
+  const credentialEntityOptions = convertUnumDtoToCredentialEntityOptionsV3(issuerDto, version);
   try {
     await credentialDataService.create(credentialEntityOptions);
   } catch (e) {
@@ -267,10 +452,10 @@ export const validateRequest: UserServiceHook = async (ctx) => {
   const { params } = ctx;
 
   if (!params.headers?.version) {
-    (params.headers as any).version = '1.0.0'; // base version
+    logger.info('User request made without version');
+  } else {
+    logger.info(`User request made with version ${params.headers?.version}`);
   }
-
-  logger.info(`User request made with version ${params.headers?.version}`);
 
   return ctx;
 };

@@ -1,6 +1,8 @@
-import { Credential as CredentialDeprecated } from '@unumid/types-deprecated';
-import { Credential, Issuer } from '@unumid/types';
-import { UnumDto } from '@unumid/server-sdk';
+import { Credential as CredentialDeprecatedV1 } from '@unumid/types-deprecated-v1';
+import { Credential as CredentialDeprecatedV2 } from '@unumid/types-deprecated-v2';
+import { Credential, CredentialPb, Issuer } from '@unumid/types';
+
+import { convertCredentialSubject, UnumDto } from '@unumid/server-sdk';
 import { v4 } from 'uuid';
 
 import { CredentialEntity } from '../src/entities/Credential';
@@ -40,7 +42,8 @@ export const dummyCredentialSubject = {
   confidence: '99%'
 };
 
-export const dummyCredential: CredentialDeprecated = {
+// can be used with v2 as well since the subject is just stringified
+export const dummyCredential: CredentialDeprecatedV1 = {
   '@context': [
     'https://www.w3.org/2018/credentials/v1'
   ],
@@ -67,6 +70,32 @@ export const dummyCredential: CredentialDeprecated = {
   }
 };
 
+export const dummyCredentialV3: CredentialPb = {
+  context: [
+    'https://www.w3.org/2018/credentials/v1'
+  ],
+  credentialStatus: {
+    id: 'https://api.dev-unumid.org//credentialStatus/9e90a492-3360-4beb-b3ca-e8eff1ec6e2a',
+    type: 'CredentialStatus'
+  },
+  credentialSubject: JSON.stringify(dummyCredentialSubject),
+  issuer: 'did:unum:2e05967f-216f-44c4-ae8e-d6f71cd17c5a',
+  type: [
+    'VerifiableCredential',
+    'BankIdentityCredential'
+  ],
+  id: '9e90a492-3360-4beb-b3ca-e8eff1ec6e2a',
+  issuanceDate: new Date('2021-02-08T21:18:23.403Z'),
+  expirationDate: new Date('2022-02-08T00:00:00.000Z'),
+  proof: {
+    created: new Date('2021-02-08T21:18:23.403Z'),
+    signatureValue: 'iKx1CJMheLAPr3H1T4TDH13h7xTVeunAhTy6ochNjxteHbb7X7J951idkvR8ZCxfvoz85JHwTpiNXFBYUB842UhWcTCS4JEhcf',
+    type: 'secp256r1Signature2020',
+    verificationMethod: 'did:unum:2e05967f-216f-44c4-ae8e-d6f71cd17c5a',
+    proofPurpose: 'AssertionMethod'
+  }
+};
+
 export const dummyCredentialEntityOptions = {
   credentialContext: dummyCredential['@context'],
   credentialCredentialStatus: dummyCredential.credentialStatus,
@@ -79,9 +108,23 @@ export const dummyCredentialEntityOptions = {
   credentialProof: dummyCredential.proof
 };
 
+export const dummyCredentialEntityOptionsV3 = {
+  credentialContext: dummyCredentialV3.context as ['https://www.w3.org/2018/credentials/v1', ...string[]],
+  credentialCredentialStatus: dummyCredentialV3.credentialStatus,
+  credentialCredentialSubject: convertCredentialSubject(dummyCredentialV3.credentialSubject),
+  credentialId: dummyCredentialV3.id,
+  credentialIssuer: dummyCredentialV3.issuer,
+  credentialType: dummyCredentialV3.type as ['VerifiableCredential', ...string[]],
+  credentialIssuanceDate: dummyCredentialV3.issuanceDate,
+  credentialExpirationDate: dummyCredentialV3.expirationDate,
+  credentialProof: dummyCredentialV3.proof
+};
+
 export const dummyCredentialEntity = new CredentialEntity(dummyCredentialEntityOptions);
 
 export const dummyCredentialEntity2 = new CredentialEntity(dummyCredentialEntityOptions);
+
+export const dummyCredentialEntityV3 = new CredentialEntity(dummyCredentialEntityOptionsV3);
 
 export const dummyUser = new User({
   email: 'test@unumid.org',
@@ -124,15 +167,23 @@ export const dummyIssuerEntity = new IssuerEntity(dummyIssuerEntityOptions);
 
 export const dummyIssuerEntity2 = new IssuerEntity(dummyIssuerEntityOptions);
 
-export const dummyCredentialDtoDeprecated: UnumDto<CredentialDeprecated> = {
+export const dummyCredentialDtoDeprecated: UnumDto<CredentialDeprecatedV1> = {
   body: dummyCredential,
   authToken: dummyIssuerEntityOptions.authToken
 };
 
-export const dummyCredentialDto: UnumDto<Credential> = {
+export const dummyCredentialDtoDeprecatedV2: UnumDto<CredentialDeprecatedV2> = {
   body: {
     ...dummyCredential,
     credentialSubject: JSON.stringify(dummyCredential.credentialSubject)
+  },
+  authToken: dummyIssuerEntityOptions.authToken
+};
+
+export const dummyCredentialDto: UnumDto<CredentialPb> = {
+  body: {
+    ...dummyCredentialV3,
+    credentialSubject: dummyCredentialV3.credentialSubject
   },
   authToken: dummyIssuerEntityOptions.authToken
 };

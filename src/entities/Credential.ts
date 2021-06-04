@@ -1,5 +1,5 @@
 import { Entity, Property } from '@mikro-orm/core';
-import { CredentialSubject, Proof } from '@unumid/types';
+import { CredentialSubject, Proof, ProofPb } from '@unumid/types';
 
 import { BaseEntity } from './BaseEntity';
 
@@ -12,7 +12,7 @@ export interface CredentialEntityOptions extends Partial<BaseEntity> {
   credentialType: ['VerifiableCredential', ...string[]];
   credentialIssuanceDate: Date;
   credentialExpirationDate?: Date;
-  credentialProof: Proof;
+  credentialProof: ProofPb;
 }
 
 @Entity({ tableName: 'Credential' })
@@ -42,7 +42,7 @@ export class CredentialEntity extends BaseEntity {
   credentialExpirationDate?: Date;
 
   @Property()
-  credentialProof: Proof;
+  credentialProof: ProofPb;
 
   constructor (options: CredentialEntityOptions) {
     super(options);
