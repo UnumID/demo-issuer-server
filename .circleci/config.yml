@@ -4,6 +4,7 @@ orbs:
   aws-cli: circleci/aws-cli@0.1.22
   aws-eks: circleci/aws-eks@0.2.3
   kubernetes: circleci/kubernetes@0.4.0
+  slack: circleci/slack@4.4.2
 
 jobs:
   lint-and-test-job:
@@ -123,6 +124,13 @@ jobs:
           command: |
             kubectl set image deployment/<< parameters.deployment >> << parameters.deployment >>=${AWS_ECR_URL}/<< parameters.repo >>:"${CIRCLE_BRANCH}-${CIRCLE_PREVIOUS_BUILD_NUM}"
           name: Update container image
+      - slack/notify:
+          event: fail
+          mentions: '@Ray'
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          template: success_tagged_deploy_1
 
   deploy-image-sandbox:
     parameters:
@@ -148,6 +156,13 @@ jobs:
           command: |
             kubectl set image deployment/<< parameters.deployment >> << parameters.deployment >>=${AWS_ECR_URL}/<< parameters.repo >>:"${CIRCLE_TAG}" -n << parameters.namespace >>
           name: Update container image
+      - slack/notify:
+          event: fail
+          mentions: '@Ray'
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          template: success_tagged_deploy_1
 
 workflows:
   build-and-deploy-release:
