@@ -127,10 +127,40 @@ jobs:
       - slack/notify:
           event: fail
           mentions: '@Ray'
-          template: basic_fail_1
+          # template: basic_fail_1
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "Dev deployment of the demo-issuer-server failed.",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
       - slack/notify:
           event: pass
-          template: success_tagged_deploy_1
+          # template: success_tagged_deploy_1
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "Dev deployment of the demo-issuer-server succeeded.",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
 
   deploy-image-sandbox:
     parameters:
@@ -159,10 +189,40 @@ jobs:
       - slack/notify:
           event: fail
           mentions: '@Ray'
-          template: basic_fail_1
+          # template: basic_fail_1
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "Sandbox deployment of the demo-issuer-server failed.",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
       - slack/notify:
           event: pass
-          template: success_tagged_deploy_1
+          # template: success_tagged_deploy_1
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "Sandbox deployment of the demo-issuer-server succeeded.",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
 
 workflows:
   build-and-deploy-release:
