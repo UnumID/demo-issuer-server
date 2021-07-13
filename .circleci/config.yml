@@ -189,35 +189,6 @@ jobs:
           #     ]
           #   }
 
-  deploy-image-test:
-    parameters:
-      cluster-name:
-        type: string
-        default: "dev-customer-cluster"
-      repo:
-        type: string
-      deployment:
-        type: string
-
-    executor: aws-eks/python3
-    steps:
-      - kubernetes/install
-      - aws-eks/update-kubeconfig-with-authenticator:
-          install-kubectl: true
-          aws-region: ${AWS_REGION}
-          cluster-name: << parameters.cluster-name >>
-      - run:
-          command: |
-            kubectl set image deployment/<< parameters.deployment >> << parameters.deployment >>=${AWS_ECR_URL}/<< parameters.repo >>:"${CIRCLE_BRANCH}-${CIRCLE_PREVIOUS_BUILD_NUM}"
-          name: Update container image
-      - slack/notify:
-          event: fail
-          mentions: '@Ray'
-          template: basic_fail_1
-      - slack/notify:
-          event: pass
-          template: basic_success_1
-
   deploy-image-sandbox:
     parameters:
       cluster-name:
@@ -373,9 +344,9 @@ workflows:
               only:
                 - test-circleci
 
-      - deploy-image-test:
+      - deploy-image:
           requires:
-            - build-and-push-image
+            - build-and-push-image-test
           context: 
             - AWS-Dev
             - Slack-Context
