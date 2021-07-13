@@ -1,18 +1,13 @@
 import { BadRequest, GeneralError } from '@feathersjs/errors';
 import { Hook } from '@feathersjs/feathers';
 import { convertCredentialSubject, issueCredential as sdkIssueCredential, UnumDto } from '@unumid/server-sdk';
-import { issueCredential as sdkIssueCredentialDeprecatedV2 } from '@unumid/server-sdk-deprecated-v2';
-import { issueCredential as sdkIssueCredentialDeprecatedV1 } from '@unumid/server-sdk-deprecated-v1';
-import { CredentialPb, CredentialSubject, Proof, ProofPb } from '@unumid/types';
-import { Credential as CredentialDeprecatedV2 } from '@unumid/types-deprecated-v2';
-import { Credential as CredentialDeprecatedV1 } from '@unumid/types-deprecated-v1';
+import { CredentialPb, CredentialSubject, ProofPb } from '@unumid/types';
 import { Service as MikroOrmService } from 'feathers-mikro-orm';
 
 import { User } from '../../../entities/User';
 import { CredentialEntity, CredentialEntityOptions } from '../../../entities/Credential';
 import logger from '../../../logger';
 import { IssuerEntity } from '../../../entities/Issuer';
-import { lt } from 'semver';
 import { CredentialStatus } from '@unumid/types/build/protos/credential';
 
 interface AuthCredentialSubject extends CredentialSubject {
@@ -115,29 +110,7 @@ export const issueCredential = async (
   }
 };
 
-// export const convertUnumDtoToCredentialEntityOptions = (issuerDto: UnumDto<CredentialDeprecatedV2> | UnumDto<CredentialDeprecatedV1>, version: string): CredentialEntityOptions => {
-//   const proof: ProofPb = {
-//     ...issuerDto.body.proof,
-//     created: new Date((issuerDto.body.proof as Proof).created)
-//   };
-
-//   const context = issuerDto.body['@context'];
-
-//   return {
-//     credentialContext: context,
-//     credentialId: issuerDto.body.id,
-//     credentialCredentialSubject: lt(version, '2.0.0') ? (issuerDto.body as CredentialDeprecatedV1).credentialSubject : convertCredentialSubject((issuerDto.body as CredentialDeprecatedV2).credentialSubject),
-//     credentialCredentialStatus: issuerDto.body.credentialStatus,
-//     credentialIssuer: issuerDto.body.issuer,
-//     credentialType: issuerDto.body.type,
-//     credentialIssuanceDate: issuerDto.body.issuanceDate,
-//     credentialExpirationDate: issuerDto.body.expirationDate,
-//     credentialProof: proof
-//   };
-// };
-
 export const convertUnumDtoToCredentialEntityOptions = (issuerDto: UnumDto<CredentialPb>): CredentialEntityOptions => {
-  // export const convertUnumDtoToCredentialEntityOptionsV3 = (issuerDto: UnumDto<CredentialPb>): CredentialEntityOptions => {
   const proof: ProofPb = {
     ...issuerDto.body.proof,
     created: issuerDto.body.proof?.created,
@@ -204,8 +177,8 @@ export const issueAuthCredential: UserServiceHook = async (ctx) => {
 
   // store the issued credential
   const credentialDataService = ctx.app.service('credentialData') as MikroOrmService<CredentialEntity>;
-  // const credentialEntityOptions = convertUnumDtoToCredentialEntityOptionsV3(issuerDto);
   const credentialEntityOptions = convertUnumDtoToCredentialEntityOptions(issuerDto);
+
   try {
     await credentialDataService.create(credentialEntityOptions);
   } catch (e) {
@@ -251,8 +224,8 @@ export const issueKYCCredential: UserServiceHook = async (ctx) => {
 
   // store the issued credential
   const credentialDataService = ctx.app.service('credentialData') as MikroOrmService<CredentialEntity>;
-  // const credentialEntityOptions = convertUnumDtoToCredentialEntityOptionsV3(issuerDto);
   const credentialEntityOptions = convertUnumDtoToCredentialEntityOptions(issuerDto);
+
   try {
     await credentialDataService.create(credentialEntityOptions);
   } catch (e) {
