@@ -9,7 +9,7 @@ import {
   hooks,
   buildAuthCredentialSubject,
   buildKYCCredentialSubject,
-  issueCredentialV3 as issueCredential,
+  issueCredential,
   convertUnumDtoToCredentialEntityOptions,
   getDefaultIssuerEntity,
   issueAuthCredential,

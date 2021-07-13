@@ -95,42 +95,6 @@ export const formatBearerToken = (token: string): string =>
 export const issueCredential = async (
   issuerEntity: IssuerEntity,
   credentialSubject: CredentialSubject,
-  credentialType: string,
-  version: string
-): Promise<UnumDto<CredentialDeprecatedV2> | UnumDto<CredentialDeprecatedV1>> => {
-  let authCredentialResponse;
-
-  try {
-    if (lt(version, '2.0.0')) {
-      authCredentialResponse = await sdkIssueCredentialDeprecatedV1(
-        formatBearerToken(issuerEntity.authToken),
-        credentialType,
-        issuerEntity.issuerDid,
-        credentialSubject,
-        issuerEntity.privateKey
-      );
-
-      return authCredentialResponse as UnumDto<CredentialDeprecatedV1>;
-    }
-
-    authCredentialResponse = await sdkIssueCredentialDeprecatedV2(
-      formatBearerToken(issuerEntity.authToken),
-      credentialType,
-      issuerEntity.issuerDid,
-      credentialSubject,
-      issuerEntity.privateKey
-    );
-
-    return authCredentialResponse as UnumDto<CredentialDeprecatedV2>;
-  } catch (e) {
-    logger.error('issueCredential caught an error thrown by the server sdk', e);
-    throw e;
-  }
-};
-
-export const issueCredentialV3 = async (
-  issuerEntity: IssuerEntity,
-  credentialSubject: CredentialSubject,
   credentialType: string
 ): Promise<UnumDto<CredentialPb>> => {
   let authCredentialResponse;
@@ -235,7 +199,7 @@ export const issueAuthCredential: UserServiceHook = async (ctx) => {
 
   // issue a DemoAuthCredential using the server sdk
   const authCredentialSubject = buildAuthCredentialSubject(did, id as string, result.email);
-  const issuerDto = await issueCredentialV3(defaultIssuerEntity, authCredentialSubject, 'DemoAuthCredential');
+  const issuerDto = await issueCredential(defaultIssuerEntity, authCredentialSubject, 'DemoAuthCredential');
 
   // store the issued credential
   const credentialDataService = ctx.app.service('credentialData') as MikroOrmService<CredentialEntity>;
@@ -281,7 +245,7 @@ export const issueKYCCredential: UserServiceHook = async (ctx) => {
 
   // issue a DemoAuthCredential using the server sdk
   const KYCCredentialSubject = buildKYCCredentialSubject(did, result.firstName as string || 'Richard');
-  const issuerDto = await issueCredentialV3(defaultIssuerEntity, KYCCredentialSubject, 'KYCCredential');
+  const issuerDto = await issueCredential(defaultIssuerEntity, KYCCredentialSubject, 'KYCCredential');
 
   // store the issued credential
   const credentialDataService = ctx.app.service('credentialData') as MikroOrmService<CredentialEntity>;
