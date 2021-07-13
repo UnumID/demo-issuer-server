@@ -5,7 +5,7 @@ import generateApp from '../../../src/app';
 import { Application } from '../../../src/declarations';
 import { CredentialEntity } from '../../../src/entities/Credential';
 import { resetDb } from '../../helpers/resetDb';
-import { dummyCredentialEntityOptions } from '../../mocks';
+import { dummyCredentialEntityOptionsV3 as dummyCredentialEntityOptions } from '../../mocks';
 
 describe('CredentialDataService', () => {
   describe('initializing the service', () => {

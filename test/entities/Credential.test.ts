@@ -3,7 +3,7 @@ import { EntityRepository, MikroORM } from '@mikro-orm/core';
 import { CredentialEntity } from '../../src/entities/Credential';
 import mikroOrmConfig from '../../src/mikro-orm.config';
 import { resetDb } from '../helpers/resetDb';
-import { dummyCredentialEntityOptions } from '../mocks';
+import { dummyCredentialEntityOptionsV3 as dummyCredentialEntityOptions } from '../mocks';
 
 describe('Credential entity', () => {
   const credentialEntity = new CredentialEntity(dummyCredentialEntityOptions);
@@ -61,7 +61,7 @@ describe('Credential entity', () => {
       expect(retrievedCredentialEntity.credentialType).toEqual(credentialEntity.credentialType);
       expect(retrievedCredentialEntity.credentialIssuanceDate).toEqual(credentialEntity.credentialIssuanceDate);
       expect(retrievedCredentialEntity.credentialExpirationDate).toEqual(credentialEntity.credentialExpirationDate);
-      expect(retrievedCredentialEntity.credentialProof).toEqual(credentialEntity.credentialProof);
+      expect({ ...retrievedCredentialEntity.credentialProof, created: new Date(retrievedCredentialEntity.credentialProof.created) }).toEqual({ ...credentialEntity.credentialProof, created: new Date(credentialEntity.credentialProof.created) });
     });
   });
 });
