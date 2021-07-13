@@ -188,7 +188,9 @@ workflows:
       - deploy-image-sandbox:
           requires:
             - build-and-push-image-sandbox
-          context: AWS-Dev
+          context: 
+            - AWS-Dev
+            - Slack-Context
           repo: demo-issuer-server
           deployment: demo-issuer-server
           filters:
@@ -229,7 +231,9 @@ workflows:
       - deploy-image:
           requires:
             - build-and-push-image
-          context: AWS-Dev
+          context: 
+            - AWS-Dev
+            - Slack-Context
           repo: demo-issuer-server
           deployment: demo-issuer-server
           filters:
