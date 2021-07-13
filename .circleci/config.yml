@@ -77,6 +77,32 @@ jobs:
             docker push << parameters.reg >>/<< parameters.repo >>:dev-latest
           name: Update container image
 
+  build-and-push-image-test:
+    executor: aws-cli/default
+    parameters:
+      reg:
+        type: string
+        default: "248606629437.dkr.ecr.us-west-2.amazonaws.com"
+      repo:
+        type: string
+    steps:
+      - checkout
+      - aws-cli/setup
+      - setup_remote_docker:
+          version: 19.03.13
+      - run:
+          command: |
+            echo Logging in to Amazon ECR...
+            $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+            echo Building the Docker image...
+            DOCKER_BUILDKIT=1 docker build --ssh github="$HOME/.ssh/id_rsa" -t ${CIRCLE_SHA1} .
+            docker tag ${CIRCLE_SHA1} << parameters.reg >>/<< parameters.repo >>:test-latest
+            docker tag ${CIRCLE_SHA1} << parameters.reg >>/<< parameters.repo >>:"${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}"
+            echo Pushing the Docker image...
+            docker push << parameters.reg >>/<< parameters.repo >>:"${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}"
+            docker push << parameters.reg >>/<< parameters.repo >>:test-latest
+          name: Update container image
+
   build-and-push-image-sandbox:
     executor: aws-cli/default
     parameters:
@@ -162,6 +188,35 @@ jobs:
           #       }
           #     ]
           #   }
+
+  deploy-image-test:
+    parameters:
+      cluster-name:
+        type: string
+        default: "dev-customer-cluster"
+      repo:
+        type: string
+      deployment:
+        type: string
+
+    executor: aws-eks/python3
+    steps:
+      - kubernetes/install
+      - aws-eks/update-kubeconfig-with-authenticator:
+          install-kubectl: true
+          aws-region: ${AWS_REGION}
+          cluster-name: << parameters.cluster-name >>
+      - run:
+          command: |
+            kubectl set image deployment/<< parameters.deployment >> << parameters.deployment >>=${AWS_ECR_URL}/<< parameters.repo >>:"${CIRCLE_BRANCH}-${CIRCLE_PREVIOUS_BUILD_NUM}"
+          name: Update container image
+      - slack/notify:
+          event: fail
+          mentions: '@Ray'
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          template: basic_success_1
 
   deploy-image-sandbox:
     parameters:
@@ -276,7 +331,6 @@ workflows:
             branches:
               only:
                 - main
-                - test-circleci
 
       - build-and-push-image:
           requires:
@@ -287,7 +341,6 @@ workflows:
             branches:
               only:
                 - main
-                - test-circleci
 
       - deploy-image:
           requires:
@@ -301,5 +354,34 @@ workflows:
             branches:
               only:
                 - main
+
+  build-and-deploy-test:
+    jobs:
+      - lint-and-test-job:
+          filters:
+            branches:
+              only:
                 - test-circleci
 
+      - build-and-push-image-test:
+          requires:
+            - lint-and-test-job
+          context: AWS-Dev
+          repo: demo-issuer-server
+          filters:
+            branches:
+              only:
+                - test-circleci
+
+      - deploy-image-test:
+          requires:
+            - build-and-push-image
+          context: 
+            - AWS-Dev
+            - Slack-Context
+          repo: demo-issuer-server
+          deployment: demo-issuer-server
+          filters:
+            branches:
+              only:
+                - test-circleci
