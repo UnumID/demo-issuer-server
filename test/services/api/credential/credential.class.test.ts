@@ -1,6 +1,6 @@
 import { CredentialService } from '../../../../src/services/api/credential/credential.class';
 import { Application } from '../../../../src/declarations';
-import { dummyCredentialEntityV3 as dummyCredentialEntity, dummyCredentialEntity2V3 as dummyCredentialEntity2, dummyCredentialEntityOptionsV3 as dummyCredentialEntityOptions } from '../../../mocks';
+import { dummyCredentialEntity, dummyCredentialEntity2, dummyCredentialEntityOptions } from '../../../mocks';
 
 describe('CredentialService class', () => {
   let service: CredentialService;

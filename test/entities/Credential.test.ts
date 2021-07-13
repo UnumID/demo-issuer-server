@@ -3,7 +3,7 @@ import { EntityRepository, MikroORM } from '@mikro-orm/core';
 import { CredentialEntity } from '../../src/entities/Credential';
 import mikroOrmConfig from '../../src/mikro-orm.config';
 import { resetDb } from '../helpers/resetDb';
-import { dummyCredentialEntityOptionsV3 as dummyCredentialEntityOptions } from '../mocks';
+import { dummyCredentialEntityOptions } from '../mocks';
 
 describe('Credential entity', () => {
   const credentialEntity = new CredentialEntity(dummyCredentialEntityOptions);

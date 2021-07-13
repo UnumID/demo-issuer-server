@@ -19,7 +19,7 @@ import {
 import {
   dummyCredentialDto,
   dummyCredentialEntityOptions,
-  dummyCredentialEntityOptionsV3,
+  dummyCredentialEntityOptions,
   dummyCredentialSubject,
   dummyIssuerEntity,
   dummyUser
@@ -344,7 +344,7 @@ describe('user api service hooks version 3.0.0', () => {
         } as unknown as HookContext;
 
         await issueAuthCredential(ctx);
-        expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptionsV3);
+        expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptions);
       });
 
       it('catches, logs and re-throws errors storing the credential', async () => {
@@ -571,7 +571,7 @@ describe('user api service hooks version 3.0.0', () => {
         } as unknown as HookContext;
 
         await issueKYCCredential(ctx);
-        expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptionsV3);
+        expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptions);
       });
 
       it('catches, logs and re-throws errors storing the credential', async () => {

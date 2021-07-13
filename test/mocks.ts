@@ -1,10 +1,7 @@
 import { CredentialPb, Issuer } from '@unumid/types';
-
 import { convertCredentialSubject, UnumDto } from '@unumid/server-sdk';
 import { v4 } from 'uuid';
-
 import { CredentialEntity } from '../src/entities/Credential';
-
 import { IssuerEntity } from '../src/entities/Issuer';
 import { User } from '../src/entities/User';
 
@@ -40,7 +37,7 @@ export const dummyCredentialSubject = {
   confidence: '99%'
 };
 
-export const dummyCredentialV3: CredentialPb = {
+export const dummyCredential: CredentialPb = {
   context: [
     'https://www.w3.org/2018/credentials/v1'
   ],
@@ -66,20 +63,20 @@ export const dummyCredentialV3: CredentialPb = {
   }
 };
 
-export const dummyCredentialEntityOptionsV3 = {
-  credentialContext: dummyCredentialV3.context as ['https://www.w3.org/2018/credentials/v1', ...string[]],
-  credentialCredentialStatus: dummyCredentialV3.credentialStatus,
-  credentialCredentialSubject: convertCredentialSubject(dummyCredentialV3.credentialSubject),
-  credentialId: dummyCredentialV3.id,
-  credentialIssuer: dummyCredentialV3.issuer,
-  credentialType: dummyCredentialV3.type as ['VerifiableCredential', ...string[]],
-  credentialIssuanceDate: dummyCredentialV3.issuanceDate,
-  credentialExpirationDate: dummyCredentialV3.expirationDate,
-  credentialProof: dummyCredentialV3.proof
+export const dummyCredentialEntityOptions = {
+  credentialContext: dummyCredential.context as ['https://www.w3.org/2018/credentials/v1', ...string[]],
+  credentialCredentialStatus: dummyCredential.credentialStatus,
+  credentialCredentialSubject: convertCredentialSubject(dummyCredential.credentialSubject),
+  credentialId: dummyCredential.id,
+  credentialIssuer: dummyCredential.issuer,
+  credentialType: dummyCredential.type as ['VerifiableCredential', ...string[]],
+  credentialIssuanceDate: dummyCredential.issuanceDate,
+  credentialExpirationDate: dummyCredential.expirationDate,
+  credentialProof: dummyCredential.proof
 };
 
-export const dummyCredentialEntityV3 = new CredentialEntity(dummyCredentialEntityOptionsV3);
-export const dummyCredentialEntity2V3 = new CredentialEntity(dummyCredentialEntityOptionsV3);
+export const dummyCredentialEntity = new CredentialEntity(dummyCredentialEntityOptions);
+export const dummyCredentialEntity2 = new CredentialEntity(dummyCredentialEntityOptions);
 
 export const dummyUser = new User({
   email: 'test@unumid.org',
@@ -124,8 +121,8 @@ export const dummyIssuerEntity2 = new IssuerEntity(dummyIssuerEntityOptions);
 
 export const dummyCredentialDto: UnumDto<CredentialPb> = {
   body: {
-    ...dummyCredentialV3,
-    credentialSubject: dummyCredentialV3.credentialSubject
+    ...dummyCredential,
+    credentialSubject: dummyCredential.credentialSubject
   },
   authToken: dummyIssuerEntityOptions.authToken
 };
