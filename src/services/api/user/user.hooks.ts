@@ -218,12 +218,12 @@ export const getDefaultIssuerEntity: UserServiceHook = async (ctx) => {
 
 export const issueAuthCredential: UserServiceHook = async (ctx) => {
   const { params } = ctx;
-
-  if (lt(params.headers?.version, '3.0.0')) {
-    return issueAuthCredentialV2(ctx);
-  } else {
-    return issueAuthCredentialV3(ctx);
-  }
+  return issueAuthCredentialV3(ctx);
+  // if (lt(params.headers?.version, '3.0.0')) {
+  //   return issueAuthCredentialV2(ctx);
+  // } else {
+  //   return issueAuthCredentialV3(ctx);
+  // }
 };
 
 export const issueAuthCredentialV2: UserServiceHook = async (ctx) => {
