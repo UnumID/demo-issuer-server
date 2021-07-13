@@ -61,7 +61,7 @@ describe('Credential entity', () => {
       expect(retrievedCredentialEntity.credentialType).toEqual(credentialEntity.credentialType);
       expect(retrievedCredentialEntity.credentialIssuanceDate).toEqual(credentialEntity.credentialIssuanceDate);
       expect(retrievedCredentialEntity.credentialExpirationDate).toEqual(credentialEntity.credentialExpirationDate);
-      expect(retrievedCredentialEntity.credentialProof).toEqual(credentialEntity.credentialProof);
+      expect({ ...retrievedCredentialEntity.credentialProof, created: new Date(retrievedCredentialEntity.credentialProof.created) }).toEqual({ ...credentialEntity.credentialProof, created: new Date(credentialEntity.credentialProof.created) });
     });
   });
 });
