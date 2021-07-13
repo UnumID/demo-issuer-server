@@ -103,10 +103,9 @@ describe('user api service hooks version 3.0.0', () => {
       const credentialType = 'DemoAuthCredential';
       const userEmail = 'test@unum.id';
       const credentialSubject = buildAuthCredentialSubject(did, userUuid, userEmail);
-      const version = '3.0.0';
 
       it('issues a credential using the server sdk', async () => {
-        await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
+        await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
         expect(mockIssueCredential).toBeCalledWith(
           formatBearerToken(dummyIssuerEntity.authToken),
           credentialType,
@@ -118,7 +117,7 @@ describe('user api service hooks version 3.0.0', () => {
 
       it('returns the response from the sdk', async () => {
         mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
-        const received = await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
+        const received = await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
         expect(received).toEqual(dummyCredentialDto);
       });
 
@@ -127,7 +126,7 @@ describe('user api service hooks version 3.0.0', () => {
         mockIssueCredential.mockRejectedValueOnce(err);
 
         try {
-          await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
+          await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
           fail();
         } catch (e) {
           expect(logger.error).toBeCalledWith('issueCredential caught an error thrown by the server sdk', err);
@@ -145,7 +144,7 @@ describe('user api service hooks version 3.0.0', () => {
       const version = '3.0.0';
 
       it('issues a credential using the server sdk', async () => {
-        await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
+        await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
         expect(mockIssueCredential).toBeCalledWith(
           formatBearerToken(dummyIssuerEntity.authToken),
           credentialType,
@@ -157,7 +156,7 @@ describe('user api service hooks version 3.0.0', () => {
 
       it('returns the response from the sdk', async () => {
         mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
-        const received = await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
+        const received = await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
         expect(received).toEqual(dummyCredentialDto);
       });
 
@@ -166,7 +165,7 @@ describe('user api service hooks version 3.0.0', () => {
         mockIssueCredential.mockRejectedValueOnce(err);
 
         try {
-          await issueCredential(dummyIssuerEntity, credentialSubject, credentialType, version);
+          await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
           fail();
         } catch (e) {
           expect(logger.error).toBeCalledWith('issueCredential caught an error thrown by the server sdk', err);
@@ -176,11 +175,10 @@ describe('user api service hooks version 3.0.0', () => {
     });
 
     describe('convertUnumDtoToCredentialEntityOptions version 3.0.0', () => {
-      const version = '3.0.0';
       it('converts an IssuerDto containing a Credential to a CredentialEntityOptions object', () => {
-        const received = convertUnumDtoToCredentialEntityOptions(dummyCredentialDto, version);
+        const received = convertUnumDtoToCredentialEntityOptions(dummyCredentialDto);
         const expected = {
-          credentialContext: dummyCredentialDto.body['@context'],
+          credentialContext: dummyCredentialDto.body.context,
           credentialId: dummyCredentialDto.body.id,
           credentialCredentialSubject: dummyCredentialSubject,
           credentialCredentialStatus: dummyCredentialDto.body.credentialStatus,
