@@ -2,6 +2,8 @@
 
 > Issuer server for the Acme family of demos
 
+Information about the Unum ID demo ecosystem can be found in our [documentation](https://docs.unum.id/#demos).
+
 ## About
 
 This project uses [Feathers](http://feathersjs.com). An open source web framework for building modern real-time applications.
