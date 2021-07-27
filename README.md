@@ -40,6 +40,13 @@ $ feathers generate hook                  # Generate a new Hook
 $ feathers help                           # Show all commands
 ```
 
+## Release 
+### Dev
+Just merging changes to `main` will trigger automated deployments to dev.
+
+### Sandbox
+To release version of this project to sandbox push a tag with a preceding `v`. This will trigger an automated deployment to sandbox.
+
 ## Help
 
 For more information on all the things you can do with Feathers visit [docs.feathersjs.com](http://docs.feathersjs.com).
