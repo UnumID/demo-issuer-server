@@ -76,6 +76,10 @@ jobs:
             docker push << parameters.reg >>/<< parameters.repo >>:"${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}"
             docker push << parameters.reg >>/<< parameters.repo >>:dev-latest
           name: Update container image
+      - slack/notify:
+          event: fail
+          mentions: '@devops-team'
+          template: basic_fail_1
 
   build-and-push-image-test:
     executor: aws-cli/default
@@ -102,6 +106,10 @@ jobs:
             docker push << parameters.reg >>/<< parameters.repo >>:"${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}"
             docker push << parameters.reg >>/<< parameters.repo >>:test-latest
           name: Update container image
+      - slack/notify:
+          event: fail
+          mentions: '@devops-team'
+          template: basic_fail_1
 
   build-and-push-image-sandbox:
     executor: aws-cli/default
@@ -128,6 +136,10 @@ jobs:
             docker push << parameters.reg >>/<< parameters.repo >>:"${CIRCLE_TAG}"
             docker push << parameters.reg >>/<< parameters.repo >>:sandbox-latest
           name: Update container image
+      - slack/notify:
+          event: fail
+          mentions: '@devops-team'
+          template: basic_fail_1
 
   deploy-image:
     parameters:
@@ -162,7 +174,7 @@ jobs:
           name: Update container image
       - slack/notify:
           event: fail
-          mentions: '@Ray'
+          mentions: '@devops-team'
           template: basic_fail_1
           # custom: |
           #   {
@@ -235,7 +247,7 @@ jobs:
           name: Update container image
       - slack/notify:
           event: fail
-          mentions: '@Ray'
+          mentions: '@devops-team'
           template: basic_fail_1
           # custom: |
           #   {
@@ -284,7 +296,9 @@ workflows:
       - build-and-push-image-sandbox:
           requires:
             - lint-and-test-job
-          context: AWS-Dev
+          context: 
+            - AWS-Dev
+            - Slack-Context
           repo: demo-issuer-server
           filters:
             tags:
@@ -326,7 +340,9 @@ workflows:
       - build-and-push-image:
           requires:
             - lint-and-test-job
-          context: AWS-Dev
+          context: 
+            - AWS-Dev
+            - Slack-Context
           repo: demo-issuer-server
           filters:
             branches:
@@ -357,7 +373,9 @@ workflows:
       - build-and-push-image-test:
           requires:
             - lint-and-test-job
-          context: AWS-Dev
+          context: 
+            - AWS-Dev
+            - Slack-Context
           repo: demo-issuer-server
           filters:
             branches:
