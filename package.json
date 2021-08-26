@@ -84,7 +84,7 @@
     "@typescript-eslint/eslint-plugin": "^4.15.0",
     "@typescript-eslint/parser": "^4.15.0",
     "@unumid/demo-types": "git+ssh://git@github.com/UnumID/demo-types#3.0.1",
-    "@unumid/types": "^3.0.6",
+    "@unumid/types": "3.0.6",
     "axios": "^0.21.1",
     "eslint": "^7.13.0",
     "eslint-config-semistandard": "^15.0.1",
