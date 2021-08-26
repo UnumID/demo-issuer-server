@@ -30,10 +30,10 @@
     "start": "npm run migrate && node lib/",
     "jest": "jest  --forceExit --max-workers=1",
     "compile": "shx rm -rf lib/ && tsc",
-    "migrate": "npm run migration:up",
-    "migration:create": "npm run mikro-orm migration:create",
-    "migration:up": "npm run mikro-orm migration:up",
-    "migration:down": "npm run mikro-orm migration:down"
+    "migrate": "npx run migration:up",
+    "migration:create": "npx mikro-orm migration:create",
+    "migration:up": "npx mikro-orm migration:up",
+    "migration:down": "npx mikro-orm migration:down"
   },
   "standard": {
     "env": [
