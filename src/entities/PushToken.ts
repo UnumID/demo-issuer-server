@@ -1,4 +1,4 @@
-import { Entity, Enum, ManyToOne, Property } from '@mikro-orm/core';
+import { Collection, Entity, Enum, ManyToMany, Property } from '@mikro-orm/core';
 import {
   pushProviders,
   PushProvider
@@ -21,14 +21,17 @@ export class PushToken extends BaseEntity {
   @Enum({ items: [...pushProviders] })
   provider: PushProvider;
 
-  @ManyToOne()
-  user: User;
+  @ManyToMany(() => User, user => user.pushTokens)
+  users = new Collection<User>(this);
 
   constructor (options: PushTokenOptions) {
     super(options);
 
+    console.log('PushToken constructor');
+    console.log('options', options);
+
     this.value = options.value;
-    this.user = options.user;
+    this.users.add(options.user);
     this.provider = options.provider;
   }
 }

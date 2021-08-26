@@ -1,8 +1,8 @@
 import {
   Entity,
   Property,
-  OneToMany,
-  Collection
+  Collection,
+  ManyToMany
 } from '@mikro-orm/core';
 import { DemoUserCreateOptions } from '@unumid/demo-types';
 
@@ -28,7 +28,7 @@ export class User extends BaseEntity {
   @Property()
   firstName?: string;
 
-  @OneToMany({ entity: () => PushToken, mappedBy: 'user', eager: true })
+  @ManyToMany(() => PushToken, 'users', { owner: true })
   pushTokens = new Collection<PushToken>(this);
 
   constructor (options: UserEntityOptions) {
