@@ -1,180 +1,156 @@
-import { GeneralError } from '@feathersjs/errors';
-import { when } from 'jest-when';
+import { Service as MikroOrmService } from 'feathers-mikro-orm';
 
 import { PushTokenCreateOptions, PushTokenService } from '../../../../src/services/api/pushToken/pushToken.class';
 import { dummyUser, dummyUser2 } from '../../../mocks';
 import { Application } from '../../../../src/declarations';
-import logger from '../../../../src/logger';
 import { PushToken } from '../../../../src/entities/PushToken';
-
-jest.mock('../../../../src/logger');
-const dummyPushToken = new PushToken({ value: 'dummy token', user: dummyUser, provider: 'FCM' });
+import { MikroORM } from '@mikro-orm/core';
+import { resetDb } from '../../../helpers/resetDb';
+import generateApp from '../../../../src/app';
+import { User } from '../../../../src/entities/User';
+import { PushTokenDataService } from '../../../../src/services/data/pushToken.data.service';
 
 describe('PushTokenService class', () => {
+  let orm: MikroORM;
+  let app: Application;
+  let pushTokenService: PushTokenService;
+  let userDataService: MikroOrmService<User>;
+  let pushTokenDataService: PushTokenDataService;
+
+  beforeAll(async () => {
+    app = await generateApp();
+    orm = app.get('orm');
+    pushTokenService = app.service('pushToken');
+    userDataService = app.service('userData');
+    pushTokenDataService = app.service('pushTokenData');
+  });
+
+  afterEach(async () => {
+    await resetDb(orm);
+    orm.em.clear();
+  });
+
   describe('create', () => {
-    const mockGetByToken = jest.fn();
-    const mockGet = jest.fn(() => Promise.resolve(dummyUser));
-    const mockService = jest.fn();
-    const app = { service: mockService } as unknown as Application;
-    let service: PushTokenService;
+    it('saves and returns a new pushToken if there is no existing token with the value', async () => {
+      // leaving in commented out orm/em implementation as a reminder that it does NOT work
+      // as it causes other tests in this suite to fail. Still not sure why ¯\_(ツ)_/¯
+      // await orm.em.persistAndFlush(dummyUser);
+      await userDataService.create(dummyUser);
 
-    beforeEach(() => {
-      when(mockService)
-        .calledWith('pushTokenData').mockReturnValue({ getByToken: mockGetByToken })
-        .calledWith('userData').mockReturnValue({ get: mockGet });
-      service = new PushTokenService(app);
+      const options: PushTokenCreateOptions = {
+        value: 'test token',
+        userUuid: dummyUser.uuid,
+        provider: 'FCM'
+      };
+      const newToken = await pushTokenService.create(options);
+
+      await newToken.users.init();
+      expect(newToken.uuid).toBeDefined();
+
+      // make sure the value was set correctly
+      expect(newToken.value).toEqual(options.value);
+
+      // make sure it was associated with the user
+      expect(newToken.users.getIdentifiers()).toContainEqual(dummyUser.uuid);
+
+      // make sure that the token was persisted correctly
+      // clear the identity map to simulate a new request
+      orm.em.clear();
+
+      // const savedToken = await orm.em.findOneOrFail(PushToken, { uuid: newToken.uuid }, ['users']);
+      const savedToken = await pushTokenDataService.get(newToken.uuid, { populate: ['users'] });
+
+      // value was saved correctly
+      expect(savedToken.value).toEqual(options.value);
+
+      // user relationship was saved correctly
+      await savedToken.users.init();
+      expect(savedToken.users.count()).toEqual(1);
+      expect(savedToken.users.getIdentifiers()).toContainEqual(dummyUser.uuid);
     });
 
-    it('creates a new pushToken if one does not exist', async () => {
+    it('does not create or update anything if the existing token is already with the user', async () => {
+      // leaving in (commented out) orm/em implementation as a reminder that it does NOT work
+      // as it causes other tests in this suite to fail. Still not sure why ¯\_(ツ)_/¯
+      // await orm.em.persistAndFlush(dummyUser);
+      await userDataService.create(dummyUser);
+
       const options: PushTokenCreateOptions = {
-        value: 'dummy token',
+        value: 'test token',
         userUuid: dummyUser.uuid,
         provider: 'FCM'
       };
 
-      jest.spyOn(service, 'actuallyCreate').mockResolvedValueOnce(dummyPushToken);
-      mockGetByToken.mockResolvedValue(null);
+      // create the initial token
+      const created = await pushTokenService.create(options);
 
-      const pushToken = await service.create(options);
+      expect(created.uuid).toBeDefined();
 
-      expect(service.actuallyCreate).toBeCalled();
-      expect(pushToken).toEqual(dummyPushToken);
+      // we really care about what is persisted, not what's returned from the create call
+      // clear the identity map to simulate a new request
+      orm.em.clear();
+      // const token1 = await orm.em.findOneOrFail(PushToken, { uuid: created.uuid }, ['users']);
+      const token1 = await pushTokenDataService.get(created.uuid, { populate: ['users'] });
+      await token1.users.init();
+
+      // clear the identity map to simulate a new request
+      orm.em.clear();
+
+      // create again with the same values
+      const recreated = await pushTokenService.create(options);
+
+      // we really care about what was persisted, not what was returned from the create call
+      // clear the identity map to simulate a new request
+      orm.em.clear();
+      // const token2 = await orm.em.findOneOrFail(PushToken, { uuid: recreated.uuid }, ['users']);
+      const token2 = await pushTokenDataService.get(recreated.uuid);
+      await token2.users.init();
+
+      expect(token2).toEqual(token1);
+
+      // should only be one token in the database
+      // const count = await orm.em.count(PushToken);
+      const tokens = await pushTokenDataService.find();
+      const count = tokens.length;
+      expect(count).toEqual(1);
     });
 
-    it('returns the pushToken if it exists and the user does not need to be updated', async () => {
+    it('associates the existing token with the user if it is not already', async () => {
+      // leaving in (commented out) orm/em implementation as a reminder that it does NOT work
+      // as it causes other tests in this suite to fail. Still not sure why ¯\_(ツ)_/¯
+      // await orm.em.persistAndFlush(dummyUser);
+      // await orm.em.persistAndFlush(dummyUser2);
+
+      await userDataService.create(dummyUser);
+      await userDataService.create(dummyUser2);
+
       const options: PushTokenCreateOptions = {
-        value: 'dummy token',
+        value: 'test token',
         userUuid: dummyUser.uuid,
         provider: 'FCM'
       };
 
-      jest.spyOn(service, 'actuallyCreate');
-      mockGetByToken.mockResolvedValueOnce(dummyPushToken);
+      // create the initial token
+      await pushTokenService.create(options);
 
-      const pushToken = await service.create(options);
+      // clear the identity map to simulate a new request
+      orm.em.clear();
 
-      expect(service.actuallyCreate).not.toBeCalled();
-      expect(pushToken).toEqual(dummyPushToken);
-    });
-
-    it('updates the existing pushToken if it is associated with a different user', async () => {
-      const options: PushTokenCreateOptions = {
-        value: 'dummy token',
-        userUuid: dummyUser2.uuid,
-        provider: 'FCM'
+      // create the token again with the same value but a different user
+      const options2: PushTokenCreateOptions = {
+        ...options,
+        userUuid: dummyUser2.uuid
       };
 
-      jest.spyOn(service, 'associateUser').mockResolvedValueOnce({ ...dummyPushToken, user: dummyUser2 });
-      mockGetByToken.mockResolvedValueOnce(dummyPushToken);
+      const recreated = await pushTokenService.create(options2);
 
-      const pushToken = await service.create(options);
+      // the token should now be associated with both users
+      expect(recreated.users.getIdentifiers()).toContainEqual(dummyUser.uuid);
+      expect(recreated.users.getIdentifiers()).toContainEqual(dummyUser2.uuid);
 
-      expect(service.associateUser).toBeCalled();
-      expect(pushToken).toEqual({ ...dummyPushToken, user: dummyUser2 });
-    });
-  });
-
-  describe('getUser', () => {
-    const mockGet = jest.fn(() => Promise.resolve(dummyUser));
-    const dummyUserDataService = { get: mockGet };
-    const mockService = jest.fn();
-    const app = { service: mockService } as unknown as Application;
-    const service = new PushTokenService(app);
-
-    beforeEach(() => {
-      when(mockService).calledWith('userData').mockReturnValue(dummyUserDataService);
-    });
-
-    afterEach(() => {
-      jest.clearAllMocks();
-    });
-
-    it('gets a user by uuid', async () => {
-      const user = await service.getUser(dummyUser.uuid);
-      expect(mockService).toBeCalledWith('userData');
-      expect(mockGet).toBeCalledWith(dummyUser.uuid);
-      expect(user).toEqual(dummyUser);
-    });
-
-    it('logs and re-throws caught errors', async () => {
-      const err = new GeneralError('error getting user');
-      mockGet.mockRejectedValueOnce(err);
-
-      try {
-        await service.getUser(dummyUser.uuid);
-        fail();
-      } catch (e) {
-        expect(logger.error).toBeCalled();
-        expect(e).toEqual(err);
-      }
-    });
-  });
-
-  describe('associateUser', () => {
-    const mockPatch = jest.fn(() => Promise.resolve(dummyPushToken));
-    const mockGet = jest.fn(() => Promise.resolve(dummyUser));
-    const mockService = jest.fn();
-    const app = { service: mockService } as unknown as Application;
-    let service: PushTokenService;
-
-    beforeEach(() => {
-      when(mockService)
-        .calledWith('pushTokenData').mockReturnValue({ patch: mockPatch })
-        .calledWith('userData').mockReturnValue({ get: mockGet });
-      service = new PushTokenService(app);
-    });
-
-    it('patches the PushToken to associate it with the user', async () => {
-      const patchedPushToken = await service.associateUser(dummyPushToken.uuid, dummyUser.uuid);
-      expect(mockService).toBeCalledWith('pushTokenData');
-      expect(mockPatch).toBeCalledWith(dummyPushToken.uuid, { user: dummyUser });
-      expect(patchedPushToken).toEqual(dummyPushToken);
-    });
-
-    it('logs and re-throws caught errors', async () => {
-      const err = new GeneralError('error patching pushToken');
-      mockPatch.mockRejectedValueOnce(err);
-
-      try {
-        await service.associateUser(dummyPushToken.uuid, dummyUser.uuid);
-        fail();
-      } catch (e) {
-        expect(logger.error).toBeCalled();
-        expect(e).toEqual(err);
-      }
-    });
-  });
-
-  describe('actuallyCreate', () => {
-    const mockCreate = jest.fn(() => Promise.resolve(dummyPushToken));
-    const mockGet = jest.fn(() => Promise.resolve(dummyUser));
-    const mockService = jest.fn();
-    const app = { service: mockService } as unknown as Application;
-    let service: PushTokenService;
-
-    beforeEach(() => {
-      when(mockService)
-        .calledWith('pushTokenData').mockReturnValue({ create: mockCreate })
-        .calledWith('userData').mockReturnValue({ get: mockGet });
-      service = new PushTokenService(app);
-    });
-    it('creates a PushToken using the data service', async () => {
-      const pushToken = await service.actuallyCreate({ value: 'dummy token', userUuid: dummyUser.uuid, provider: 'FCM' });
-      expect(pushToken).toEqual(dummyPushToken);
-      expect(mockCreate).toBeCalledWith({ value: 'dummy token', user: dummyUser, provider: 'FCM' });
-    });
-
-    it('logs and re-throws caught errors', async () => {
-      const err = new GeneralError('error creating pushToken');
-      mockCreate.mockRejectedValueOnce(err);
-
-      try {
-        await service.actuallyCreate({ value: 'dummy token', userUuid: dummyUser.uuid, provider: 'FCM' });
-        fail();
-      } catch (e) {
-        expect(logger.error).toBeCalled();
-        expect(e).toEqual(err);
-      }
+      // there should still only be one token in the database
+      const count = await orm.em.count(PushToken);
+      expect(count).toEqual(1);
     });
   });
 });

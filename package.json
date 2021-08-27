@@ -24,16 +24,16 @@
     "yarn": ">= 0.18.0"
   },
   "scripts": {
-    "test": "yarn run lint && yarn run compile && NODE_ENV=test yarn run migrate && NODE_ENV=test yarn run jest",
+    "test": "npm run lint && npm run compile && NODE_ENV=test npm run migrate && NODE_ENV=test npm run jest",
     "lint": "eslint src/. test/. --config .eslintrc.json --ext .ts --fix",
     "dev": "ts-node-dev --no-notify src/",
-    "start": "yarn migrate && node lib/",
+    "start": "npm run migrate && node lib/",
     "jest": "jest  --forceExit --max-workers=1",
     "compile": "shx rm -rf lib/ && tsc",
-    "migrate": "yarn migration:up",
-    "migration:create": "yarn mikro-orm migration:create",
-    "migration:up": "yarn mikro-orm migration:up",
-    "migration:down": "yarn mikro-orm migration:down"
+    "migrate": "npm run migration:up",
+    "migration:create": "npx mikro-orm migration:create",
+    "migration:up": "npx mikro-orm migration:up",
+    "migration:down": "npx mikro-orm migration:down"
   },
   "standard": {
     "env": [
@@ -56,11 +56,11 @@
     "@mikro-orm/core": "^4.4.2",
     "@mikro-orm/postgresql": "^4.4.2",
     "@mikro-orm/reflection": "^4.4.2",
-    "@unumid/server-sdk": "^3.0.4",
+    "@unumid/server-sdk": "3.0.4",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
-    "feathers-mikro-orm": "git+ssh://git@github.com/UnumID/feathers-mikro-orm.git#v0.2.1",
+    "feathers-mikro-orm": "git+ssh://git@github.com/UnumID/feathers-mikro-orm.git#v0.2.4",
     "firebase-admin": "^9.5.0",
     "helmet": "^4.2.0",
     "logform": "^2.2.0",
@@ -84,7 +84,7 @@
     "@typescript-eslint/eslint-plugin": "^4.15.0",
     "@typescript-eslint/parser": "^4.15.0",
     "@unumid/demo-types": "git+ssh://git@github.com/UnumID/demo-types#3.0.1",
-    "@unumid/types": "^3.0.6",
+    "@unumid/types": "3.0.6",
     "axios": "^0.21.1",
     "eslint": "^7.13.0",
     "eslint-config-semistandard": "^15.0.1",

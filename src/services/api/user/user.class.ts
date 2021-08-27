@@ -32,7 +32,7 @@ export class UserService {
   async get (uuid: NullableId, params?: Params): Promise<User> {
     const userDataService = this.app.service('userData');
     try {
-      const user = await userDataService.get(uuid, params);
+      const user = await userDataService.get(uuid, { ...params, populate: ['pushTokens'] });
       return user;
     } catch (e) {
       logger.error('error in UserDataService.get', e);
@@ -62,7 +62,7 @@ export class UserService {
     }
   }
 
-  async remove (uuid: NullableId, params?: Params): Promise<User> {
+  async remove (uuid: NullableId, params?: Params): Promise<User | { success: boolean }> {
     const userDataService = this.app.service('userData');
     try {
       const response = await userDataService.remove(uuid, params);
