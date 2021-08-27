@@ -30,7 +30,7 @@ describe('UserService class', () => {
       mockUserDataService.get.mockResolvedValueOnce(dummyUser);
 
       const user = await service.get(dummyUser.uuid);
-      expect(mockUserDataService.get).toBeCalledWith(dummyUser.uuid, undefined);
+      expect(mockUserDataService.get).toBeCalledWith(dummyUser.uuid, { populate: ['pushTokens'] });
       expect(user).toEqual(dummyUser);
     });
   });
