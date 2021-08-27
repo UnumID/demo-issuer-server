@@ -29,7 +29,6 @@ export class PushTokenService {
 
   async find (): Promise<PushToken[]> {
     const pushTokens = await this.dataService.find({ populate: 'users' });
-    console.log('pushTokens', pushTokens);
 
     return pushTokens;
   }
@@ -88,9 +87,6 @@ export class PushTokenService {
   }
 
   async create ({ value, provider, userUuid }: PushTokenCreateOptions): Promise<PushToken> {
-    console.log('create');
-    console.log('value', value);
-    console.log('userUuid', userUuid);
     // get existing token with this value, if there is one
     const existingToken = await this.dataService.getByToken(value);
 
@@ -99,7 +95,7 @@ export class PushTokenService {
 
     // if there is no existing token, create one and return it
     if (!existingToken) {
-      console.log('no existing token, creating...');
+      logger.info('no existing token, creating...');
       try {
         const createdToken = await this.actuallyCreate({ value, user, provider });
         return createdToken;
@@ -113,12 +109,12 @@ export class PushTokenService {
     await existingToken.users.init();
 
     if (existingToken.users.getIdentifiers().includes(userUuid)) {
-      console.log('existing token already associated with user, returning existing token');
+      logger.info('existing token already associated with user, returning existing token');
       return existingToken;
     }
 
-    console.log('user and token are not associated, associating them...');
     // if the user and existing token are not already associated, associate them
+    logger.info('existing token not associated with user, associating...');
     try {
       await this.associateUser(existingToken, user);
 

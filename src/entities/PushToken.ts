@@ -27,9 +27,6 @@ export class PushToken extends BaseEntity {
   constructor (options: PushTokenOptions) {
     super(options);
 
-    console.log('PushToken constructor');
-    console.log('options', options);
-
     this.value = options.value;
     this.users.add(options.user);
     this.provider = options.provider;
