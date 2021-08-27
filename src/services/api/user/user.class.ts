@@ -62,7 +62,7 @@ export class UserService {
     }
   }
 
-  async remove (uuid: NullableId, params?: Params): Promise<User> {
+  async remove (uuid: NullableId, params?: Params): Promise<User | { success: boolean }> {
     const userDataService = this.app.service('userData');
     try {
       const response = await userDataService.remove(uuid, params);

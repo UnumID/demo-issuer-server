@@ -51,7 +51,7 @@ export class CredentialService {
     }
   }
 
-  async remove (uuid: NullableId, params?: Params): Promise<CredentialEntity> {
+  async remove (uuid: NullableId, params?: Params): Promise<CredentialEntity | { success: boolean }> {
     const credentialDataService = this.app.service('credentialData');
     try {
       const response = await credentialDataService.remove(uuid, params);

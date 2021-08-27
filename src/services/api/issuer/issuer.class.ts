@@ -61,7 +61,7 @@ export class IssuerService {
     }
   }
 
-  async remove (uuid: NullableId, params?: Params): Promise<IssuerEntity> {
+  async remove (uuid: NullableId, params?: Params): Promise<IssuerEntity | { success: boolean }> {
     const issuerDataService = this.app.service('issuerData');
     try {
       const response = await issuerDataService.remove(uuid, params);
