@@ -116,7 +116,6 @@ describe('issuer api service hooks', () => {
 
         await registerIssuerHook(ctx);
         expect(mockRegisterIssuer).toBeCalledWith(
-          dummyIssuerEntityOptions.issuerName,
           dummyIssuerEntityOptions.issuerCustomerUuid,
           dummyIssuerEntityOptions.apiKey
         );
