@@ -38,11 +38,11 @@ export const registerIssuerHook: Hook<IssuerEntityOptions> = async (ctx) => {
   if (!data) {
     throw new BadRequest();
   }
-  const { issuerName, apiKey, issuerCustomerUuid } = data;
+  const { apiKey, issuerCustomerUuid } = data;
 
   try {
     // use the server sdk to generate keys and register the issuer with the saas
-    const response = await registerIssuer(issuerName, issuerCustomerUuid, apiKey);
+    const response = await registerIssuer(issuerCustomerUuid, apiKey);
     const { body, authToken } = response;
 
     // format the response from the sdk to match the way we represent issuers in this application
