@@ -126,3 +126,11 @@ export const dummyCredentialDto: UnumDto<CredentialPb> = {
   },
   authToken: dummyIssuerEntityOptions.authToken
 };
+
+export const dummyCredentialsDto: UnumDto<CredentialPb[]> = {
+  body: [{
+    ...dummyCredential,
+    credentialSubject: dummyCredential.credentialSubject
+  }],
+  authToken: dummyIssuerEntityOptions.authToken
+};

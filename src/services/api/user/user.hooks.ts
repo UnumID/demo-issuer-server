@@ -1,7 +1,7 @@
 import { BadRequest, GeneralError } from '@feathersjs/errors';
 import { Hook } from '@feathersjs/feathers';
-import { convertCredentialSubject, issueCredential as sdkIssueCredential, UnumDto } from '@unumid/server-sdk';
-import { CredentialPb, CredentialSubject, ProofPb } from '@unumid/types';
+import { convertCredentialSubject, issueCredential as sdkIssueCredential, UnumDto, issueCredentials as sdkIssueCredentials } from '@unumid/server-sdk';
+import { CredentialData, CredentialPb, CredentialSubject, ProofPb } from '@unumid/types';
 import { Service as MikroOrmService } from 'feathers-mikro-orm';
 
 import { User } from '../../../entities/User';
@@ -110,6 +110,31 @@ export const issueCredential = async (
   }
 };
 
+export const issueCredentials = async (
+  issuerEntity: IssuerEntity,
+  credentialSubject: string,
+  credentialDataList: CredentialData[],
+  credentialTypes: string[]
+): Promise<UnumDto<CredentialPb[]>> => {
+  let authCredentialResponse;
+
+  try {
+    authCredentialResponse = await sdkIssueCredentials(
+      formatBearerToken(issuerEntity.authToken),
+      credentialTypes,
+      issuerEntity.issuerDid,
+      credentialSubject,
+      credentialDataList,
+      issuerEntity.privateKey
+    );
+
+    return authCredentialResponse as UnumDto<CredentialPb[]>;
+  } catch (e) {
+    logger.error('issueCredentials caught an error thrown by the server sdk', e);
+    throw e;
+  }
+};
+
 export const convertUnumDtoToCredentialEntityOptions = (issuerDto: UnumDto<CredentialPb>): CredentialEntityOptions => {
   const proof: ProofPb = {
     ...issuerDto.body.proof,
@@ -133,6 +158,29 @@ export const convertUnumDtoToCredentialEntityOptions = (issuerDto: UnumDto<Crede
   };
 };
 
+export const convertCredentialToCredentialEntityOptions = (credential: CredentialPb): CredentialEntityOptions => {
+  const proof: ProofPb = {
+    ...credential.proof,
+    created: credential.proof?.created,
+    signatureValue: (credential.proof?.signatureValue as string),
+    type: credential.proof?.type as string,
+    verificationMethod: credential.proof?.verificationMethod as string,
+    proofPurpose: credential.proof?.proofPurpose as string
+  };
+
+  return {
+    credentialContext: (credential.context as ['https://www.w3.org/2018/credentials/v1', ...string[]]), // the proto type def can not have constants, but the value is ensured prior to sending to saas for encrypted persistence.
+    credentialId: credential.id,
+    credentialCredentialSubject: convertCredentialSubject(credential.credentialSubject),
+    credentialCredentialStatus: (credential.credentialStatus as CredentialStatus),
+    credentialIssuer: credential.issuer,
+    credentialType: (credential.type as ['VerifiableCredential', ...string[]]), // the proto type def can not have constants, but the value is ensured prior to sending to saas for encrypted persistence.
+    credentialIssuanceDate: credential.issuanceDate as Date,
+    credentialExpirationDate: credential.expirationDate,
+    credentialProof: proof
+  };
+};
+
 export const getDefaultIssuerEntity: UserServiceHook = async (ctx) => {
   const issuerDataService = ctx.app.service('issuerData');
   let defaultIssuerEntity: IssuerEntity;
@@ -151,6 +199,57 @@ export const getDefaultIssuerEntity: UserServiceHook = async (ctx) => {
     logger.error('getDefaultIssuerEntity hook caught an error thrown by issuerDataService.getDefaultIssuerEntity', e);
     throw e;
   }
+};
+
+export const issueAuthAndKYCCredentials: UserServiceHook = async (ctx) => {
+  const { id, data, result, params } = ctx;
+  const defaultIssuerEntity = params.defaultIssuerEntity as IssuerEntity;
+
+  if (!data || !id || !result) {
+    throw new BadRequest();
+  }
+
+  // only run this hook if the did is being updated
+  const { did } = data;
+  if (!did) {
+    return ctx;
+  }
+
+  if (!defaultIssuerEntity) {
+    throw new GeneralError('Error in issuerAuthCredential hook: defaultIssuerEntity param is not set. Did you forget to run the getDefaultIssuerEntity hook first?');
+  }
+
+  // issue a DemoAuthCredential & KYCCredential using the server sdk
+  const authCredentialSubject = buildAuthCredentialSubject(did, id as string, result.email);
+  const KYCCredentialSubject = buildKYCCredentialSubject(did, result.firstName as string || 'Richard');
+  const issuerDto: UnumDto<CredentialPb[]> = await issueCredentials(defaultIssuerEntity, did, [authCredentialSubject, KYCCredentialSubject], ['DemoAuthCredential', 'KYCCredential']);
+
+  // store the issued credentials
+  const credentialDataService = ctx.app.service('credentialData') as MikroOrmService<CredentialEntity>;
+
+  for (const issuedCredential of issuerDto.body) {
+    const credentialEntityOptions = convertCredentialToCredentialEntityOptions(issuedCredential);
+
+    try {
+      await credentialDataService.create(credentialEntityOptions);
+    } catch (e) {
+      logger.error('issueAuthAndKYCCredentials hook caught an error thrown by credentialDataService.create', e);
+      throw e;
+    }
+  }
+
+  // update the default issuer's auth token if it has been reissued
+  if (issuerDto.authToken !== defaultIssuerEntity.authToken) {
+    const issuerDataService = ctx.app.service('issuerData');
+    try {
+      await issuerDataService.patch(defaultIssuerEntity.uuid, { authToken: issuerDto.authToken });
+    } catch (e) {
+      logger.error('issueAuthAndKYCCredentials hook caught an error thrown by issuerDataService.patch', e);
+      throw e;
+    }
+  }
+
+  return ctx;
 };
 
 export const issueAuthCredential: UserServiceHook = async (ctx) => {
@@ -218,7 +317,7 @@ export const issueKYCCredential: UserServiceHook = async (ctx) => {
     throw new GeneralError('Error in issueKYCCredential hook: defaultIssuerEntity param is not set. Did you forget to run the getDefaultIssuerEntity hook first?');
   }
 
-  // issue a DemoAuthCredential using the server sdk
+  // issue a KYCCredential using the server sdk
   const KYCCredentialSubject = buildKYCCredentialSubject(did, result.firstName as string || 'Richard');
   const issuerDto = await issueCredential(defaultIssuerEntity, KYCCredentialSubject, 'KYCCredential');
 
@@ -264,6 +363,7 @@ export const hooks = {
     all: [validateRequest]
   },
   after: {
-    patch: [getDefaultIssuerEntity, issueAuthCredential, issueKYCCredential]
+    // patch: [getDefaultIssuerEntity, issueAuthCredential, issueKYCCredential]
+    patch: [getDefaultIssuerEntity, issueAuthAndKYCCredentials]
   }
 };
