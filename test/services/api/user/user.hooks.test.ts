@@ -16,7 +16,8 @@ import {
   issueKYCCredential,
   formatBearerToken,
   issueAuthAndKYCCredentials,
-  issueCredentials
+  issueCredentials,
+  convertCredentialToCredentialEntityOptions
 } from '../../../../src/services/api/user/user.hooks';
 import {
   dummyCredentialDto,
@@ -182,8 +183,26 @@ describe('user api service hooks version 3.0.0', () => {
     });
 
     describe('convertUnumDtoToCredentialEntityOptions version 3.0.0', () => {
-      it('converts an IssuerDto containing a Credential to a CredentialEntityOptions object', () => {
+      it('converts an UnumDto containing a Credential to a CredentialEntityOptions object', () => {
         const received = convertUnumDtoToCredentialEntityOptions(dummyCredentialDto);
+        const expected = {
+          credentialContext: dummyCredentialDto.body.context,
+          credentialId: dummyCredentialDto.body.id,
+          credentialCredentialSubject: dummyCredentialSubject,
+          credentialCredentialStatus: dummyCredentialDto.body.credentialStatus,
+          credentialIssuer: dummyCredentialDto.body.issuer,
+          credentialType: dummyCredentialDto.body.type,
+          credentialIssuanceDate: dummyCredentialDto.body.issuanceDate,
+          credentialExpirationDate: dummyCredentialDto.body.expirationDate,
+          credentialProof: dummyCredentialDto.body.proof
+        };
+        expect(received).toEqual(expected);
+      });
+    });
+
+    describe('convertCredentialToCredentialEntityOptions version 3.0.0', () => {
+      it('converts a Credential to a CredentialEntityOptions object', () => {
+        const received = convertCredentialToCredentialEntityOptions(dummyCredentialDto.body);
         const expected = {
           credentialContext: dummyCredentialDto.body.context,
           credentialId: dummyCredentialDto.body.id,
