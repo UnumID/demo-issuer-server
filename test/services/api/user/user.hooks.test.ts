@@ -1,6 +1,6 @@
 import { GeneralError } from '@feathersjs/errors';
 import { HookContext } from '@feathersjs/feathers';
-import { issueCredential as sdkIssueCredential } from '@unumid/server-sdk';
+import { issueCredential as sdkIssueCredential, issueCredentials as sdkIssueCredentials } from '@unumid/server-sdk';
 import { v4 } from 'uuid';
 
 import logger from '../../../../src/logger';
@@ -14,12 +14,15 @@ import {
   getDefaultIssuerEntity,
   issueAuthCredential,
   issueKYCCredential,
-  formatBearerToken
+  formatBearerToken,
+  issueAuthAndKYCCredentials,
+  issueCredentials
 } from '../../../../src/services/api/user/user.hooks';
 import {
   dummyCredentialDto,
   dummyCredentialEntityOptions,
   dummyCredentialEntityOptions,
+  dummyCredentialsDto,
   dummyCredentialSubject,
   dummyIssuerEntity,
   dummyUser
@@ -31,11 +34,13 @@ jest.mock('@unumid/server-sdk', () => {
   const actual = jest.requireActual('@unumid/server-sdk');
   return {
     ...actual,
-    issueCredential: jest.fn() // this is the only exported function we actually want to mock
+    issueCredential: jest.fn(), // this is the only exported function we actually want to mock
+    issueCredentials: jest.fn() // this is the only exported function we actually want to mock
   };
 });
 
 const mockIssueCredential = sdkIssueCredential as jest.Mock;
+const mockIssueCredentials = sdkIssueCredentials as jest.Mock;
 
 describe('user api service hooks version 3.0.0', () => {
   afterEach(() => {
@@ -97,7 +102,7 @@ describe('user api service hooks version 3.0.0', () => {
       });
     });
 
-    describe('issueCredential version 3.0.0', () => {
+    describe('issueCredential', () => {
       const did = `did:unum:${v4}`;
       const userUuid = v4();
       const credentialType = 'DemoAuthCredential';
@@ -135,40 +140,42 @@ describe('user api service hooks version 3.0.0', () => {
       });
     });
 
-    describe('issueCredential version 3.0.0', () => {
+    describe('issueCredentials', () => {
       const did = `did:unum:${v4}`;
       const userUuid = v4();
-      const credentialType = 'DemoAuthCredential';
+      const credentialTypes = ['DemoAuthCredential', 'KYCCredential'];
       const userEmail = 'test@unum.id';
-      const credentialSubject = buildAuthCredentialSubject(did, userUuid, userEmail);
-      const version = '3.0.0';
+      const credentialSubject1 = buildAuthCredentialSubject(did, userUuid, userEmail);
+      const credentialSubject2 = buildKYCCredentialSubject(did, userUuid);
+      const credentialSubjects = [credentialSubject1, credentialSubject2];
 
-      it('issues a credential using the server sdk', async () => {
-        await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
-        expect(mockIssueCredential).toBeCalledWith(
+      it('issues a credentials using the server sdk', async () => {
+        await issueCredentials(dummyIssuerEntity, did, credentialSubjects, credentialTypes);
+        expect(mockIssueCredentials).toBeCalledWith(
           formatBearerToken(dummyIssuerEntity.authToken),
-          credentialType,
+          credentialTypes,
           dummyIssuerEntity.issuerDid,
-          credentialSubject,
+          did,
+          credentialSubjects,
           dummyIssuerEntity.privateKey
         );
       });
 
-      it('returns the response from the sdk', async () => {
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
-        const received = await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
-        expect(received).toEqual(dummyCredentialDto);
+      it('returns the credentials response from the sdk', async () => {
+        mockIssueCredentials.mockResolvedValueOnce(dummyCredentialsDto);
+        const received = await issueCredentials(dummyIssuerEntity, did, credentialSubjects, credentialTypes);
+        expect(received).toEqual(dummyCredentialsDto);
       });
 
       it('catches, logs and re-throws errors thrown by the sdk', async () => {
         const err = new Error('sdk error');
-        mockIssueCredential.mockRejectedValueOnce(err);
+        mockIssueCredentials.mockRejectedValueOnce(err);
 
         try {
-          await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
+          await issueCredentials(dummyIssuerEntity, did, credentialSubjects, credentialTypes);
           fail();
         } catch (e) {
-          expect(logger.error).toBeCalledWith('issueCredential caught an error thrown by the server sdk', err);
+          expect(logger.error).toBeCalledWith('issueCredentials caught an error thrown by the server sdk', err);
           expect(e).toEqual(err);
         }
       });
@@ -246,452 +253,675 @@ describe('user api service hooks version 3.0.0', () => {
       });
     });
 
-    describe('issueAuthCredential', () => {
-      it('runs as the second after patch hook', () => {
-        expect(hooks.after.patch[1]).toBe(issueAuthCredential);
-      });
-
-      it('throws if the defaultIssuerEntity param has not been set', async () => {
-        const did = `did:unum:${v4()}`;
-        const ctx = {
-          data: { did },
-          result: dummyUser,
-          id: dummyUser.uuid,
-          params: { headers: { version: '3.0.0' } }
-        } as unknown as HookContext;
-
-        try {
-          await issueAuthCredential(ctx);
-          fail();
-        } catch (e) {
-          console.log(e);
-          expect(e).toBeInstanceOf(GeneralError);
-        }
-      });
-
-      it('exits early if the did is not being updated', async () => {
-        const ctx = {
-          data: { email: 'test@unumid.org' },
-          id: dummyUser.uuid,
-          result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } }
-        } as unknown as HookContext;
-
-        await issueAuthCredential(ctx);
-        expect(mockIssueCredential).not.toBeCalled();
-      });
-
-      it('issues a DemoAuthCredential', async () => {
-        const mockService = jest.fn();
-        const mockCredentialDataService = {
-          create: jest.fn()
-        };
-        const mockIssuerDataService = {
-          patch: jest.fn()
-        };
-
-        mockService
-          .mockReturnValueOnce(mockCredentialDataService)
-          .mockReturnValueOnce(mockIssuerDataService);
-
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
-        const did = `did:unum:${v4()}`;
-        const ctx = {
-          data: { did },
-          id: dummyUser.uuid,
-          result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
-          app: {
-            service: mockService
-          }
-        } as unknown as HookContext;
-
-        await issueAuthCredential(ctx);
-
-        expect(mockIssueCredential).toBeCalled();
-        expect(mockIssueCredential).toBeCalledWith(
-          formatBearerToken(dummyIssuerEntity.authToken),
-          'DemoAuthCredential',
-          dummyIssuerEntity.issuerDid,
-          buildAuthCredentialSubject(ctx.data.did, ctx.id as string, dummyUser.email),
-          dummyIssuerEntity.privateKey
-        );
-      });
-
-      it('stores the issued credential', async () => {
-        const mockService = jest.fn();
-        const mockCredentialDataService = {
-          create: jest.fn()
-        };
-        const mockIssuerDataService = {
-          patch: jest.fn()
-        };
-
-        mockService
-          .mockReturnValueOnce(mockCredentialDataService)
-          .mockReturnValueOnce(mockIssuerDataService);
-
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
-        const did = `did:unum:${v4()}`;
-        const ctx = {
-          data: { did },
-          id: dummyUser.uuid,
-          result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
-          app: {
-            service: mockService
-          }
-        } as unknown as HookContext;
-
-        await issueAuthCredential(ctx);
-        expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptions);
-      });
-
-      it('catches, logs and re-throws errors storing the credential', async () => {
-        const mockService = jest.fn();
-        const mockCredentialDataService = {
-          create: jest.fn()
-        };
-        const mockIssuerDataService = {
-          patch: jest.fn()
-        };
-
-        mockService
-          .mockReturnValueOnce(mockCredentialDataService)
-          .mockReturnValueOnce(mockIssuerDataService);
-
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
-
-        const did = `did:unum:${v4()}`;
-
-        const ctx = {
-          data: { did },
-          id: dummyUser.uuid,
-          result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
-          app: {
-            service: mockService
-          }
-        } as unknown as HookContext;
-
-        const err = new Error('CredentialDataService error');
-        mockCredentialDataService.create.mockRejectedValueOnce(err);
-        try {
-          await issueAuthCredential(ctx);
-          fail();
-        } catch (e) {
-          expect(logger.error).toBeCalledWith(
-            'issueAuthCredential hook caught an error thrown by credentialDataService.create',
-            err
-          );
-          expect(e).toEqual(err);
-        }
-      });
-
-      it('updates the issuer authToken if it has been reissued', async () => {
-        const mockService = jest.fn();
-        const mockCredentialDataService = {
-          create: jest.fn()
-        };
-        const mockIssuerDataService = {
-          patch: jest.fn()
-        };
-
-        mockService
-          .mockReturnValueOnce(mockCredentialDataService)
-          .mockReturnValueOnce(mockIssuerDataService);
-
-        mockIssueCredential.mockResolvedValueOnce({
-          ...dummyCredentialDto,
-          authToken: 'updated auth token'
-        });
-
-        const userUuid = v4();
-        const did = `did:unum:${v4()}`;
-
-        const ctx = {
-          data: { did },
-          id: userUuid,
-          result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
-          app: {
-            service: mockService
-          }
-        } as unknown as HookContext;
-
-        await issueAuthCredential(ctx);
-
-        expect(mockIssuerDataService.patch).toBeCalledWith(dummyIssuerEntity.uuid, { authToken: 'updated auth token' });
-      });
-
-      it('catches, logs and re-throws errors updating the issuer authToken', async () => {
-        const mockService = jest.fn();
-        const mockCredentialDataService = {
-          create: jest.fn()
-        };
-        const mockIssuerDataService = {
-          patch: jest.fn()
-        };
-
-        mockService
-          .mockReturnValueOnce(mockCredentialDataService)
-          .mockReturnValueOnce(mockIssuerDataService);
-
-        mockIssueCredential.mockResolvedValueOnce({
-          ...dummyCredentialDto,
-          authToken: 'updated auth token'
-        });
-
-        const did = `did:unum:${v4()}`;
-
-        const ctx = {
-          data: { did },
-          id: dummyUser.uuid,
-          result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
-          app: {
-            service: mockService
-          }
-        } as unknown as HookContext;
-
-        const err = new Error('IssuerDataService error');
-        mockIssuerDataService.patch.mockRejectedValueOnce(err);
-
-        try {
-          await issueAuthCredential(ctx);
-        } catch (e) {
-          expect(logger.error).toBeCalledWith(
-            'issueAuthCredential hook caught an error thrown by issuerDataService.patch',
-            err
-          );
-          expect(e).toEqual(err);
-        }
-      });
-    });
-
-    describe('issueKYCCredential', () => {
-      it('runs as the third after patch hook', () => {
-        expect(hooks.after.patch[2]).toBe(issueKYCCredential);
-      });
-
-      it('throws if the defaultIssuerEntity param has not been set', async () => {
-        const did = `did:unum:${v4()}`;
-
-        const ctx = {
-          data: { did },
-          id: dummyUser.uuid,
-          result: dummyUser,
-          params: { headers: { version: '3.0.0' } }
-        } as unknown as HookContext;
-
-        try {
-          await issueKYCCredential(ctx);
-          fail();
-        } catch (e) {
-          console.log(e);
-          expect(e).toBeInstanceOf(GeneralError);
-        }
-      });
-
-      it('exits early if the did is not being updated', async () => {
-        const email = 'test@unum.id';
-
-        const ctx = {
-          data: { email },
-          id: dummyUser.uuid,
-          result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } }
-        } as unknown as HookContext;
-
-        await issueKYCCredential(ctx);
-        expect(mockIssueCredential).not.toBeCalled();
-      });
-
-      it('issues a KYCCredential', async () => {
-        const mockService = jest.fn();
-        const mockCredentialDataService = {
-          create: jest.fn()
-        };
-        const mockIssuerDataService = {
-          patch: jest.fn()
-        };
-
-        mockService
-          .mockReturnValueOnce(mockCredentialDataService)
-          .mockReturnValueOnce(mockIssuerDataService);
-
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
-        const did = `did:unum:${v4()}`;
-
-        const ctx = {
-          data: { did },
-          result: dummyUser,
-          id: dummyUser.uuid,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
-          app: {
-            service: mockService
-          }
-        } as unknown as HookContext;
-
-        await issueKYCCredential(ctx);
-
-        expect(mockIssueCredential).toBeCalled();
-        expect(mockIssueCredential).toBeCalledWith(
-          formatBearerToken(dummyIssuerEntity.authToken),
-          'KYCCredential',
-          dummyIssuerEntity.issuerDid,
-          buildKYCCredentialSubject(ctx.data.did, dummyUser.firstName),
-          dummyIssuerEntity.privateKey
-        );
-      });
-
-      it('stores the issued credential', async () => {
-        const mockService = jest.fn();
-        const mockCredentialDataService = {
-          create: jest.fn()
-        };
-        const mockIssuerDataService = {
-          patch: jest.fn()
-        };
-
-        mockService
-          .mockReturnValueOnce(mockCredentialDataService)
-          .mockReturnValueOnce(mockIssuerDataService);
-
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
-        const did = `did:unum:${v4()}`;
-        const ctx = {
-          data: { did },
-          id: dummyUser.uuid,
-          result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
-          app: {
-            service: mockService
-          }
-        } as unknown as HookContext;
-
-        await issueKYCCredential(ctx);
-        expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptions);
-      });
-
-      it('catches, logs and re-throws errors storing the credential', async () => {
-        const mockService = jest.fn();
-        const mockCredentialDataService = {
-          create: jest.fn()
-        };
-        const mockIssuerDataService = {
-          patch: jest.fn()
-        };
-
-        mockService
-          .mockReturnValueOnce(mockCredentialDataService)
-          .mockReturnValueOnce(mockIssuerDataService);
-
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
-        const did = `did:unum:${v4()}`;
-
-        const ctx = {
-          data: { did },
-          id: dummyUser.uuid,
-          result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
-          app: {
-            service: mockService
-          }
-        } as unknown as HookContext;
-
-        const err = new Error('CredentialDataService error');
-        mockCredentialDataService.create.mockRejectedValueOnce(err);
-        try {
-          await issueKYCCredential(ctx);
-          fail();
-        } catch (e) {
-          expect(logger.error).toBeCalledWith(
-            'issueKYCCredential hook caught an error thrown by credentialDataService.create',
-            err
-          );
-          expect(e).toEqual(err);
-        }
-      });
-
-      it('updates the issuer authToken if it has been reissued', async () => {
-        const mockService = jest.fn();
-        const mockCredentialDataService = {
-          create: jest.fn()
-        };
-        const mockIssuerDataService = {
-          patch: jest.fn()
-        };
-
-        mockService
-          .mockReturnValueOnce(mockCredentialDataService)
-          .mockReturnValueOnce(mockIssuerDataService);
-
-        mockIssueCredential.mockResolvedValueOnce({
-          ...dummyCredentialDto,
-          authToken: 'updated auth token'
-        });
-
-        const did = `did:unum:${v4()}`;
-
-        const ctx = {
-          data: { did },
-          id: dummyUser.uuid,
-          result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
-          app: {
-            service: mockService
-          }
-        } as unknown as HookContext;
-
-        await issueKYCCredential(ctx);
-
-        expect(mockIssuerDataService.patch).toBeCalledWith(dummyIssuerEntity.uuid, { authToken: 'updated auth token' });
-      });
-
-      it('catches, logs, and re-throws errors updating the issuer authToken', async () => {
-        const mockService = jest.fn();
-        const mockCredentialDataService = {
-          create: jest.fn()
-        };
-        const mockIssuerDataService = {
-          patch: jest.fn()
-        };
-
-        mockService
-          .mockReturnValueOnce(mockCredentialDataService)
-          .mockReturnValueOnce(mockIssuerDataService);
-
-        mockIssueCredential.mockResolvedValueOnce({
-          ...dummyCredentialDto,
-          authToken: 'updated auth token'
-        });
-
-        const did = `did:unum:${v4()}`;
-
-        const ctx = {
-          data: { did },
-          id: dummyUser.uuid,
-          result: dummyUser,
-          params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
-          app: {
-            service: mockService
-          }
-        } as unknown as HookContext;
-
-        const err = new Error('IssuerDataService error');
-        mockIssuerDataService.patch.mockRejectedValueOnce(err);
-
-        try {
-          await issueKYCCredential(ctx);
-        } catch (e) {
-          expect(logger.error).toBeCalledWith(
-            'issueKYCCredential hook caught an error thrown by issuerDataService.patch',
-            err
-          );
-          expect(e).toEqual(err);
-        }
-      });
-    });
+    // describe('issueAuthAndKYCCredential', () => {
+    //   it('runs as the second after patch hook', () => {
+    //     expect(hooks.after.patch[1]).toBe(issueAuthAndKYCCredentials);
+    //   });
+
+    //   it('throws if the defaultIssuerEntity param has not been set', async () => {
+    //     const did = `did:unum:${v4()}`;
+    //     const ctx = {
+    //       data: { did },
+    //       result: dummyUser,
+    //       id: dummyUser.uuid,
+    //       params: { headers: { version: '3.0.0' } }
+    //     } as unknown as HookContext;
+
+    //     try {
+    //       await issueAuthAndKYCCredentials(ctx);
+    //       fail();
+    //     } catch (e) {
+    //       console.log(e);
+    //       expect(e).toBeInstanceOf(GeneralError);
+    //     }
+    //   });
+
+    //   it('exits early if the did is not being updated', async () => {
+    //     const ctx = {
+    //       data: { email: 'test@unumid.org' },
+    //       id: dummyUser.uuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } }
+    //     } as unknown as HookContext;
+
+    //     await issueAuthAndKYCCredentials(ctx);
+    //     expect(mockIssueCredentials).not.toBeCalled();
+    //   });
+
+    //   it('issues a DemoAuthCredential', async () => {
+    //     const mockService = jest.fn();
+    //     const mockCredentialDataService = {
+    //       create: jest.fn()
+    //     };
+    //     const mockIssuerDataService = {
+    //       patch: jest.fn()
+    //     };
+
+    //     mockService
+    //       .mockReturnValueOnce(mockCredentialDataService)
+    //       .mockReturnValueOnce(mockIssuerDataService);
+
+    //     mockIssueCredentials.mockResolvedValueOnce(dummyCredentialDto);
+    //     const did = `did:unum:${v4()}`;
+    //     const ctx = {
+    //       data: { did },
+    //       id: dummyUser.uuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
+    //       app: {
+    //         service: mockService
+    //       }
+    //     } as unknown as HookContext;
+
+    //     await issueAuthAndKYCCredentials(ctx);
+
+    //     expect(mockIssueCredentials).toBeCalled();
+    //     expect(mockIssueCredentials).toBeCalledWith(
+    //       formatBearerToken(dummyIssuerEntity.authToken),
+    //       'DemoAuthCredential',
+    //       dummyIssuerEntity.issuerDid,
+    //       buildAuthCredentialSubject(ctx.data.did, ctx.id as string, dummyUser.email),
+    //       dummyIssuerEntity.privateKey
+    //     );
+    //   });
+
+    //   it('stores the issued credential', async () => {
+    //     const mockService = jest.fn();
+    //     const mockCredentialDataService = {
+    //       create: jest.fn()
+    //     };
+    //     const mockIssuerDataService = {
+    //       patch: jest.fn()
+    //     };
+
+    //     mockService
+    //       .mockReturnValueOnce(mockCredentialDataService)
+    //       .mockReturnValueOnce(mockIssuerDataService);
+
+    //     mockIssueCredentials.mockResolvedValueOnce(dummyCredentialDto);
+    //     const did = `did:unum:${v4()}`;
+    //     const ctx = {
+    //       data: { did },
+    //       id: dummyUser.uuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
+    //       app: {
+    //         service: mockService
+    //       }
+    //     } as unknown as HookContext;
+
+    //     await issueAuthCredential(ctx);
+    //     expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptions);
+    //   });
+
+    //   it('catches, logs and re-throws errors storing the credential', async () => {
+    //     const mockService = jest.fn();
+    //     const mockCredentialDataService = {
+    //       create: jest.fn()
+    //     };
+    //     const mockIssuerDataService = {
+    //       patch: jest.fn()
+    //     };
+
+    //     mockService
+    //       .mockReturnValueOnce(mockCredentialDataService)
+    //       .mockReturnValueOnce(mockIssuerDataService);
+
+    //     mockIssueCredentials.mockResolvedValueOnce(dummyCredentialDto);
+
+    //     const did = `did:unum:${v4()}`;
+
+    //     const ctx = {
+    //       data: { did },
+    //       id: dummyUser.uuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
+    //       app: {
+    //         service: mockService
+    //       }
+    //     } as unknown as HookContext;
+
+    //     const err = new Error('CredentialDataService error');
+    //     mockCredentialDataService.create.mockRejectedValueOnce(err);
+    //     try {
+    //       await issueAuthCredential(ctx);
+    //       fail();
+    //     } catch (e) {
+    //       expect(logger.error).toBeCalledWith(
+    //         'issueAuthCredential hook caught an error thrown by credentialDataService.create',
+    //         err
+    //       );
+    //       expect(e).toEqual(err);
+    //     }
+    //   });
+
+    //   it('updates the issuer authToken if it has been reissued', async () => {
+    //     const mockService = jest.fn();
+    //     const mockCredentialDataService = {
+    //       create: jest.fn()
+    //     };
+    //     const mockIssuerDataService = {
+    //       patch: jest.fn()
+    //     };
+
+    //     mockService
+    //       .mockReturnValueOnce(mockCredentialDataService)
+    //       .mockReturnValueOnce(mockIssuerDataService);
+
+    //     mockIssueCredentials.mockResolvedValueOnce({
+    //       ...dummyCredentialDto,
+    //       authToken: 'updated auth token'
+    //     });
+
+    //     const userUuid = v4();
+    //     const did = `did:unum:${v4()}`;
+
+    //     const ctx = {
+    //       data: { did },
+    //       id: userUuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
+    //       app: {
+    //         service: mockService
+    //       }
+    //     } as unknown as HookContext;
+
+    //     await issueAuthCredential(ctx);
+
+    //     expect(mockIssuerDataService.patch).toBeCalledWith(dummyIssuerEntity.uuid, { authToken: 'updated auth token' });
+    //   });
+
+    //   it('catches, logs and re-throws errors updating the issuer authToken', async () => {
+    //     const mockService = jest.fn();
+    //     const mockCredentialDataService = {
+    //       create: jest.fn()
+    //     };
+    //     const mockIssuerDataService = {
+    //       patch: jest.fn()
+    //     };
+
+    //     mockService
+    //       .mockReturnValueOnce(mockCredentialDataService)
+    //       .mockReturnValueOnce(mockIssuerDataService);
+
+    //     mockIssueCredentials.mockResolvedValueOnce({
+    //       ...dummyCredentialDto,
+    //       authToken: 'updated auth token'
+    //     });
+
+    //     const did = `did:unum:${v4()}`;
+
+    //     const ctx = {
+    //       data: { did },
+    //       id: dummyUser.uuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
+    //       app: {
+    //         service: mockService
+    //       }
+    //     } as unknown as HookContext;
+
+    //     const err = new Error('IssuerDataService error');
+    //     mockIssuerDataService.patch.mockRejectedValueOnce(err);
+
+    //     try {
+    //       await issueAuthCredential(ctx);
+    //     } catch (e) {
+    //       expect(logger.error).toBeCalledWith(
+    //         'issueAuthCredential hook caught an error thrown by issuerDataService.patch',
+    //         err
+    //       );
+    //       expect(e).toEqual(err);
+    //     }
+    //   });
+    // });
+
+    // describe('issueAuthCredential', () => {
+    //   it('runs as the second after patch hook', () => {
+    //     expect(hooks.after.patch[1]).toBe(issueAuthAndKYCCredentials);
+    //   });
+
+    //   it('throws if the defaultIssuerEntity param has not been set', async () => {
+    //     const did = `did:unum:${v4()}`;
+    //     const ctx = {
+    //       data: { did },
+    //       result: dummyUser,
+    //       id: dummyUser.uuid,
+    //       params: { headers: { version: '3.0.0' } }
+    //     } as unknown as HookContext;
+
+    //     try {
+    //       await issueAuthCredential(ctx);
+    //       fail();
+    //     } catch (e) {
+    //       console.log(e);
+    //       expect(e).toBeInstanceOf(GeneralError);
+    //     }
+    //   });
+
+    //   it('exits early if the did is not being updated', async () => {
+    //     const ctx = {
+    //       data: { email: 'test@unumid.org' },
+    //       id: dummyUser.uuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } }
+    //     } as unknown as HookContext;
+
+    //     await issueAuthCredential(ctx);
+    //     expect(mockIssueCredential).not.toBeCalled();
+    //   });
+
+    //   it('issues a DemoAuthCredential', async () => {
+    //     const mockService = jest.fn();
+    //     const mockCredentialDataService = {
+    //       create: jest.fn()
+    //     };
+    //     const mockIssuerDataService = {
+    //       patch: jest.fn()
+    //     };
+
+    //     mockService
+    //       .mockReturnValueOnce(mockCredentialDataService)
+    //       .mockReturnValueOnce(mockIssuerDataService);
+
+    //     mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+    //     const did = `did:unum:${v4()}`;
+    //     const ctx = {
+    //       data: { did },
+    //       id: dummyUser.uuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
+    //       app: {
+    //         service: mockService
+    //       }
+    //     } as unknown as HookContext;
+
+    //     await issueAuthCredential(ctx);
+
+    //     expect(mockIssueCredential).toBeCalled();
+    //     expect(mockIssueCredential).toBeCalledWith(
+    //       formatBearerToken(dummyIssuerEntity.authToken),
+    //       'DemoAuthCredential',
+    //       dummyIssuerEntity.issuerDid,
+    //       buildAuthCredentialSubject(ctx.data.did, ctx.id as string, dummyUser.email),
+    //       dummyIssuerEntity.privateKey
+    //     );
+    //   });
+
+    //   it('stores the issued credential', async () => {
+    //     const mockService = jest.fn();
+    //     const mockCredentialDataService = {
+    //       create: jest.fn()
+    //     };
+    //     const mockIssuerDataService = {
+    //       patch: jest.fn()
+    //     };
+
+    //     mockService
+    //       .mockReturnValueOnce(mockCredentialDataService)
+    //       .mockReturnValueOnce(mockIssuerDataService);
+
+    //     mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+    //     const did = `did:unum:${v4()}`;
+    //     const ctx = {
+    //       data: { did },
+    //       id: dummyUser.uuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
+    //       app: {
+    //         service: mockService
+    //       }
+    //     } as unknown as HookContext;
+
+    //     await issueAuthCredential(ctx);
+    //     expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptions);
+    //   });
+
+    //   it('catches, logs and re-throws errors storing the credential', async () => {
+    //     const mockService = jest.fn();
+    //     const mockCredentialDataService = {
+    //       create: jest.fn()
+    //     };
+    //     const mockIssuerDataService = {
+    //       patch: jest.fn()
+    //     };
+
+    //     mockService
+    //       .mockReturnValueOnce(mockCredentialDataService)
+    //       .mockReturnValueOnce(mockIssuerDataService);
+
+    //     mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+
+    //     const did = `did:unum:${v4()}`;
+
+    //     const ctx = {
+    //       data: { did },
+    //       id: dummyUser.uuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
+    //       app: {
+    //         service: mockService
+    //       }
+    //     } as unknown as HookContext;
+
+    //     const err = new Error('CredentialDataService error');
+    //     mockCredentialDataService.create.mockRejectedValueOnce(err);
+    //     try {
+    //       await issueAuthCredential(ctx);
+    //       fail();
+    //     } catch (e) {
+    //       expect(logger.error).toBeCalledWith(
+    //         'issueAuthCredential hook caught an error thrown by credentialDataService.create',
+    //         err
+    //       );
+    //       expect(e).toEqual(err);
+    //     }
+    //   });
+
+    //   it('updates the issuer authToken if it has been reissued', async () => {
+    //     const mockService = jest.fn();
+    //     const mockCredentialDataService = {
+    //       create: jest.fn()
+    //     };
+    //     const mockIssuerDataService = {
+    //       patch: jest.fn()
+    //     };
+
+    //     mockService
+    //       .mockReturnValueOnce(mockCredentialDataService)
+    //       .mockReturnValueOnce(mockIssuerDataService);
+
+    //     mockIssueCredential.mockResolvedValueOnce({
+    //       ...dummyCredentialDto,
+    //       authToken: 'updated auth token'
+    //     });
+
+    //     const userUuid = v4();
+    //     const did = `did:unum:${v4()}`;
+
+    //     const ctx = {
+    //       data: { did },
+    //       id: userUuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
+    //       app: {
+    //         service: mockService
+    //       }
+    //     } as unknown as HookContext;
+
+    //     await issueAuthCredential(ctx);
+
+    //     expect(mockIssuerDataService.patch).toBeCalledWith(dummyIssuerEntity.uuid, { authToken: 'updated auth token' });
+    //   });
+
+    //   it('catches, logs and re-throws errors updating the issuer authToken', async () => {
+    //     const mockService = jest.fn();
+    //     const mockCredentialDataService = {
+    //       create: jest.fn()
+    //     };
+    //     const mockIssuerDataService = {
+    //       patch: jest.fn()
+    //     };
+
+    //     mockService
+    //       .mockReturnValueOnce(mockCredentialDataService)
+    //       .mockReturnValueOnce(mockIssuerDataService);
+
+    //     mockIssueCredential.mockResolvedValueOnce({
+    //       ...dummyCredentialDto,
+    //       authToken: 'updated auth token'
+    //     });
+
+    //     const did = `did:unum:${v4()}`;
+
+    //     const ctx = {
+    //       data: { did },
+    //       id: dummyUser.uuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
+    //       app: {
+    //         service: mockService
+    //       }
+    //     } as unknown as HookContext;
+
+    //     const err = new Error('IssuerDataService error');
+    //     mockIssuerDataService.patch.mockRejectedValueOnce(err);
+
+    //     try {
+    //       await issueAuthCredential(ctx);
+    //     } catch (e) {
+    //       expect(logger.error).toBeCalledWith(
+    //         'issueAuthCredential hook caught an error thrown by issuerDataService.patch',
+    //         err
+    //       );
+    //       expect(e).toEqual(err);
+    //     }
+    //   });
+    // });
+
+    // describe('issueKYCCredential', () => {
+    //   it('runs as the third after patch hook', () => {
+    //     expect(hooks.after.patch[2]).toBe(issueAuthAndKYCCredentials);
+    //   });
+
+    //   it('throws if the defaultIssuerEntity param has not been set', async () => {
+    //     const did = `did:unum:${v4()}`;
+
+    //     const ctx = {
+    //       data: { did },
+    //       id: dummyUser.uuid,
+    //       result: dummyUser,
+    //       params: { headers: { version: '3.0.0' } }
+    //     } as unknown as HookContext;
+
+    //     try {
+    //       await issueKYCCredential(ctx);
+    //       fail();
+    //     } catch (e) {
+    //       console.log(e);
+    //       expect(e).toBeInstanceOf(GeneralError);
+    //     }
+    //   });
+
+    //   it('exits early if the did is not being updated', async () => {
+    //     const email = 'test@unum.id';
+
+    //     const ctx = {
+    //       data: { email },
+    //       id: dummyUser.uuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } }
+    //     } as unknown as HookContext;
+
+    //     await issueKYCCredential(ctx);
+    //     expect(mockIssueCredential).not.toBeCalled();
+    //   });
+
+    //   it('issues a KYCCredential', async () => {
+    //     const mockService = jest.fn();
+    //     const mockCredentialDataService = {
+    //       create: jest.fn()
+    //     };
+    //     const mockIssuerDataService = {
+    //       patch: jest.fn()
+    //     };
+
+    //     mockService
+    //       .mockReturnValueOnce(mockCredentialDataService)
+    //       .mockReturnValueOnce(mockIssuerDataService);
+
+    //     mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+    //     const did = `did:unum:${v4()}`;
+
+    //     const ctx = {
+    //       data: { did },
+    //       result: dummyUser,
+    //       id: dummyUser.uuid,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
+    //       app: {
+    //         service: mockService
+    //       }
+    //     } as unknown as HookContext;
+
+    //     await issueKYCCredential(ctx);
+
+    //     expect(mockIssueCredential).toBeCalled();
+    //     expect(mockIssueCredential).toBeCalledWith(
+    //       formatBearerToken(dummyIssuerEntity.authToken),
+    //       'KYCCredential',
+    //       dummyIssuerEntity.issuerDid,
+    //       buildKYCCredentialSubject(ctx.data.did, dummyUser.firstName),
+    //       dummyIssuerEntity.privateKey
+    //     );
+    //   });
+
+    //   it('stores the issued credential', async () => {
+    //     const mockService = jest.fn();
+    //     const mockCredentialDataService = {
+    //       create: jest.fn()
+    //     };
+    //     const mockIssuerDataService = {
+    //       patch: jest.fn()
+    //     };
+
+    //     mockService
+    //       .mockReturnValueOnce(mockCredentialDataService)
+    //       .mockReturnValueOnce(mockIssuerDataService);
+
+    //     mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+    //     const did = `did:unum:${v4()}`;
+    //     const ctx = {
+    //       data: { did },
+    //       id: dummyUser.uuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
+    //       app: {
+    //         service: mockService
+    //       }
+    //     } as unknown as HookContext;
+
+    //     await issueKYCCredential(ctx);
+    //     expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptions);
+    //   });
+
+    //   it('catches, logs and re-throws errors storing the credential', async () => {
+    //     const mockService = jest.fn();
+    //     const mockCredentialDataService = {
+    //       create: jest.fn()
+    //     };
+    //     const mockIssuerDataService = {
+    //       patch: jest.fn()
+    //     };
+
+    //     mockService
+    //       .mockReturnValueOnce(mockCredentialDataService)
+    //       .mockReturnValueOnce(mockIssuerDataService);
+
+    //     mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
+    //     const did = `did:unum:${v4()}`;
+
+    //     const ctx = {
+    //       data: { did },
+    //       id: dummyUser.uuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
+    //       app: {
+    //         service: mockService
+    //       }
+    //     } as unknown as HookContext;
+
+    //     const err = new Error('CredentialDataService error');
+    //     mockCredentialDataService.create.mockRejectedValueOnce(err);
+    //     try {
+    //       await issueKYCCredential(ctx);
+    //       fail();
+    //     } catch (e) {
+    //       expect(logger.error).toBeCalledWith(
+    //         'issueKYCCredential hook caught an error thrown by credentialDataService.create',
+    //         err
+    //       );
+    //       expect(e).toEqual(err);
+    //     }
+    //   });
+
+    //   it('updates the issuer authToken if it has been reissued', async () => {
+    //     const mockService = jest.fn();
+    //     const mockCredentialDataService = {
+    //       create: jest.fn()
+    //     };
+    //     const mockIssuerDataService = {
+    //       patch: jest.fn()
+    //     };
+
+    //     mockService
+    //       .mockReturnValueOnce(mockCredentialDataService)
+    //       .mockReturnValueOnce(mockIssuerDataService);
+
+    //     mockIssueCredential.mockResolvedValueOnce({
+    //       ...dummyCredentialDto,
+    //       authToken: 'updated auth token'
+    //     });
+
+    //     const did = `did:unum:${v4()}`;
+
+    //     const ctx = {
+    //       data: { did },
+    //       id: dummyUser.uuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
+    //       app: {
+    //         service: mockService
+    //       }
+    //     } as unknown as HookContext;
+
+    //     await issueKYCCredential(ctx);
+
+    //     expect(mockIssuerDataService.patch).toBeCalledWith(dummyIssuerEntity.uuid, { authToken: 'updated auth token' });
+    //   });
+
+    //   it('catches, logs, and re-throws errors updating the issuer authToken', async () => {
+    //     const mockService = jest.fn();
+    //     const mockCredentialDataService = {
+    //       create: jest.fn()
+    //     };
+    //     const mockIssuerDataService = {
+    //       patch: jest.fn()
+    //     };
+
+    //     mockService
+    //       .mockReturnValueOnce(mockCredentialDataService)
+    //       .mockReturnValueOnce(mockIssuerDataService);
+
+    //     mockIssueCredential.mockResolvedValueOnce({
+    //       ...dummyCredentialDto,
+    //       authToken: 'updated auth token'
+    //     });
+
+    //     const did = `did:unum:${v4()}`;
+
+    //     const ctx = {
+    //       data: { did },
+    //       id: dummyUser.uuid,
+    //       result: dummyUser,
+    //       params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } },
+    //       app: {
+    //         service: mockService
+    //       }
+    //     } as unknown as HookContext;
+
+    //     const err = new Error('IssuerDataService error');
+    //     mockIssuerDataService.patch.mockRejectedValueOnce(err);
+
+    //     try {
+    //       await issueKYCCredential(ctx);
+    //     } catch (e) {
+    //       expect(logger.error).toBeCalledWith(
+    //         'issueKYCCredential hook caught an error thrown by issuerDataService.patch',
+    //         err
+    //       );
+    //       expect(e).toEqual(err);
+    //     }
+    //   });
+    // });
   });
 });

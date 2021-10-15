@@ -130,7 +130,7 @@ export const issueCredentials = async (
 
     return authCredentialResponse as UnumDto<CredentialPb[]>;
   } catch (e) {
-    logger.error('issueCredential caught an error thrown by the server sdk', e);
+    logger.error('issueCredentials caught an error thrown by the server sdk', e);
     throw e;
   }
 };
