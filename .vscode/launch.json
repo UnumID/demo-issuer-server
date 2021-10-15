@@ -24,6 +24,13 @@
             "request": "launch",
             "command": "yarn dev",
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "node-terminal",
+            "name": "Debug Tests",
+            "request": "launch",
+            "command": "yarn jest test/services/api/user/user.hooks.test.ts -t 'updates the issuer authToken if it has been reissued'",
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

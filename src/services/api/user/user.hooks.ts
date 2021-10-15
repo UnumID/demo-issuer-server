@@ -114,14 +114,14 @@ export const issueCredentials = async (
   issuerEntity: IssuerEntity,
   credentialSubject: string,
   credentialDataList: CredentialData[],
-  credentialType: string[]
+  credentialTypes: string[]
 ): Promise<UnumDto<CredentialPb[]>> => {
   let authCredentialResponse;
 
   try {
     authCredentialResponse = await sdkIssueCredentials(
       formatBearerToken(issuerEntity.authToken),
-      credentialType,
+      credentialTypes,
       issuerEntity.issuerDid,
       credentialSubject,
       credentialDataList,
@@ -233,7 +233,7 @@ export const issueAuthAndKYCCredentials: UserServiceHook = async (ctx) => {
     try {
       await credentialDataService.create(credentialEntityOptions);
     } catch (e) {
-      logger.error('issueAuthCredential hook caught an error thrown by credentialDataService.create', e);
+      logger.error('issueAuthAndKYCCredentials hook caught an error thrown by credentialDataService.create', e);
       throw e;
     }
   }
@@ -244,7 +244,7 @@ export const issueAuthAndKYCCredentials: UserServiceHook = async (ctx) => {
     try {
       await issuerDataService.patch(defaultIssuerEntity.uuid, { authToken: issuerDto.authToken });
     } catch (e) {
-      logger.error('issueAuthCredential hook caught an error thrown by issuerDataService.patch', e);
+      logger.error('issueAuthAndKYCCredentials hook caught an error thrown by issuerDataService.patch', e);
       throw e;
     }
   }
