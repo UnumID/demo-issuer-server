@@ -160,7 +160,6 @@ describe('user api service hooks version 3.0.0', () => {
         await issueCredentials(dummyIssuerEntity, did, credentialSubjects);
         expect(mockIssueCredentials).toBeCalledWith(
           formatBearerToken(dummyIssuerEntity.authToken),
-          credentialTypes,
           dummyIssuerEntity.issuerDid,
           did,
           credentialSubjects,
