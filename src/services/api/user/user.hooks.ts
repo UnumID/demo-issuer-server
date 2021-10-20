@@ -113,15 +113,21 @@ export const issueCredential = async (
 export const issueCredentials = async (
   issuerEntity: IssuerEntity,
   credentialSubject: string,
-  credentialDataList: CredentialData[],
-  credentialTypes: string[]
+  credentialDataList: CredentialData[]
+  // credentialTypes: string[]
 ): Promise<UnumDto<CredentialPb[]>> => {
   let authCredentialResponse;
 
   try {
+    // authCredentialResponse = await sdkIssueCredentials(
+    //   formatBearerToken(issuerEntity.authToken),
+    //   issuerEntity.issuerDid,
+    //   credentialSubject,
+    //   credentialDataList,
+    //   issuerEntity.privateKey
+    // );
     authCredentialResponse = await sdkIssueCredentials(
       formatBearerToken(issuerEntity.authToken),
-      credentialTypes,
       issuerEntity.issuerDid,
       credentialSubject,
       credentialDataList,
@@ -220,9 +226,16 @@ export const issueAuthAndKYCCredentials: UserServiceHook = async (ctx) => {
   }
 
   // issue a DemoAuthCredential & KYCCredential using the server sdk
-  const authCredentialSubject = buildAuthCredentialSubject(did, id as string, result.email);
-  const KYCCredentialSubject = buildKYCCredentialSubject(did, result.firstName as string || 'Richard');
-  const issuerDto: UnumDto<CredentialPb[]> = await issueCredentials(defaultIssuerEntity, did, [authCredentialSubject, KYCCredentialSubject], ['DemoAuthCredential', 'KYCCredential']);
+  const authCredentialSubject = {
+    ...buildAuthCredentialSubject(did, id as string, result.email),
+    type: 'DemoAuthCredential'
+  };
+  const KYCCredentialSubject = {
+    ...buildKYCCredentialSubject(did, result.firstName as string || 'Richard'),
+    type: 'KYCCredential'
+  };
+  // const issuerDto: UnumDto<CredentialPb[]> = await issueCredentials(defaultIssuerEntity, did, [authCredentialSubject, KYCCredentialSubject], ['DemoAuthCredential', 'KYCCredential']);
+  const issuerDto: UnumDto<CredentialPb[]> = await issueCredentials(defaultIssuerEntity, did, [authCredentialSubject, KYCCredentialSubject]);
 
   // store the issued credentials
   const credentialDataService = ctx.app.service('credentialData') as MikroOrmService<CredentialEntity>;
