@@ -114,18 +114,10 @@ export const issueCredentials = async (
   issuerEntity: IssuerEntity,
   credentialSubject: string,
   credentialDataList: CredentialData[]
-  // credentialTypes: string[]
 ): Promise<UnumDto<CredentialPb[]>> => {
   let authCredentialResponse;
 
   try {
-    // authCredentialResponse = await sdkIssueCredentials(
-    //   formatBearerToken(issuerEntity.authToken),
-    //   issuerEntity.issuerDid,
-    //   credentialSubject,
-    //   credentialDataList,
-    //   issuerEntity.privateKey
-    // );
     authCredentialResponse = await sdkIssueCredentials(
       formatBearerToken(issuerEntity.authToken),
       issuerEntity.issuerDid,
@@ -234,7 +226,7 @@ export const issueAuthAndKYCCredentials: UserServiceHook = async (ctx) => {
     ...buildKYCCredentialSubject(did, result.firstName as string || 'Richard'),
     type: 'KYCCredential'
   };
-  // const issuerDto: UnumDto<CredentialPb[]> = await issueCredentials(defaultIssuerEntity, did, [authCredentialSubject, KYCCredentialSubject], ['DemoAuthCredential', 'KYCCredential']);
+
   const issuerDto: UnumDto<CredentialPb[]> = await issueCredentials(defaultIssuerEntity, did, [authCredentialSubject, KYCCredentialSubject]);
 
   // store the issued credentials
