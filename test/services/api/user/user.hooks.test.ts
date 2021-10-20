@@ -146,15 +146,20 @@ describe('user api service hooks version 3.0.0', () => {
       const userUuid = v4();
       const credentialTypes = ['DemoAuthCredential', 'KYCCredential'];
       const userEmail = 'test@unum.id';
-      const credentialSubject1 = buildAuthCredentialSubject(did, userUuid, userEmail);
-      const credentialSubject2 = buildKYCCredentialSubject(did, userUuid);
+      const credentialSubject1 = {
+        ...buildAuthCredentialSubject(did, userUuid, userEmail),
+        type: 'DemoAuthCredential'
+      };
+      const credentialSubject2 = {
+        ...buildKYCCredentialSubject(did, userUuid),
+        type: 'KYCCredential'
+      };
       const credentialSubjects = [credentialSubject1, credentialSubject2];
 
       it('issues a credentials using the server sdk', async () => {
-        await issueCredentials(dummyIssuerEntity, did, credentialSubjects, credentialTypes);
+        await issueCredentials(dummyIssuerEntity, did, credentialSubjects);
         expect(mockIssueCredentials).toBeCalledWith(
           formatBearerToken(dummyIssuerEntity.authToken),
-          credentialTypes,
           dummyIssuerEntity.issuerDid,
           did,
           credentialSubjects,
@@ -164,7 +169,7 @@ describe('user api service hooks version 3.0.0', () => {
 
       it('returns the credentials response from the sdk', async () => {
         mockIssueCredentials.mockResolvedValueOnce(dummyCredentialsDto);
-        const received = await issueCredentials(dummyIssuerEntity, did, credentialSubjects, credentialTypes);
+        const received = await issueCredentials(dummyIssuerEntity, did, credentialSubjects);
         expect(received).toEqual(dummyCredentialsDto);
       });
 
@@ -173,7 +178,7 @@ describe('user api service hooks version 3.0.0', () => {
         mockIssueCredentials.mockRejectedValueOnce(err);
 
         try {
-          await issueCredentials(dummyIssuerEntity, did, credentialSubjects, credentialTypes);
+          await issueCredentials(dummyIssuerEntity, did, credentialSubjects);
           fail();
         } catch (e) {
           expect(logger.error).toBeCalledWith('issueCredentials caught an error thrown by the server sdk', err);
