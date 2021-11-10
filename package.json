@@ -56,7 +56,7 @@
     "@mikro-orm/core": "^4.4.2",
     "@mikro-orm/postgresql": "^4.4.2",
     "@mikro-orm/reflection": "^4.4.2",
-    "@unumid/server-sdk": "git+ssh://git@github.com/UnumID/server-sdk-typescript.git#url",
+    "@unumid/server-sdk": "git+ssh://git@github.com/UnumID/server-sdk-typescript.git#3.9.0",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
