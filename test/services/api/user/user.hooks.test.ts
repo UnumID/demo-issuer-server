@@ -17,7 +17,8 @@ import {
   formatBearerToken,
   issueAuthAndKYCAndEmailCredentials,
   issueCredentials,
-  convertCredentialToCredentialEntityOptions
+  convertCredentialToCredentialEntityOptions,
+  buildEmailCredentialSubject
 } from '../../../../src/services/api/user/user.hooks';
 import {
   dummyCredentialDto,
@@ -105,6 +106,20 @@ describe('user api service hooks version 3.0.0', () => {
       });
     });
 
+    describe('buildEmailCredentialSubject', () => {
+      it('builds the CredentialSubject for a EmailCredential with the provided did and email', () => {
+        const did = `did:unum:${v4}`;
+        const email = 'test@unum.id';
+        const emailCredential = buildEmailCredentialSubject(did, email);
+        const expected = {
+          type: 'EmailCredential',
+          id: did,
+          email
+        };
+        expect(emailCredential).toEqual(expected);
+      });
+    });
+
     describe('issueCredential', () => {
       const did = `did:unum:${v4}`;
       const userUuid = v4();
@@ -146,7 +161,7 @@ describe('user api service hooks version 3.0.0', () => {
     describe('issueCredentials', () => {
       const did = `did:unum:${v4}`;
       const userUuid = v4();
-      const credentialTypes = ['DemoAuthCredential', 'KYCCredential'];
+      const credentialTypes = ['DemoAuthCredential', 'EmailCredential', 'KYCCredential'];
       const userEmail = 'test@unum.id';
       const credentialSubject1 = {
         ...buildAuthCredentialSubject(did, userUuid, userEmail),
@@ -156,7 +171,9 @@ describe('user api service hooks version 3.0.0', () => {
         ...buildKYCCredentialSubject(did, userUuid),
         type: 'KYCCredential'
       };
-      const credentialSubjects = [credentialSubject1, credentialSubject2];
+      const credentialSubject3 = buildEmailCredentialSubject(did, userEmail);
+
+      const credentialSubjects = [credentialSubject1, credentialSubject2, credentialSubject3];
 
       it('issues a credentials using the server sdk', async () => {
         await issueCredentials(dummyIssuerEntity, did, credentialSubjects);
