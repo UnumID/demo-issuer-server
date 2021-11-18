@@ -15,9 +15,10 @@ import {
   issueAuthCredential,
   issueKYCCredential,
   formatBearerToken,
-  issueAuthAndKYCCredentials,
+  issueAuthAndKYCAndEmailCredentials,
   issueCredentials,
-  convertCredentialToCredentialEntityOptions
+  convertCredentialToCredentialEntityOptions,
+  buildEmailCredentialSubject
 } from '../../../../src/services/api/user/user.hooks';
 import {
   dummyCredentialDto,
@@ -56,6 +57,7 @@ describe('user api service hooks version 3.0.0', () => {
         const userEmail = 'test@unum.id';
         const authCredential = buildAuthCredentialSubject(did, userUuid, userEmail);
         const expected = {
+          type: 'DemoAuthCredential',
           id: did,
           userUuid,
           userEmail,
@@ -71,6 +73,7 @@ describe('user api service hooks version 3.0.0', () => {
         const firstName = 'Gizmo';
         const kycCredential = buildKYCCredentialSubject(did, firstName);
         const expected = {
+          type: 'KYCCredential',
           id: did,
           firstName,
           lastName: 'Hendricks',
@@ -100,6 +103,20 @@ describe('user api service hooks version 3.0.0', () => {
           confidence: '99%'
         };
         expect(kycCredential).toEqual(expected);
+      });
+    });
+
+    describe('buildEmailCredentialSubject', () => {
+      it('builds the CredentialSubject for a EmailCredential with the provided did and email', () => {
+        const did = `did:unum:${v4}`;
+        const email = 'test@unum.id';
+        const emailCredential = buildEmailCredentialSubject(did, email);
+        const expected = {
+          type: 'EmailCredential',
+          id: did,
+          email
+        };
+        expect(emailCredential).toEqual(expected);
       });
     });
 
@@ -144,7 +161,7 @@ describe('user api service hooks version 3.0.0', () => {
     describe('issueCredentials', () => {
       const did = `did:unum:${v4}`;
       const userUuid = v4();
-      const credentialTypes = ['DemoAuthCredential', 'KYCCredential'];
+      const credentialTypes = ['DemoAuthCredential', 'EmailCredential', 'KYCCredential'];
       const userEmail = 'test@unum.id';
       const credentialSubject1 = {
         ...buildAuthCredentialSubject(did, userUuid, userEmail),
@@ -154,7 +171,9 @@ describe('user api service hooks version 3.0.0', () => {
         ...buildKYCCredentialSubject(did, userUuid),
         type: 'KYCCredential'
       };
-      const credentialSubjects = [credentialSubject1, credentialSubject2];
+      const credentialSubject3 = buildEmailCredentialSubject(did, userEmail);
+
+      const credentialSubjects = [credentialSubject1, credentialSubject2, credentialSubject3];
 
       it('issues a credentials using the server sdk', async () => {
         await issueCredentials(dummyIssuerEntity, did, credentialSubjects);
@@ -279,7 +298,7 @@ describe('user api service hooks version 3.0.0', () => {
 
     describe('issueAuthAndKYCCredential', () => {
       it('runs as the second after patch hook', () => {
-        expect(hooks.after.patch[1]).toBe(issueAuthAndKYCCredentials);
+        expect(hooks.after.patch[1]).toBe(issueAuthAndKYCAndEmailCredentials);
       });
 
       it('throws if the defaultIssuerEntity param has not been set', async () => {
@@ -292,7 +311,7 @@ describe('user api service hooks version 3.0.0', () => {
         } as unknown as HookContext;
 
         try {
-          await issueAuthAndKYCCredentials(ctx);
+          await issueAuthAndKYCAndEmailCredentials(ctx);
           fail();
         } catch (e) {
           console.log(e);
@@ -308,7 +327,7 @@ describe('user api service hooks version 3.0.0', () => {
           params: { defaultIssuerEntity: dummyIssuerEntity, headers: { version: '3.0.0' } }
         } as unknown as HookContext;
 
-        await issueAuthAndKYCCredentials(ctx);
+        await issueAuthAndKYCAndEmailCredentials(ctx);
         expect(mockIssueCredentials).not.toBeCalled();
       });
 
@@ -338,7 +357,7 @@ describe('user api service hooks version 3.0.0', () => {
       //     }
       //   } as unknown as HookContext;
 
-      //   await issueAuthAndKYCCredentials(ctx);
+      //   await issueAuthAndKYCAndEmailCredentials(ctx);
 
       //   const credentialTypes = ['DemoAuthCredential', 'KYCCredential'];
       //   const userUuid = v4();
@@ -383,7 +402,7 @@ describe('user api service hooks version 3.0.0', () => {
       //     }
       //   } as unknown as HookContext;
 
-      //   await issueAuthAndKYCCredentials(ctx);
+      //   await issueAuthAndKYCAndEmailCredentials(ctx);
       //   expect(mockCredentialDataService.create).toBeCalledWith(dummyCredentialEntityOptions);
       // });
 
@@ -459,7 +478,7 @@ describe('user api service hooks version 3.0.0', () => {
       //     }
       //   } as unknown as HookContext;
 
-      //   await issueAuthAndKYCCredentials(ctx);
+      //   await issueAuthAndKYCAndEmailCredentials(ctx);
 
       //   expect(mockIssuerDataService.patch).toBeCalledWith(dummyIssuerEntity.uuid, { authToken: 'updated auth token' });
       // });
@@ -498,10 +517,10 @@ describe('user api service hooks version 3.0.0', () => {
         mockIssuerDataService.patch.mockRejectedValueOnce(err);
 
         try {
-          await issueAuthAndKYCCredentials(ctx);
+          await issueAuthAndKYCAndEmailCredentials(ctx);
         } catch (e) {
           expect(logger.error).toBeCalledWith(
-            'issueAuthAndKYCCredentials hook caught an error thrown by issuerDataService.patch',
+            'issueAuthAndKYCAndEmailCredentials hook caught an error thrown by issuerDataService.patch',
             err
           );
           expect(e).toEqual(err);
@@ -511,7 +530,7 @@ describe('user api service hooks version 3.0.0', () => {
 
     describe('issueAuthCredential', () => {
       // it('runs as the second after patch hook', () => {
-      //   // expect(hooks.after.patch[1]).toBe(issueAuthAndKYCCredentials);
+      //   // expect(hooks.after.patch[1]).toBe(issueAuthAndKYCAndEmailCredentials);
       //   expect(hooks.after.patch[1]).toBe(issueAuthCredential);
       // });
 
@@ -735,7 +754,7 @@ describe('user api service hooks version 3.0.0', () => {
 
     describe('issueKYCCredential', () => {
       // it('runs as the third after patch hook', () => {
-      //   // expect(hooks.after.patch[1]).toBe(issueAuthAndKYCCredentials);
+      //   // expect(hooks.after.patch[1]).toBe(issueAuthAndKYCAndEmailCredentials);
       //   expect(hooks.after.patch[2]).toBe(issueKYCCredential);
       // });
 
