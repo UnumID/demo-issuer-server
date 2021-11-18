@@ -10,13 +10,20 @@ import logger from '../../../logger';
 import { IssuerEntity } from '../../../entities/Issuer';
 import { CredentialStatus } from '@unumid/types/build/protos/credential';
 
+interface EmailCredentialSubject extends CredentialSubject {
+  type: 'EmailCredential'
+  email: string;
+}
+
 interface AuthCredentialSubject extends CredentialSubject {
+  type: 'DemoAuthCredential'
   isAuthorized: true;
   userUuid: string;
   userEmail: string;
 }
 
 interface KYCCredentialSubject extends CredentialSubject {
+  type: 'KYCCredential',
   firstName: string;
   lastName: string;
   ssn4: number;
@@ -48,13 +55,21 @@ interface KYCCredentialSubject extends CredentialSubject {
 type UserServiceHook = Hook<User>;
 
 export const buildAuthCredentialSubject = (did: string, userUuid: string, userEmail: string): AuthCredentialSubject => ({
+  type: 'DemoAuthCredential',
   id: did,
   isAuthorized: true,
   userUuid,
   userEmail
 });
 
+export const buildEmailCredentialSubject = (did: string, userEmail: string): EmailCredentialSubject => ({
+  type: 'EmailCredential',
+  id: did,
+  email: userEmail
+});
+
 export const buildKYCCredentialSubject = (did: string, firstName: string): KYCCredentialSubject => ({
+  type: 'KYCCredential',
   id: did,
   firstName,
   lastName: 'Hendricks',
@@ -199,7 +214,7 @@ export const getDefaultIssuerEntity: UserServiceHook = async (ctx) => {
   }
 };
 
-export const issueAuthAndKYCCredentials: UserServiceHook = async (ctx) => {
+export const issueAuthAndKYCAndEmailCredentials: UserServiceHook = async (ctx) => {
   const { id, data, result, params } = ctx;
   const defaultIssuerEntity = params.defaultIssuerEntity as IssuerEntity;
 
@@ -218,16 +233,20 @@ export const issueAuthAndKYCCredentials: UserServiceHook = async (ctx) => {
   }
 
   // issue a DemoAuthCredential & KYCCredential using the server sdk
-  const authCredentialSubject = {
+  const authCredentialSubject: AuthCredentialSubject = {
     ...buildAuthCredentialSubject(did, id as string, result.email),
     type: 'DemoAuthCredential'
   };
-  const KYCCredentialSubject = {
+  const emailCredentialSubject: EmailCredentialSubject = {
+    ...buildEmailCredentialSubject(did, result.email),
+    type: 'EmailCredential'
+  };
+  const KYCCredentialSubject: KYCCredentialSubject = {
     ...buildKYCCredentialSubject(did, result.firstName as string || 'Richard'),
     type: 'KYCCredential'
   };
 
-  const issuerDto: UnumDto<CredentialPb[]> = await issueCredentials(defaultIssuerEntity, did, [authCredentialSubject, KYCCredentialSubject]);
+  const issuerDto: UnumDto<CredentialPb[]> = await issueCredentials(defaultIssuerEntity, did, [authCredentialSubject, emailCredentialSubject, KYCCredentialSubject]);
 
   // store the issued credentials
   const credentialDataService = ctx.app.service('credentialData') as MikroOrmService<CredentialEntity>;
@@ -238,7 +257,7 @@ export const issueAuthAndKYCCredentials: UserServiceHook = async (ctx) => {
     try {
       await credentialDataService.create(credentialEntityOptions);
     } catch (e) {
-      logger.error('issueAuthAndKYCCredentials hook caught an error thrown by credentialDataService.create', e);
+      logger.error('issueAuthAndKYCAndEmailCredentials hook caught an error thrown by credentialDataService.create', e);
       throw e;
     }
   }
@@ -249,7 +268,7 @@ export const issueAuthAndKYCCredentials: UserServiceHook = async (ctx) => {
     try {
       await issuerDataService.patch(defaultIssuerEntity.uuid, { authToken: issuerDto.authToken });
     } catch (e) {
-      logger.error('issueAuthAndKYCCredentials hook caught an error thrown by issuerDataService.patch', e);
+      logger.error('issueAuthAndKYCAndEmailCredentials hook caught an error thrown by issuerDataService.patch', e);
       throw e;
     }
   }
@@ -369,6 +388,6 @@ export const hooks = {
   },
   after: {
     // patch: [getDefaultIssuerEntity, issueAuthCredential, issueKYCCredential]
-    patch: [getDefaultIssuerEntity, issueAuthAndKYCCredentials]
+    patch: [getDefaultIssuerEntity, issueAuthAndKYCAndEmailCredentials]
   }
 };
