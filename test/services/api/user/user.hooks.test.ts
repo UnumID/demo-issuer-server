@@ -56,6 +56,7 @@ describe('user api service hooks version 3.0.0', () => {
         const userEmail = 'test@unum.id';
         const authCredential = buildAuthCredentialSubject(did, userUuid, userEmail);
         const expected = {
+          type: 'DemoAuthCredential',
           id: did,
           userUuid,
           userEmail,
@@ -71,6 +72,7 @@ describe('user api service hooks version 3.0.0', () => {
         const firstName = 'Gizmo';
         const kycCredential = buildKYCCredentialSubject(did, firstName);
         const expected = {
+          type: 'KYCCredential',
           id: did,
           firstName,
           lastName: 'Hendricks',
