@@ -7,19 +7,16 @@ import logger from '../../../../src/logger';
 
 import {
   hooks,
-  buildAuthCredentialSubject,
-  buildKYCCredentialSubject,
   issueCredential,
   convertUnumDtoToCredentialEntityOptions,
   getDefaultIssuerEntity,
   issueAuthCredential,
   issueKYCCredential,
-  formatBearerToken,
-  issueAuthAndKYCAndEmailCredentials,
-  issueCredentials,
-  convertCredentialToCredentialEntityOptions,
-  buildEmailCredentialSubject
+  issueAuthAndKYCAndEmailCredentials
 } from '../../../../src/services/api/user/user.hooks';
+import { convertCredentialToCredentialEntityOptions } from '../../../../src/utils/converters';
+import { buildAuthCredentialSubject, buildEmailCredentialSubject, buildKYCCredentialSubject, issueCredentialsHelper } from '../../../../src/utils/credentials';
+import { formatBearerToken } from '../../../../src/utils/formatBearerToken';
 import {
   dummyCredentialDto,
   dummyCredentialEntityOptions,
@@ -176,7 +173,7 @@ describe('user api service hooks version 3.0.0', () => {
       const credentialSubjects = [credentialSubject1, credentialSubject2, credentialSubject3];
 
       it('issues a credentials using the server sdk', async () => {
-        await issueCredentials(dummyIssuerEntity, did, credentialSubjects);
+        await issueCredentialsHelper(dummyIssuerEntity, did, credentialSubjects);
         expect(mockIssueCredentials).toBeCalledWith(
           formatBearerToken(dummyIssuerEntity.authToken),
           dummyIssuerEntity.issuerDid,
@@ -188,7 +185,7 @@ describe('user api service hooks version 3.0.0', () => {
 
       it('returns the credentials response from the sdk', async () => {
         mockIssueCredentials.mockResolvedValueOnce(dummyCredentialsDto);
-        const received = await issueCredentials(dummyIssuerEntity, did, credentialSubjects);
+        const received = await issueCredentialsHelper(dummyIssuerEntity, did, credentialSubjects);
         expect(received).toEqual(dummyCredentialsDto);
       });
 
@@ -197,7 +194,7 @@ describe('user api service hooks version 3.0.0', () => {
         mockIssueCredentials.mockRejectedValueOnce(err);
 
         try {
-          await issueCredentials(dummyIssuerEntity, did, credentialSubjects);
+          await issueCredentialsHelper(dummyIssuerEntity, did, credentialSubjects);
           fail();
         } catch (e) {
           expect(logger.error).toBeCalledWith('issueCredentials caught an error thrown by the server sdk', err);
