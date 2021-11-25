@@ -1,10 +1,9 @@
-import { NullableId, Params } from '@feathersjs/feathers';
+import { Params } from '@feathersjs/feathers';
 
 import { Application } from '../../../declarations';
-import { CredentialEntity } from '../../../entities/Credential';
 import logger from '../../../logger';
 import { CredentialPb, SubjectCredentialRequest } from '@unumid/types';
-import { SubjectCredentialRequestVerifiedStatus, UnumDto, VerifiedStatus, verifySubjectCredentialRequests } from '@unumid/server-sdk';
+import { SubjectCredentialRequestVerifiedStatus, UnumDto, verifySubjectCredentialRequests } from '@unumid/server-sdk';
 import { IssuerEntity } from '../../../entities/Issuer';
 import { User } from '../../../entities/User';
 import { buildAuthCredentialSubject, buildEmailCredentialSubject, buildKYCCredentialSubject, issueCredentialsHelper, ValidCredentialTypes } from '../../../utils/credentials';

@@ -1,14 +1,7 @@
-import { BadRequest, GeneralError } from '@feathersjs/errors';
 import { Hook } from '@feathersjs/feathers';
-import { convertCredentialSubject, issueCredential as sdkIssueCredential, UnumDto, issueCredentials as sdkIssueCredentials } from '@unumid/server-sdk';
-import { CredentialData, CredentialPb, CredentialSubject, ProofPb } from '@unumid/types';
-import { Service as MikroOrmService } from 'feathers-mikro-orm';
 
-import { User } from '../../../entities/User';
-import { CredentialEntity, CredentialEntityOptions } from '../../../entities/Credential';
 import logger from '../../../logger';
 import { IssuerEntity } from '../../../entities/Issuer';
-import { CredentialStatus } from '@unumid/types/build/protos/credential';
 
 export const getDefaultIssuerEntity: Hook = async (ctx) => {
   const issuerDataService = ctx.app.service('issuerData');
