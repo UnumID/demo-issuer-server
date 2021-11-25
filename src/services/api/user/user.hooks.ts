@@ -9,98 +9,103 @@ import { CredentialEntity, CredentialEntityOptions } from '../../../entities/Cre
 import logger from '../../../logger';
 import { IssuerEntity } from '../../../entities/Issuer';
 import { CredentialStatus } from '@unumid/types/build/protos/credential';
-
-interface EmailCredentialSubject extends CredentialSubject {
-  type: 'EmailCredential'
-  email: string;
-}
-
-interface AuthCredentialSubject extends CredentialSubject {
-  type: 'DemoAuthCredential'
-  isAuthorized: true;
-  userUuid: string;
-  userEmail: string;
-}
-
-interface KYCCredentialSubject extends CredentialSubject {
-  type: 'KYCCredential',
-  firstName: string;
-  lastName: string;
-  ssn4: number;
-  contactInformation: {
-    emailAddress: string;
-    phoneNumber: string;
-    homeAddress: {
-      line1: string;
-      city: string;
-      state: string;
-      zip: number;
-      country: string;
-    }
-  },
-  driversLicense: {
-    state: string;
-    number: string;
-    expiration: string;
-  },
-  accounts: {
-    checking: {
-      accountNumber: string;
-      routingNumber: string;
-    }
-  },
-  confidence: string;
-}
+import { AuthCredentialSubject, buildAuthCredentialSubject, buildEmailCredentialSubject, buildKYCCredentialSubject, EmailCredentialSubject, issueCredentialsHelper, KYCCredentialSubject } from '../../../utils/credentials';
+import { formatBearerToken } from '../../../utils/formatBearerToken';
+import { convertCredentialToCredentialEntityOptions } from '../../../utils/converters';
 
 type UserServiceHook = Hook<User>;
 
-export const buildAuthCredentialSubject = (did: string, userUuid: string, userEmail: string): AuthCredentialSubject => ({
-  type: 'DemoAuthCredential',
-  id: did,
-  isAuthorized: true,
-  userUuid,
-  userEmail
-});
+// interface EmailCredentialSubject extends CredentialSubject {
+//   type: 'EmailCredential'
+//   email: string;
+// }
 
-export const buildEmailCredentialSubject = (did: string, userEmail: string): EmailCredentialSubject => ({
-  type: 'EmailCredential',
-  id: did,
-  email: userEmail
-});
+// interface AuthCredentialSubject extends CredentialSubject {
+//   type: 'DemoAuthCredential'
+//   isAuthorized: true;
+//   userUuid: string;
+//   userEmail: string;
+// }
 
-export const buildKYCCredentialSubject = (did: string, firstName: string): KYCCredentialSubject => ({
-  type: 'KYCCredential',
-  id: did,
-  firstName,
-  lastName: 'Hendricks',
-  ssn4: 4321,
-  contactInformation: {
-    emailAddress: 'richard@piedpiper.net',
-    phoneNumber: '1073741824',
-    homeAddress: {
-      line1: '5320 Newell Rd',
-      city: 'Palo Alto',
-      state: 'CA',
-      zip: 94303,
-      country: 'United States'
-    }
-  },
-  driversLicense: {
-    state: 'CA',
-    number: '6383736743891101',
-    expiration: '2026-01-14T00:00:00.000Z'
-  },
-  accounts: {
-    checking: {
-      accountNumber: '543888430912',
-      routingNumber: '021000021'
-    }
-  },
-  confidence: '99%'
-});
+// interface KYCCredentialSubject extends CredentialSubject {
+//   type: 'KYCCredential',
+//   firstName: string;
+//   lastName: string;
+//   ssn4: number;
+//   contactInformation: {
+//     emailAddress: string;
+//     phoneNumber: string;
+//     homeAddress: {
+//       line1: string;
+//       city: string;
+//       state: string;
+//       zip: number;
+//       country: string;
+//     }
+//   },
+//   driversLicense: {
+//     state: string;
+//     number: string;
+//     expiration: string;
+//   },
+//   accounts: {
+//     checking: {
+//       accountNumber: string;
+//       routingNumber: string;
+//     }
+//   },
+//   confidence: string;
+// }
 
-export const formatBearerToken = (token: string): string =>
-  token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+// type UserServiceHook = Hook<User>;
+
+// export const buildAuthCredentialSubject = (did: string, userUuid: string, userEmail: string): AuthCredentialSubject => ({
+//   type: 'DemoAuthCredential',
+//   id: did,
+//   isAuthorized: true,
+//   userUuid,
+//   userEmail
+// });
+
+// export const buildEmailCredentialSubject = (did: string, userEmail: string): EmailCredentialSubject => ({
+//   type: 'EmailCredential',
+//   id: did,
+//   email: userEmail
+// });
+
+// export const buildKYCCredentialSubject = (did: string, firstName: string): KYCCredentialSubject => ({
+//   type: 'KYCCredential',
+//   id: did,
+//   firstName,
+//   lastName: 'Hendricks',
+//   ssn4: 4321,
+//   contactInformation: {
+//     emailAddress: 'richard@piedpiper.net',
+//     phoneNumber: '1073741824',
+//     homeAddress: {
+//       line1: '5320 Newell Rd',
+//       city: 'Palo Alto',
+//       state: 'CA',
+//       zip: 94303,
+//       country: 'United States'
+//     }
+//   },
+//   driversLicense: {
+//     state: 'CA',
+//     number: '6383736743891101',
+//     expiration: '2026-01-14T00:00:00.000Z'
+//   },
+//   accounts: {
+//     checking: {
+//       accountNumber: '543888430912',
+//       routingNumber: '021000021'
+//     }
+//   },
+//   confidence: '99%'
+// });
+
+// export const formatBearerToken = (token: string): string =>
+//   token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
 export const issueCredential = async (
   issuerEntity: IssuerEntity,
@@ -125,28 +130,28 @@ export const issueCredential = async (
   }
 };
 
-export const issueCredentials = async (
-  issuerEntity: IssuerEntity,
-  credentialSubject: string,
-  credentialDataList: CredentialData[]
-): Promise<UnumDto<CredentialPb[]>> => {
-  let authCredentialResponse;
+// export const issueCredentials = async (
+//   issuerEntity: IssuerEntity,
+//   credentialSubject: string,
+//   credentialDataList: CredentialData[]
+// ): Promise<UnumDto<CredentialPb[]>> => {
+//   let authCredentialResponse;
 
-  try {
-    authCredentialResponse = await sdkIssueCredentials(
-      formatBearerToken(issuerEntity.authToken),
-      issuerEntity.issuerDid,
-      credentialSubject,
-      credentialDataList,
-      issuerEntity.privateKey
-    );
+//   try {
+//     authCredentialResponse = await sdkIssueCredentials(
+//       formatBearerToken(issuerEntity.authToken),
+//       issuerEntity.issuerDid,
+//       credentialSubject,
+//       credentialDataList,
+//       issuerEntity.privateKey
+//     );
 
-    return authCredentialResponse as UnumDto<CredentialPb[]>;
-  } catch (e) {
-    logger.error('issueCredentials caught an error thrown by the server sdk', e);
-    throw e;
-  }
-};
+//     return authCredentialResponse as UnumDto<CredentialPb[]>;
+//   } catch (e) {
+//     logger.error('issueCredentials caught an error thrown by the server sdk', e);
+//     throw e;
+//   }
+// };
 
 export const convertUnumDtoToCredentialEntityOptions = (issuerDto: UnumDto<CredentialPb>): CredentialEntityOptions => {
   const proof: ProofPb = {
@@ -171,28 +176,28 @@ export const convertUnumDtoToCredentialEntityOptions = (issuerDto: UnumDto<Crede
   };
 };
 
-export const convertCredentialToCredentialEntityOptions = (credential: CredentialPb): CredentialEntityOptions => {
-  const proof: ProofPb = {
-    ...credential.proof,
-    created: credential.proof?.created,
-    signatureValue: (credential.proof?.signatureValue as string),
-    type: credential.proof?.type as string,
-    verificationMethod: credential.proof?.verificationMethod as string,
-    proofPurpose: credential.proof?.proofPurpose as string
-  };
+// export const convertCredentialToCredentialEntityOptions = (credential: CredentialPb): CredentialEntityOptions => {
+//   const proof: ProofPb = {
+//     ...credential.proof,
+//     created: credential.proof?.created,
+//     signatureValue: (credential.proof?.signatureValue as string),
+//     type: credential.proof?.type as string,
+//     verificationMethod: credential.proof?.verificationMethod as string,
+//     proofPurpose: credential.proof?.proofPurpose as string
+//   };
 
-  return {
-    credentialContext: (credential.context as ['https://www.w3.org/2018/credentials/v1', ...string[]]), // the proto type def can not have constants, but the value is ensured prior to sending to saas for encrypted persistence.
-    credentialId: credential.id,
-    credentialCredentialSubject: convertCredentialSubject(credential.credentialSubject),
-    credentialCredentialStatus: (credential.credentialStatus as CredentialStatus),
-    credentialIssuer: credential.issuer,
-    credentialType: (credential.type as ['VerifiableCredential', ...string[]]), // the proto type def can not have constants, but the value is ensured prior to sending to saas for encrypted persistence.
-    credentialIssuanceDate: credential.issuanceDate as Date,
-    credentialExpirationDate: credential.expirationDate,
-    credentialProof: proof
-  };
-};
+//   return {
+//     credentialContext: (credential.context as ['https://www.w3.org/2018/credentials/v1', ...string[]]), // the proto type def can not have constants, but the value is ensured prior to sending to saas for encrypted persistence.
+//     credentialId: credential.id,
+//     credentialCredentialSubject: convertCredentialSubject(credential.credentialSubject),
+//     credentialCredentialStatus: (credential.credentialStatus as CredentialStatus),
+//     credentialIssuer: credential.issuer,
+//     credentialType: (credential.type as ['VerifiableCredential', ...string[]]), // the proto type def can not have constants, but the value is ensured prior to sending to saas for encrypted persistence.
+//     credentialIssuanceDate: credential.issuanceDate as Date,
+//     credentialExpirationDate: credential.expirationDate,
+//     credentialProof: proof
+//   };
+// };
 
 export const getDefaultIssuerEntity: UserServiceHook = async (ctx) => {
   const issuerDataService = ctx.app.service('issuerData');
@@ -233,25 +238,17 @@ export const issueAuthAndKYCAndEmailCredentials: UserServiceHook = async (ctx) =
   }
 
   // issue a DemoAuthCredential & KYCCredential using the server sdk
-  const authCredentialSubject: AuthCredentialSubject = {
-    ...buildAuthCredentialSubject(did, id as string, result.email),
-    type: 'DemoAuthCredential'
-  };
-  const emailCredentialSubject: EmailCredentialSubject = {
-    ...buildEmailCredentialSubject(did, result.email),
-    type: 'EmailCredential'
-  };
-  const KYCCredentialSubject: KYCCredentialSubject = {
-    ...buildKYCCredentialSubject(did, result.firstName as string || 'Richard'),
-    type: 'KYCCredential'
-  };
+  const authCredentialSubject: AuthCredentialSubject = buildAuthCredentialSubject(did, id as string, result.email);
+  const emailCredentialSubject: EmailCredentialSubject = buildEmailCredentialSubject(did, result.email);
+  const KYCCredentialSubject: KYCCredentialSubject = buildKYCCredentialSubject(did, result.firstName as string || 'Richard');
 
-  const issuerDto: UnumDto<CredentialPb[]> = await issueCredentials(defaultIssuerEntity, did, [authCredentialSubject, emailCredentialSubject, KYCCredentialSubject]);
+  const issuerDto: UnumDto<CredentialPb[]> = await issueCredentialsHelper(defaultIssuerEntity, did, [authCredentialSubject, emailCredentialSubject, KYCCredentialSubject]);
 
   // store the issued credentials
+  const credentials: CredentialPb[] = issuerDto.body;
   const credentialDataService = ctx.app.service('credentialData') as MikroOrmService<CredentialEntity>;
 
-  for (const issuedCredential of issuerDto.body) {
+  for (const issuedCredential of credentials) {
     const credentialEntityOptions = convertCredentialToCredentialEntityOptions(issuedCredential);
 
     try {
@@ -387,7 +384,6 @@ export const hooks = {
     all: [validateRequest]
   },
   after: {
-    // patch: [getDefaultIssuerEntity, issueAuthCredential, issueKYCCredential]
     patch: [getDefaultIssuerEntity, issueAuthAndKYCAndEmailCredentials]
   }
 };
