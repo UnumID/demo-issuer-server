@@ -197,7 +197,7 @@ describe('user api service hooks version 3.0.0', () => {
           await issueCredentialsHelper(dummyIssuerEntity, did, credentialSubjects);
           fail();
         } catch (e) {
-          expect(logger.error).toBeCalledWith('issueCredentials caught an error thrown by the server sdk', err);
+          expect(logger.error).toBeCalledWith(`issueCredentials caught an error thrown by the server sdk. ${e}`);
           expect(e).toEqual(err);
         }
       });
