@@ -6,6 +6,7 @@ import { IssuerEntity } from '../src/entities/Issuer';
 import { User } from '../src/entities/User';
 
 export const dummyCredentialSubject = {
+  type: 'DemoKYCCredential',
   id: 'did:unum:54ca4b1f-fe7e-43ce-a4e4-8ec178f16a65',
   firstName: 'Wile',
   middleInitial: 'E.',

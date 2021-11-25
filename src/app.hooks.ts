@@ -30,7 +30,7 @@ function log (ctx: HookContext): void {
 
 function logResult (ctx: HookContext): HookContext {
   const { path, method, result } = ctx;
-  const string = JSON.stringify(result);
+  const string = result ? JSON.stringify(result) : '';
   const length = 1500; // prevent exceedingly long result log messages.
   const resultString = string.length < length ? string : string.substring(0, length - 3) + '...';
 
