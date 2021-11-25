@@ -16,6 +16,9 @@ export type CredentialsIssuedResponse = {
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface ServiceOptions {}
 
+/**
+ * A class to handle SubjectCredentialRequests and issue credentials accordingly, all verification permitting.
+ */
 export class CredentialRequestService {
   app: Application;
   options: ServiceOptions;
