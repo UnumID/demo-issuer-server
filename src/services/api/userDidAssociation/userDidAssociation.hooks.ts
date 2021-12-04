@@ -23,21 +23,21 @@ export const getDefaultIssuerEntity: Hook = async (ctx) => {
   }
 };
 
-export const validateRequest: Hook = async (ctx) => {
-  const { params } = ctx;
+// export const validateRequest: Hook = async (ctx) => {
+//   const { params } = ctx;
 
-  if (!params.headers?.version) {
-    logger.info('CredentialRequest request made without version');
-  } else {
-    logger.info(`CredentialRequest request made with version ${params.headers?.version}`);
-  }
+//   if (!params.headers?.version) {
+//     logger.info('CredentialRequest request made without version');
+//   } else {
+//     logger.info(`CredentialRequest request made with version ${params.headers?.version}`);
+//   }
 
-  return ctx;
-};
+//   return ctx;
+// };
 
 export const hooks = {
   before: {
-    all: [validateRequest],
+    // all: [validateRequest]
     create: [getDefaultIssuerEntity]
   },
   after: {}
