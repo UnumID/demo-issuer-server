@@ -9,12 +9,12 @@ import credential from './api/credential/credential.service';
 import credentialRequest from './api/credentialRequest/credentialRequest.service';
 import pushToken from './api/pushToken/pushToken.service';
 import pushNotification from './api/pushNotification/pushNotification.service';
-import userDidAssociationService from './api/userDidAssociation/userDidAssociation.service';
+import userDidAssociation from './api/userDidAssociation/userDidAssociation.service';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export default function (app: Application): void {
   app.configure(userData);
-  app.configure(userDidAssociationService);
+  app.configure(userDidAssociation);
   app.configure(issuerData);
   app.configure(credentialData);
   app.configure(credentialRequest);
