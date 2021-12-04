@@ -2,17 +2,10 @@ import { Params } from '@feathersjs/feathers';
 
 import { Application } from '../../../declarations';
 import logger from '../../../logger';
-import { CredentialPb, UserDidAssociation, SubjectCredentialRequest } from '@unumid/types';
-import { SubjectCredentialRequestVerifiedStatus, UnumDto, VerifiedStatus, verifySubjectCredentialRequests, verifySubjectDidDocument } from '@unumid/server-sdk';
+import { UserDidAssociation } from '@unumid/types';
+import { UnumDto, VerifiedStatus, verifySubjectDidDocument } from '@unumid/server-sdk';
 import { IssuerEntity } from '../../../entities/Issuer';
 import { User } from '../../../entities/User';
-import { buildAuthCredentialSubject, buildEmailCredentialSubject, buildKYCCredentialSubject, issueCredentialsHelper, ValidCredentialTypes } from '../../../utils/credentials';
-import { convertCredentialToCredentialEntityOptions } from '../../../utils/converters';
-import { verifyDidDocument } from '@unumid/server-sdk/build/utils/verifyDidDocument';
-
-export type SuccessResponse = {
-  success: boolean
- };
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface ServiceOptions {}
