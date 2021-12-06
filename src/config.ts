@@ -14,6 +14,7 @@ interface Config {
   DB_USER: string;
   DB_PASSWORD: string;
   FIREBASE_CONFIG: Record<string, string>;
+  APP_URL: string;
 }
 
 const {
@@ -30,7 +31,8 @@ const {
   TEST_DB_PORT = '5432',
   TEST_DB_USER = '',
   TEST_DB_PASSWORD = '',
-  FIREBASE_CONFIG = '{}'
+  FIREBASE_CONFIG = '{}',
+  APP_URL = ''
 } = process.env;
 
 const dbConfig = isTestEnv(NODE_ENV)
@@ -54,5 +56,6 @@ export const config: Config = {
   PAPERTRAIL_PORT: parseInt(PAPERTRAIL_PORT, 10),
   LOG_LEVEL,
   FIREBASE_CONFIG: JSON.parse(FIREBASE_CONFIG),
+  APP_URL,
   ...dbConfig
 };
