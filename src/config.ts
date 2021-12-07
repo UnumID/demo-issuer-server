@@ -32,7 +32,7 @@ const {
   TEST_DB_USER = '',
   TEST_DB_PASSWORD = '',
   FIREBASE_CONFIG = '{}',
-  APP_URL = ''
+  APP_URL = 'api.corp.com'
 } = process.env;
 
 const dbConfig = isTestEnv(NODE_ENV)
