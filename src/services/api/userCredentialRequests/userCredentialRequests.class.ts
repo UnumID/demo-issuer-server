@@ -37,9 +37,9 @@ export class UserCredentialRequestsService {
 
     const { user, credentialRequestsInfo: { credentialRequests, issuerDid, subjectDid } } = data;
 
-    // if (issuer.issuerDid !== issuerDid) {
-    //   throw new Error(`Persisted Issuer DID ${issuer.issuerDid} does not match request\'s issuer did ${issuerDid}`);
-    // }
+    if (issuer.issuerDid !== issuerDid) {
+      throw new Error(`Persisted Issuer DID ${issuer.issuerDid} does not match request\'s issuer did ${issuerDid}`);
+    }
 
     const verification: UnumDto<SubjectCredentialRequestVerifiedStatus> = await verifySubjectCredentialRequests(issuer.authToken, issuer.issuerDid, credentialRequests);
 

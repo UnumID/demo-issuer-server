@@ -4,6 +4,7 @@ import logger from '../../../logger';
 import { IssuerEntity } from '../../../entities/Issuer';
 import { User } from '../../../entities/User';
 import { UnumDto, VerifiedStatus, verifySubjectDidDocument } from '@unumid/server-sdk';
+import { SubjectCredentialRequestsEnrichedDto } from '@unumid/types';
 
 export const getDefaultIssuerEntity: Hook = async (ctx) => {
   const issuerDataService = ctx.app.service('issuerData');
@@ -39,13 +40,39 @@ export const validateRequest: Hook = async (ctx) => {
 
 // async function handleUserDidAssociation (data: UserDidAssociation, issuer: IssuerEntity, userDataService: Service<User>, issuerData) {
 export const handleUserDidAssociation: Hook = async (ctx) => {
-  const { app, data, params } = ctx;
-  const { userIdentifier, subjectDidDocument } = data.userDidAssociation;
-  const issuer: IssuerEntity = params?.defaultIssuerEntity;
+  const { app, params } = ctx;
 
-  // need to ensure we have the userId
+  // need to get an existing user either by the userIdentifier or by the subjectDid
   const userDataService = app.service('userData');
   let user: User;
+
+  const issuer: IssuerEntity = params?.defaultIssuerEntity;
+  const data: SubjectCredentialRequestsEnrichedDto = ctx.data;
+
+  // const userDidAssociation = data.userDidAssociation;
+  const { userDidAssociation, credentialRequestsInfo: { subjectDid } } = data;
+
+  if (!userDidAssociation) {
+    logger.debug('No new userDidAssociation in the userCredentialRequests');
+
+    // grabbing user by subjectDid
+    try {
+      user = await userDataService.get(null, { where: { did: subjectDid } }); // will throw exception if not found
+    } catch (e) {
+      logger.warn(`No user found with did ${subjectDid}. This should never happen.`);
+      throw e;
+    }
+
+    return {
+      ...ctx,
+      data: {
+        ...ctx.data,
+        user
+      }
+    };
+  }
+
+  const { userIdentifier, subjectDidDocument } = userDidAssociation;
 
   try {
     user = await userDataService.get(userIdentifier); // will throw exception if not found
