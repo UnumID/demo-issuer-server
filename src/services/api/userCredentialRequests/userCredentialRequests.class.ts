@@ -14,21 +14,16 @@ export type CredentialsIssuedResponse = {
  };
 
 export interface UserCredentialRequests extends SubjectCredentialRequestsEnrichedDto {
-   user: User;
- }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface ServiceOptions {}
+  user: User;
+}
 
 /**
  * A class to handle SubjectCredentialRequests and issue credentials accordingly, all verification permitting.
  */
 export class UserCredentialRequestsService {
   app: Application;
-  options: ServiceOptions;
 
-  constructor (options: ServiceOptions = {}, app: Application) {
-    this.options = options;
+  constructor (app: Application) {
     this.app = app;
   }
 
