@@ -73,50 +73,53 @@ const data = {
   }
 };
 
-// describe('UserCredentialRequestsService', () => {
-//   let service: UserService;
+describe('UserCredentialRequestsService', () => {
+  it('todo', () => {
+    expect(true).toBe(true);
+  });
+  //   let service: UserService;
 
-//   const mockUserDataService = {
-//     get: jest.fn(),
-//     find: jest.fn(),
-//     create: jest.fn(),
-//     patch: jest.fn(),
-//     remove: jest.fn()
-//   };
+  //   const mockUserDataService = {
+  //     get: jest.fn(),
+  //     find: jest.fn(),
+  //     create: jest.fn(),
+  //     patch: jest.fn(),
+  //     remove: jest.fn()
+  //   };
 
-//   beforeEach(async () => {
-//     const app = {
-//       service: () => {
-//         return mockUserDataService;
-//       }
-//     };
+  //   beforeEach(async () => {
+  //     const app = {
+  //       service: () => {
+  //         return mockUserDataService;
+  //       }
+  //     };
 
-//     // service = new UserService({}, app as unknown as Application);
-//   });
+  //     // service = new UserService({}, app as unknown as Application);
+  //   });
 
-//   describe('create', () => {
-//     it('validates options for receipts of type CredentialIssued', () => {
-//       const ctx = { data } as HookContext;
-//       mockUserDataService.get.mockResolvedValueOnce(dummyUser);
-//       const spy = jest.spyOn(serverSdk, 'verifySubjectDidDocument');
-//       handleUserDidAssociation(ctx);
+  //   describe('create', () => {
+  //     it('validates options for receipts of type CredentialIssued', () => {
+  //       const ctx = { data } as HookContext;
+  //       mockUserDataService.get.mockResolvedValueOnce(dummyUser);
+  //       const spy = jest.spyOn(serverSdk, 'verifySubjectDidDocument');
+  //       handleUserDidAssociation(ctx);
 
-//       // expect(verifyDidDocument).toBeCalled();
-//       expect(spy).toHaveBeenCalledTimes(1);
-//     });
+  //       // expect(verifyDidDocument).toBeCalled();
+  //       expect(spy).toHaveBeenCalledTimes(1);
+  //     });
 
-//     it('verifySubjectCredentialRequests is called', async () => {
-//       const app = {
-//         service: () => ({ get: () => dummyUser })
-//       } as unknown as Application;
+  //     it('verifySubjectCredentialRequests is called', async () => {
+  //       const app = {
+  //         service: () => ({ get: () => dummyUser })
+  //       } as unknown as Application;
 
-//       mockUserDataService.get.mockResolvedValueOnce(dummyUser);
+  //       mockUserDataService.get.mockResolvedValueOnce(dummyUser);
 
-//       const service = new UserCredentialRequestsService(app);
-//       const spy = jest.spyOn(serverSdk, 'verifySubjectCredentialRequests');
+  //       const service = new UserCredentialRequestsService(app);
+  //       const spy = jest.spyOn(serverSdk, 'verifySubjectCredentialRequests');
 
 //       await service.create({ ...data, user: dummyUser });
 //       expect(sendPushNotification).toBeCalledWith('dummy deeplink', []);
 //     });
 //   });
-// });
+});
