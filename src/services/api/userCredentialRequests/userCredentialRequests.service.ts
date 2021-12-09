@@ -12,7 +12,7 @@ declare module '../../../declarations' {
 }
 
 export default function (app: Application): void {
-  app.use('/userCredentialRequests', new UserCredentialRequestsService({}, app));
+  app.use('/userCredentialRequests', new UserCredentialRequestsService(app));
   const service = app.service('userCredentialRequests');
   service.hooks(hooks);
 }
