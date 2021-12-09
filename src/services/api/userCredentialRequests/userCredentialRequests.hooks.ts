@@ -3,7 +3,7 @@ import { Hook } from '@feathersjs/feathers';
 import logger from '../../../logger';
 import { IssuerEntity } from '../../../entities/Issuer';
 import { User } from '../../../entities/User';
-import { UnumDto, VerifiedStatus, verifySubjectDidDocument } from '@unumid/server-sdk';
+import { UnumDto, updateCredentialStatus, VerifiedStatus, verifySubjectDidDocument } from '@unumid/server-sdk';
 import { SubjectCredentialRequestsEnrichedDto } from '@unumid/types';
 
 export const getDefaultIssuerEntity: Hook = async (ctx) => {
@@ -90,7 +90,17 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
 
   const userDid = subjectDidDocument.id;
 
-  await userDataService.patch(userIdentifier, { did: userDid });
+  if (userDid !== user.did) {
+    // revoke all credentials associated with old did
+    // TODO: revoke all credentials associated with old did
+    // await updateCredentialStatuses(issuer.authToken, issuer.issuerDid, issuer.privateKey, VerifiedStatus.Revoked);
+    // await revokeAllCredentials(issuer.authToken, issuer.issuerDid, issuer.privateKey, user.did);
+
+    // update the user with the new did
+    await userDataService.patch(userIdentifier, { did: userDid });
+  } else {
+    logger.debug('User association information sent with identical user did information. This should never happen.');
+  }
 
   // update the default issuer's auth token if it has been reissued
   if (result.authToken !== issuer.authToken) {
