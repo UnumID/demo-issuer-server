@@ -1,9 +1,9 @@
-import { Params } from '@feathersjs/feathers';
+import { Params, Service } from '@feathersjs/feathers';
 
 import { Application } from '../../../declarations';
 import logger from '../../../logger';
-import { CredentialPb, SubjectCredentialRequest } from '@unumid/types';
-import { SubjectCredentialRequestVerifiedStatus, UnumDto, verifySubjectCredentialRequests } from '@unumid/server-sdk';
+import { CredentialPb, Issuer, SubjectCredentialRequest, SubjectCredentialRequestsDto, SubjectCredentialRequestsEnrichedDto } from '@unumid/types';
+import { SubjectCredentialRequestVerifiedStatus, UnumDto, VerifiedStatus, verifySubjectCredentialRequests, verifySubjectDidDocument } from '@unumid/server-sdk';
 import { IssuerEntity } from '../../../entities/Issuer';
 import { User } from '../../../entities/User';
 import { buildAuthCredentialSubject, buildEmailCredentialSubject, buildKYCCredentialSubject, issueCredentialsHelper, ValidCredentialTypes } from '../../../utils/credentials';
@@ -13,42 +13,38 @@ export type CredentialsIssuedResponse = {
   credentialTypesIssued: string[]
  };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface ServiceOptions {}
+export interface UserCredentialRequests extends SubjectCredentialRequestsEnrichedDto {
+  user: User;
+}
 
 /**
  * A class to handle SubjectCredentialRequests and issue credentials accordingly, all verification permitting.
  */
-export class CredentialRequestService {
+export class UserCredentialRequestsService {
   app: Application;
-  options: ServiceOptions;
 
-  constructor (options: ServiceOptions = {}, app: Application) {
-    this.options = options;
+  constructor (app: Application) {
     this.app = app;
   }
 
-  async create (data: SubjectCredentialRequest[], params?: Params): Promise<CredentialsIssuedResponse> {
+  async create (data: UserCredentialRequests, params?: Params): Promise<CredentialsIssuedResponse> {
     const issuer: IssuerEntity = params?.defaultIssuerEntity;
 
-    const verification: UnumDto<SubjectCredentialRequestVerifiedStatus> = await verifySubjectCredentialRequests(issuer.authToken, issuer.issuerDid, data);
+    const { user, credentialRequestsInfo: { credentialRequests, issuerDid, subjectDid } } = data;
+
+    if (issuer.issuerDid !== issuerDid) {
+      throw new Error(`Persisted Issuer DID ${issuer.issuerDid} does not match request's issuer did ${issuerDid}`);
+    }
+
+    const verification: UnumDto<SubjectCredentialRequestVerifiedStatus> = await verifySubjectCredentialRequests(issuer.authToken, issuer.issuerDid, credentialRequests);
 
     if (!verification.body.isVerified) {
       logger.error(`SubjectCredentialRequests could not be validated. Not issuing credentials. ${verification.body.message}`);
       throw new Error(`SubjectCredentialRequests could not be validated. Not issuing credentials. ${verification.body.message}`);
     }
 
-    // grab the user making the credential requests
-    const userDataService = this.app.service('userData');
-    const userDid: string = verification.body.subjectDid;
-    let user: User;
-
-    try {
-      user = await userDataService.get(null, { where: { did: userDid } }); // will throw exception if not found
-    } catch (e) {
-      logger.warn(`No user found with did ${userDid}. No way to issue credentials`);
-      throw e;
-    }
+    // Note in the userDidAssociation hook we have already ensured that the user has an associated did.
+    const userDid = user.did as string;
 
     /**
      * Now that we have verified the credential requests have been all signed by the same subject, aka user, and we
@@ -58,7 +54,7 @@ export class CredentialRequestService {
      * Because no real use case yet I am going just going to simply full fill email, kyc and auth credential requests.
      */
     const credentialSubjects: ValidCredentialTypes[] = [];
-    data.forEach((credentialRequest: SubjectCredentialRequest) => {
+    credentialRequests.forEach((credentialRequest: SubjectCredentialRequest) => {
       if (credentialRequest.type === 'EmailCredential') {
         credentialSubjects.push(buildEmailCredentialSubject(userDid, user.email));
       } else if (credentialRequest.type === 'AuthCredential') {
