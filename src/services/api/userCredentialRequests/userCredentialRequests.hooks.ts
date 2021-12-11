@@ -72,12 +72,12 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
     };
   }
 
-  const { userIdentifier, subjectDidDocument } = userDidAssociation;
+  const { userCode, subjectDidDocument } = userDidAssociation;
 
   try {
-    user = await userDataService.get(userIdentifier); // will throw exception if not found
+    user = await userDataService.get(userCode); // will throw exception if not found
   } catch (e) {
-    logger.warn(`No user found with id ${userIdentifier}. Can not associate the did ${subjectDidDocument.id}.`);
+    logger.warn(`No user found with code ${userCode}. Can not associate the did ${subjectDidDocument.id}.`);
     throw e;
   }
 
@@ -85,7 +85,7 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
   const result: UnumDto<VerifiedStatus> = await verifySubjectDidDocument(issuer.authToken, issuer.issuerDid, subjectDidDocument);
 
   if (!result.body.isVerified) {
-    throw new Error(`${result.body.message} Subject DID document ${subjectDidDocument.id} for user ${userIdentifier} is not verified.`);
+    throw new Error(`${result.body.message} Subject DID document ${subjectDidDocument.id} for user ${userCode} is not verified.`);
   }
 
   const userDid = subjectDidDocument.id;
@@ -97,7 +97,7 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
     // await revokeAllCredentials(issuer.authToken, issuer.issuerDid, issuer.privateKey, user.did);
 
     // update the user with the new did
-    await userDataService.patch(userIdentifier, { did: userDid });
+    await userDataService.patch(userCode, { did: userDid });
   } else {
     logger.debug('User association information sent with identical user did information. This should never happen.');
   }
