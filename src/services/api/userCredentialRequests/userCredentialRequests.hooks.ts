@@ -3,7 +3,7 @@ import { Hook } from '@feathersjs/feathers';
 import logger from '../../../logger';
 import { IssuerEntity } from '../../../entities/Issuer';
 import { User } from '../../../entities/User';
-import { UnumDto, updateCredentialStatus, VerifiedStatus, verifySubjectDidDocument } from '@unumid/server-sdk';
+import { UnumDto, revokeAllCredentials, VerifiedStatus, verifySubjectDidDocument } from '@unumid/server-sdk';
 import { SubjectCredentialRequestsEnrichedDto } from '@unumid/types';
 
 export const getDefaultIssuerEntity: Hook = async (ctx) => {
@@ -89,12 +89,9 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
   }
 
   const userDid = subjectDidDocument.id;
-
   if (userDid !== user.did) {
     // revoke all credentials associated with old did
-    // TODO: revoke all credentials associated with old did
-    // await updateCredentialStatuses(issuer.authToken, issuer.issuerDid, issuer.privateKey, VerifiedStatus.Revoked);
-    // await revokeAllCredentials(issuer.authToken, issuer.issuerDid, issuer.privateKey, user.did);
+    await revokeAllCredentials(issuer.authToken, issuer.issuerDid, issuer.privateKey, userDid);
 
     // update the user with the new did
     await userDataService.patch(userCode, { did: userDid });
