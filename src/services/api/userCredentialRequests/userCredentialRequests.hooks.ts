@@ -38,7 +38,11 @@ export const validateRequest: Hook = async (ctx) => {
   return ctx;
 };
 
-// async function handleUserDidAssociation (data: UserDidAssociation, issuer: IssuerEntity, userDataService: Service<User>, issuerData) {
+/**
+ * Grab and return the associated user. If useDidAssociation is passed update the user with the provided did.
+ * @param ctx
+ * @returns
+ */
 export const handleUserDidAssociation: Hook = async (ctx) => {
   const { app, params } = ctx;
 
@@ -49,9 +53,9 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
   const issuer: IssuerEntity = params?.defaultIssuerEntity;
   const data: SubjectCredentialRequestsEnrichedDto = ctx.data;
 
-  // const userDidAssociation = data.userDidAssociation;
   const { userDidAssociation, credentialRequestsInfo: { subjectDid } } = data;
 
+  // if no userDidAssociation as part of request body then it is assume this issuer already has the did associated with a user
   if (!userDidAssociation) {
     logger.debug('No new userDidAssociation in the userCredentialRequests');
 
@@ -75,6 +79,7 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
   const { userCode, subjectDidDocument } = userDidAssociation;
 
   try {
+    // assuming user code is the object id... TODO change to query based on attribute
     user = await userDataService.get(userCode); // will throw exception if not found
   } catch (e) {
     logger.warn(`No user found with code ${userCode}. Can not associate the did ${subjectDidDocument.id}.`);
@@ -89,12 +94,15 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
   }
 
   const userDid = subjectDidDocument.id;
+
+  // if this is a new did association for the user then we need to revoke all the credentials associated with teh old did document
+  // TODO this needs to be revisited... actually need a user to be associated with multiple did documents potentially. Probably needs to be removed.
   if (userDid !== user.did) {
     // revoke all credentials associated with old did
     await revokeAllCredentials(issuer.authToken, issuer.issuerDid, issuer.privateKey, userDid);
 
     // update the user with the new did
-    await userDataService.patch(userCode, { did: userDid });
+    await userDataService.patch(userCode, { did: userDid }); // TODO change to just add did to User dids array
   } else {
     logger.debug('User association information sent with identical user did information. This should never happen.');
   }
