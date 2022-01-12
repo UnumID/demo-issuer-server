@@ -41,20 +41,6 @@ describe('issuer api service hooks', () => {
           expect(e).toEqual(new BadRequest('data is required.'));
         }
       });
-      it('throws a BadRequest if issuerName is missing', () => {
-        const ctx = {
-          data: {
-            apiKey: dummyIssuerEntityOptions.apiKey,
-            issuerCustomerUuid: dummyIssuerEntityOptions.issuerCustomerUuid
-          }
-        } as HookContext<IssuerEntityOptions>;
-        try {
-          validateIssuerCreateOptions(ctx);
-          fail();
-        } catch (e) {
-          expect(e).toEqual(new BadRequest('issuerName is required.'));
-        }
-      });
 
       it('throws a BadRequest if apiKey is missing', () => {
         const ctx = {

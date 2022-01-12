@@ -13,12 +13,7 @@ export const validateIssuerCreateOptions: Hook<IssuerEntityOptions> = (ctx) => {
     throw new BadRequest('data is required.');
   }
 
-  const { issuerName, apiKey, issuerCustomerUuid } = data;
-
-  // validate that each required field is present
-  if (!issuerName) {
-    throw new BadRequest('issuerName is required.');
-  }
+  const { apiKey, issuerCustomerUuid } = data;
 
   if (!apiKey) {
     throw new BadRequest('apiKey is required.');
