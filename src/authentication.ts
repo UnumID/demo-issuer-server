@@ -32,7 +32,7 @@ class MyLocalStrategy extends LocalStrategy {
       const patchedUser = await userDataService.patch(authenticatedUser.uuid, { userCode: v4() }, params);
       return patchedUser;
     } catch (e) {
-      logger.error(`error in login\'s UserDataService.patch. ${e}`);
+      logger.error(`error in login's UserDataService.patch. ${e}`);
       throw e;
     }
   }
