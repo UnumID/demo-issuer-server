@@ -93,7 +93,8 @@ describe('User entity', () => {
         phone: savedUserObj.phone,
         firstName: savedUserObj.firstName,
         did: savedUserObj.did,
-        pushTokens: savedUserObj.pushTokens
+        pushTokens: savedUserObj.pushTokens,
+        userCode: null
       };
 
       expect(wrap(savedUser).toJSON()).toEqual(expected);
