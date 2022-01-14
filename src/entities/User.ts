@@ -28,6 +28,9 @@ export class User extends BaseEntity {
   @Property()
   firstName?: string;
 
+  @Property()
+  userCode?: string;
+
   @ManyToMany(() => PushToken, 'users', { owner: true })
   pushTokens = new Collection<PushToken>(this);
 

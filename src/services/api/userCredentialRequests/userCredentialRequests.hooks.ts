@@ -80,7 +80,7 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
 
   try {
     // assuming user code is the object id... TODO change to query based on attribute
-    user = await userDataService.get(userCode); // will throw exception if not found
+    user = await userDataService.get(null, { where: { userCode } }); // will throw exception if not found
   } catch (e) {
     logger.warn(`No user found with code ${userCode}. Can not associate the did ${subjectDidDocument.id}.`);
     throw e;
@@ -96,15 +96,15 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
   const userDid = subjectDidDocument.id;
 
   // if this is a new did association for the user then we need to revoke all the credentials associated with teh old did document
-  // TODO this needs to be revisited... actually need a user to be associated with multiple did documents potentially. Probably needs to be removed.
   if (userDid !== user.did) {
     // revoke all credentials associated with old did
     await revokeAllCredentials(issuer.authToken, issuer.issuerDid, issuer.privateKey, userDid);
 
     // update the user with the new did
-    await userDataService.patch(userCode, { did: userDid }); // TODO change to just add did to User dids array
+    await userDataService.patch(null, { did: userDid, userCode: null }, { where: { userCode } });
   } else {
     logger.debug('User association information sent with identical user did information. This should never happen.');
+    await userDataService.patch(null, { userCode: null }, { where: { userCode } }); // remove the userCode from the user
   }
 
   // update the default issuer's auth token if it has been reissued
