@@ -33,7 +33,7 @@ jobs:
       - restore_cache:
           key: node-v1-{{ checksum "package.json" }}
 
-      - run: npm install
+      - run: npm ci
 
       - save_cache:
           key: v1-npm-deps-{{ checksum "package-lock.json" }}
