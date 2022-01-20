@@ -76,24 +76,24 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
     };
   }
 
-  const { userCode, subjectDidDocument } = userDidAssociation;
+  const { userCode, did } = userDidAssociation;
 
   try {
     // assuming user code is the object id... TODO change to query based on attribute
     user = await userDataService.get(null, { where: { userCode } }); // will throw exception if not found
   } catch (e) {
-    logger.warn(`No user found with code ${userCode}. Can not associate the did ${subjectDidDocument.id}.`);
+    logger.warn(`No user found with code ${userCode}. Can not associate the did ${did.id}.`);
     throw e;
   }
 
   // verify the subject did document
-  const result: UnumDto<VerifiedStatus> = await verifySubjectDidDocument(issuer.authToken, issuer.issuerDid, subjectDidDocument);
+  const result: UnumDto<VerifiedStatus> = await verifySubjectDidDocument(issuer.authToken, issuer.issuerDid, did);
 
   if (!result.body.isVerified) {
-    throw new Error(`${result.body.message} Subject DID document ${subjectDidDocument.id} for user ${userCode} is not verified.`);
+    throw new Error(`${result.body.message} Subject DID document ${did.id} for user ${userCode} is not verified.`);
   }
 
-  const userDid = subjectDidDocument.id;
+  const userDid = did.id;
 
   // if this is a new did association for the user then we need to revoke all the credentials associated with teh old did document
   if (userDid !== user.did) {

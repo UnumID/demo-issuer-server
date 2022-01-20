@@ -101,7 +101,7 @@ describe('UserCredentialRequestsService', () => {
   //     it('validates options for receipts of type CredentialIssued', () => {
   //       const ctx = { data } as HookContext;
   //       mockUserDataService.get.mockResolvedValueOnce(dummyUser);
-  //       const spy = jest.spyOn(serverSdk, 'verifySubjectDidDocument');
+  //       const spy = jest.spyOn(serverSdk, 'verifySubjectDid');
   //       handleUserDidAssociation(ctx);
 
   //       // expect(verifyDidDocument).toBeCalled();
