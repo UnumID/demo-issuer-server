@@ -3,7 +3,7 @@ import { Params, Service } from '@feathersjs/feathers';
 import { Application } from '../../../declarations';
 import logger from '../../../logger';
 import { CredentialPb, Issuer, SubjectCredentialRequest, SubjectCredentialRequestsDto, SubjectCredentialRequestsEnrichedDto } from '@unumid/types';
-import { UnumDto, VerifiedStatus, verifySubjectCredentialRequests, verifySubjectDidDocument } from '@unumid/server-sdk';
+import { UnumDto, VerifiedStatus, verifySubjectCredentialRequests } from '@unumid/server-sdk';
 import { IssuerEntity } from '../../../entities/Issuer';
 import { User } from '../../../entities/User';
 import { buildAuthCredentialSubject, buildEmailCredentialSubject, buildKYCCredentialSubject, issueCredentialsHelper, ValidCredentialTypes } from '../../../utils/credentials';
