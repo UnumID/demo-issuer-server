@@ -3,7 +3,7 @@ import { Hook } from '@feathersjs/feathers';
 import logger from '../../../logger';
 import { IssuerEntity } from '../../../entities/Issuer';
 import { User } from '../../../entities/User';
-import { UnumDto, revokeAllCredentials, VerifiedStatus, verifySubjectDidDocument } from '@unumid/server-sdk';
+import { UnumDto, revokeAllCredentials, VerifiedStatus, verifySignedDid } from '@unumid/server-sdk';
 import { SubjectCredentialRequestsEnrichedDto } from '@unumid/types';
 
 export const getDefaultIssuerEntity: Hook = async (ctx) => {
@@ -87,7 +87,7 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
   }
 
   // verify the subject did document
-  const result: UnumDto<VerifiedStatus> = await verifySubjectDidDocument(issuer.authToken, issuer.issuerDid, did);
+  const result: UnumDto<VerifiedStatus> = await verifySignedDid(issuer.authToken, issuer.issuerDid, did);
 
   if (!result.body.isVerified) {
     throw new Error(`${result.body.message} Subject DID document ${did.id} for user ${userCode} is not verified.`);
