@@ -2,12 +2,13 @@ import { Params, Service } from '@feathersjs/feathers';
 
 import { Application } from '../../../declarations';
 import logger from '../../../logger';
-import { CredentialPb, Issuer, SubjectCredentialRequest, SubjectCredentialRequestsDto, SubjectCredentialRequestsEnrichedDto } from '@unumid/types';
+import { CredentialPb, SubjectCredentialRequests, SubjectCredentialRequestsEnrichedDto } from '@unumid/types';
 import { UnumDto, VerifiedStatus, verifySubjectCredentialRequests } from '@unumid/server-sdk';
 import { IssuerEntity } from '../../../entities/Issuer';
 import { User } from '../../../entities/User';
 import { buildAuthCredentialSubject, buildEmailCredentialSubject, buildKYCCredentialSubject, issueCredentialsHelper, ValidCredentialTypes } from '../../../utils/credentials';
 import { convertCredentialToCredentialEntityOptions } from '../../../utils/converters';
+import { CredentialRequest } from '@unumid/types/build/protos/credential';
 
 export type CredentialsIssuedResponse = {
   credentialTypesIssued: string[]
@@ -30,13 +31,13 @@ export class UserCredentialRequestsService {
   async create (data: UserCredentialRequests, params?: Params): Promise<CredentialsIssuedResponse> {
     const issuer: IssuerEntity = params?.defaultIssuerEntity;
 
-    const { user, credentialRequestsInfo: { credentialRequests, issuerDid, subjectDid } } = data;
+    const { user, credentialRequestsInfo: { subjectCredentialRequests, issuerDid, subjectDid } } = data;
 
     if (issuer.issuerDid !== issuerDid) {
       throw new Error(`Persisted Issuer DID ${issuer.issuerDid} does not match request's issuer did ${issuerDid}`);
     }
 
-    const verification: UnumDto<VerifiedStatus> = await verifySubjectCredentialRequests(issuer.authToken, issuer.issuerDid, subjectDid, credentialRequests);
+    const verification: UnumDto<VerifiedStatus> = await verifySubjectCredentialRequests(issuer.authToken, issuer.issuerDid, subjectDid, subjectCredentialRequests);
 
     if (!verification.body.isVerified) {
       logger.error(`SubjectCredentialRequests could not be validated. Not issuing credentials. ${verification.body.message}`);
@@ -54,7 +55,7 @@ export class UserCredentialRequestsService {
      * Because no real use case yet I am going just going to simply full fill email, kyc and auth credential requests.
      */
     const credentialSubjects: ValidCredentialTypes[] = [];
-    credentialRequests.forEach((credentialRequest: SubjectCredentialRequest) => {
+    subjectCredentialRequests.credentialRequests.forEach((credentialRequest: CredentialRequest) => {
       if (credentialRequest.type === 'EmailCredential') {
         credentialSubjects.push(buildEmailCredentialSubject(userDid, user.email));
       } else if (credentialRequest.type === 'AuthCredential') {
