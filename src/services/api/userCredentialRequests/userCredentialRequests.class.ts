@@ -48,11 +48,11 @@ export class UserCredentialRequestsService {
     const userDid = user.did as string;
 
     /**
-     * Now that we have verified the credential requests have been all signed by the same subject, aka user, and we
+     * Now that we have verified the credential requests signature signed by the subject, aka user, and we
      * have confirmed to have a user with the matching did in our data store, we need some logic to determine if we can
      * issue the requested credentials.
      *
-     * Because no real use case yet I am going just going to simply full fill email, kyc and auth credential requests.
+     * For demonstration purposes just simply full-filling email, kyc and auth credential requests.
      */
     const credentialSubjects: ValidCredentialTypes[] = [];
     subjectCredentialRequests.credentialRequests.forEach((credentialRequest: CredentialRequest) => {
