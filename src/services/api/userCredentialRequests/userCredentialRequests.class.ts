@@ -58,7 +58,7 @@ export class UserCredentialRequestsService {
     subjectCredentialRequests.credentialRequests.forEach((credentialRequest: CredentialRequest) => {
       if (credentialRequest.type === 'EmailCredential') {
         credentialSubjects.push(buildEmailCredentialSubject(userDid, user.email));
-      } else if (credentialRequest.type === 'AuthCredential') {
+      } else if (credentialRequest.type === 'DemoAuthCredential') {
         credentialSubjects.push(buildAuthCredentialSubject(userDid, user.uuid, user.email));
       } else if (credentialRequest.type === 'KYCCredential') {
         credentialSubjects.push(buildKYCCredentialSubject(userDid, user.firstName as string));
