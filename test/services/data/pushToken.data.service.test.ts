@@ -2,6 +2,7 @@ import generateApp from '../../../src/app';
 import { Application } from '../../../src/declarations';
 import { User } from '../../../src/entities/User';
 import { PushTokenDataService } from '../../../src/services/data/pushToken.data.service';
+import { expectNonNullishValuesToBeEqual } from '../../helpers/expectNonNullishValuesToBeEqual';
 import { resetDb } from '../../helpers/resetDb';
 
 describe('PushTokenDataService', () => {
@@ -32,7 +33,6 @@ describe('PushTokenDataService', () => {
 
     afterEach(async () => {
       const orm = app.get('orm');
-      orm.em.clear();
       await resetDb(orm);
     });
 
@@ -45,8 +45,11 @@ describe('PushTokenDataService', () => {
         };
 
         const pushToken = await service.create(options);
-        const retrievedPushToken = await service.get(pushToken.uuid);
-        expect(retrievedPushToken).toEqual(pushToken);
+        // `populate` param doesn't appear to work with create method,
+        // so we have to init the collection
+        await pushToken.users.init();
+        const retrievedPushToken = await service.get(pushToken.uuid, { populate: ['users'] });
+        expectNonNullishValuesToBeEqual(retrievedPushToken, pushToken);
       });
     });
 
@@ -59,8 +62,11 @@ describe('PushTokenDataService', () => {
         };
 
         const pushToken = await service.create(options);
-        const retrievedPushToken = await service.get(pushToken.uuid);
-        expect(retrievedPushToken).toEqual(pushToken);
+        // `populate` param doesn't appear to work with create method,
+        // so we have to init the collection
+        await pushToken.users.init();
+        const retrievedPushToken = await service.get(pushToken.uuid, { populate: ['users'] });
+        expectNonNullishValuesToBeEqual(retrievedPushToken, pushToken);
       });
 
       it('gets a fcmRegistrationToken from the database by a query', async () => {
@@ -71,8 +77,11 @@ describe('PushTokenDataService', () => {
         };
 
         const pushToken = await service.create(options);
-        const retrievedPushToken = await service.get(null, { query: { where: { value: 'dummy token' } } });
-        expect(retrievedPushToken).toEqual(pushToken);
+        // `populate` param doesn't appear to work with create method,
+        // so we have to init the collection
+        await pushToken.users.init();
+        const retrievedPushToken = await service.get(null, { query: { where: { value: 'dummy token' } }, populate: ['users'] });
+        expectNonNullishValuesToBeEqual(retrievedPushToken, pushToken);
       });
     });
 
@@ -113,7 +122,7 @@ describe('PushTokenDataService', () => {
         const pushToken = await service.create(options);
 
         const retrievedPushToken = await service.getByToken('dummy token');
-        expect(retrievedPushToken).toEqual(pushToken);
+        expect(retrievedPushToken.uuid).toEqual(pushToken.uuid);
       });
     });
   });

@@ -1,4 +1,4 @@
-import { NullableId, Params } from '@feathersjs/feathers';
+import { NullableId, Paginated, Params } from '@feathersjs/feathers';
 import { DemoUserCreateOptions } from '@unumid/demo-types';
 
 import { Application } from '../../../declarations';
@@ -40,7 +40,7 @@ export class UserService {
     }
   }
 
-  async find (params?: Params): Promise<User[]> {
+  async find (params?: Params): Promise<User[] | Paginated<User>> {
     const userDataService = this.app.service('userData');
     try {
       const users = await userDataService.find(params);
@@ -51,7 +51,7 @@ export class UserService {
     }
   }
 
-  async patch (uuid: NullableId, data: Partial<User>, params?: Params): Promise<User> {
+  async patch (uuid: NullableId, data: Partial<User>, params?: Params): Promise<User | User[]> {
     const userDataService = this.app.service('userData');
     try {
       const patchedUser = await userDataService.patch(uuid, data, params);

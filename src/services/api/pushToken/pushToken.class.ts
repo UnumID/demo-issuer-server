@@ -1,3 +1,4 @@
+import { Paginated } from '@feathersjs/feathers';
 import { PushProvider } from '@unumid/types';
 
 import { Application } from '../../../declarations';
@@ -27,7 +28,7 @@ export class PushTokenService {
     this.dataService = app.service('pushTokenData');
   }
 
-  async find (): Promise<PushToken[]> {
+  async find (): Promise<PushToken[] | Paginated<PushToken>> {
     const pushTokens = await this.dataService.find({ populate: 'users' });
 
     return pushTokens;
@@ -46,7 +47,7 @@ export class PushTokenService {
   async patchUser (uuid: string, data: Partial<User>): Promise<User> {
     try {
       const patchedUser = await this.app.service('userData').patch(uuid, data);
-      return patchedUser;
+      return patchedUser as User;
     } catch (e) {
       logger.error('PushTokenService.patchUser caught an error thrown by UserDataService.patch', e);
       throw e;

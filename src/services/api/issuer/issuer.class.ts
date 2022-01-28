@@ -1,4 +1,4 @@
-import { NullableId, Params } from '@feathersjs/feathers';
+import { NullableId, Paginated, Params } from '@feathersjs/feathers';
 
 import { Application } from '../../../declarations';
 import { IssuerEntity, IssuerEntityOptions } from '../../../entities/Issuer';
@@ -39,7 +39,7 @@ export class IssuerService {
     }
   }
 
-  async find (params?: Params): Promise<IssuerEntity[]> {
+  async find (params?: Params): Promise<IssuerEntity[] | Paginated<IssuerEntity>> {
     const issuerDataService = this.app.service('issuerData');
     try {
       const issuers = await issuerDataService.find(params);
@@ -54,7 +54,7 @@ export class IssuerService {
     const issuerDataService = this.app.service('issuerData');
     try {
       const patchedIssuer = await issuerDataService.patch(uuid, data, params);
-      return patchedIssuer;
+      return patchedIssuer as IssuerEntity;
     } catch (e) {
       logger.error('error in IssuerDataService.patch', e);
       throw e;
