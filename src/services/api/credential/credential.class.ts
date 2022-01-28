@@ -1,4 +1,4 @@
-import { NullableId, Params } from '@feathersjs/feathers';
+import { NullableId, Paginated, Params } from '@feathersjs/feathers';
 
 import { Application } from '../../../declarations';
 import { CredentialEntity } from '../../../entities/Credential';
@@ -40,7 +40,7 @@ export class CredentialService {
     }
   }
 
-  async find (params?: Params): Promise<CredentialEntity[]> {
+  async find (params?: Params): Promise<CredentialEntity[] | Paginated<CredentialEntity>> {
     const credentialDataService = this.app.service('credentialData');
     try {
       const credentials = await credentialDataService.find(params);

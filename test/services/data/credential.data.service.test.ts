@@ -1,5 +1,6 @@
 import { NotFound } from '@feathersjs/errors';
 import { Service as MikroOrmService } from 'feathers-mikro-orm';
+import stringify from 'fast-stable-stringify';
 
 import generateApp from '../../../src/app';
 import { Application } from '../../../src/declarations';
@@ -27,7 +28,6 @@ describe('CredentialDataService', () => {
 
     afterEach(async () => {
       const orm = app.get('orm');
-      orm.em.clear();
       await resetDb(orm);
     });
 
@@ -35,7 +35,8 @@ describe('CredentialDataService', () => {
       it('saves a credential in the database', async () => {
         const savedCredential = await service.create(dummyCredentialEntityOptions);
         const retrievedCredential = await service.get(savedCredential.uuid);
-        expect(retrievedCredential).toEqual(savedCredential);
+        // stringify for comparison because nested dates in json columns are returned as strings
+        expect(stringify(retrievedCredential)).toEqual(stringify(savedCredential));
       });
     });
 
@@ -48,18 +49,19 @@ describe('CredentialDataService', () => {
 
       afterEach(async () => {
         const orm = app.get('orm');
-        orm.em.clear();
         await resetDb(orm);
       });
 
       it('gets a credential entity from the database by uuid', async () => {
         const retrievedCredential = await service.get(savedCredential.uuid);
-        expect(retrievedCredential).toEqual(savedCredential);
+        // stringify for comparison because nested dates in json columns are returned as strings
+        expect(stringify(retrievedCredential)).toEqual(stringify(savedCredential));
       });
 
       it('gets a credential entity from the db by a query', async () => {
         const retrievedCredential = await service.get(null, { query: { where: { credentialId: dummyCredentialEntityOptions.credentialId } } });
-        expect(retrievedCredential).toEqual(savedCredential);
+        // stringify for comparison because nested dates in json columns are returned as strings
+        expect(stringify(retrievedCredential)).toEqual(stringify(savedCredential));
       });
     });
 
@@ -74,12 +76,14 @@ describe('CredentialDataService', () => {
 
       it('gets all credentials from the database', async () => {
         const retrievedCredentials = await service.find();
-        expect(retrievedCredentials).toEqual([savedCredential1, savedCredential2]);
+        // stringify for comparison because nested dates in json columns are returned as strings
+        expect(stringify(retrievedCredentials)).toEqual(stringify([savedCredential1, savedCredential2]));
       });
 
       it('gets all credentials matching a query', async () => {
         const retrievedCredentials = await service.find({ query: { createdAt: savedCredential1.createdAt } });
-        expect(retrievedCredentials).toEqual([savedCredential1]);
+        // stringify for comparison because nested dates in json columns are returned as strings
+        expect(stringify(retrievedCredentials)).toEqual(stringify([savedCredential1]));
       });
     });
 

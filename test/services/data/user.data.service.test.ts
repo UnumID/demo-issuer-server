@@ -5,6 +5,7 @@ import { v4 } from 'uuid';
 import generateApp from '../../../src/app';
 import { Application } from '../../../src/declarations';
 import { User } from '../../../src/entities/User';
+import { expectNonNullishValuesToBeEqual } from '../../helpers/expectNonNullishValuesToBeEqual';
 import { resetDb } from '../../helpers/resetDb';
 describe('UserDataService', () => {
   describe('initializing the service', () => {
@@ -26,7 +27,6 @@ describe('UserDataService', () => {
 
     afterEach(async () => {
       const orm = app.get('orm');
-      orm.em.clear();
       await resetDb(orm);
     });
 
@@ -39,7 +39,13 @@ describe('UserDataService', () => {
 
         const user = await service.create(options);
         const savedUser = await service.get(user.uuid);
-        expect(savedUser).toEqual(user);
+
+        // comparing individual properties rather than the whole object
+        // because mikro-orm omits keys when the value is undefined (on create)
+        // but returns a value of null when it's null in the db (on get)
+        expect(savedUser.uuid).toEqual(user.uuid);
+        expect(savedUser.email).toEqual(user.email);
+        expect(savedUser.createdAt).toEqual(user.createdAt);
       });
     });
 
@@ -63,12 +69,22 @@ describe('UserDataService', () => {
 
       it('gets a user from the database by uuid', async () => {
         const gottenUser = await service.get(user.uuid);
-        expect(gottenUser).toEqual(user);
+        // comparing individual properties rather than the whole object
+        // because mikro-orm omits keys when the value is undefined (on create)
+        // but returns a value of null when it's null in the db (on get)
+        expect(gottenUser.uuid).toEqual(user.uuid);
+        expect(gottenUser.email).toEqual(user.email);
+        expect(gottenUser.createdAt).toEqual(user.createdAt);
       });
 
       it('gets a user from the db by a query', async () => {
         const gottenUser = await service.get(null, { query: { where: { email: 'test@unumid.org' } } });
-        expect(gottenUser).toEqual(user);
+        // comparing individual properties rather than the whole object
+        // because mikro-orm omits keys when the value is undefined (on create)
+        // but returns a value of null when it's null in the db (on get)
+        expect(gottenUser.uuid).toEqual(user.uuid);
+        expect(gottenUser.email).toEqual(user.email);
+        expect(gottenUser.createdAt).toEqual(user.createdAt);
       });
     });
 
@@ -92,13 +108,16 @@ describe('UserDataService', () => {
       });
 
       it('gets all users from the database', async () => {
-        const users = await service.find();
-        expect(users).toEqual([user1, user2]);
+        const users = await service.find() as User[];
+        expect(users.length).toEqual(2);
+        expectNonNullishValuesToBeEqual(users[0], user1);
+        expectNonNullishValuesToBeEqual(users[1], user2);
       });
 
       it('gets users from the db by a query', async () => {
-        const users = await service.find({ query: { email: 'test@unumid.org' } });
-        expect(users).toEqual([user1]);
+        const users = await service.find({ query: { email: 'test@unumid.org' } }) as User[];
+        expect(users.length).toEqual(1);
+        expectNonNullishValuesToBeEqual(users[0], user1);
       });
     });
 
@@ -128,7 +147,6 @@ describe('UserDataService', () => {
         expect(patchedUser.createdAt).toEqual(user.createdAt);
         expect(patchedUser.updatedAt.getTime()).toBeGreaterThan(user.createdAt.getTime());
         expect(patchedUser.email).toEqual(user.email);
-        expect(patchedUser.phone).toEqual(user.phone);
         expect(patchedUser.did).toEqual(changes.did);
       });
     });

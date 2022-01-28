@@ -4,12 +4,13 @@ import { ServiceAddons } from '@feathersjs/feathers';
 import { Application } from '../../declarations';
 import { IssuerEntity } from '../../entities/Issuer';
 import logger from '../../logger';
+import { isPaginated } from '../../typeguards';
 
 class IssuerDataService extends MikroOrmService<IssuerEntity> {
   async getDefaultIssuerEntity (): Promise<IssuerEntity> {
     try {
-      const [defaultIssuerEntity] = await this.find();
-      return defaultIssuerEntity;
+      const issuerEntities = await this.find();
+      return isPaginated<IssuerEntity>(issuerEntities) ? issuerEntities.data[0] : issuerEntities[0];
     } catch (e) {
       logger.error('IssuerDataService.getDefaultEntity caught an error thrown by this.find', e);
       throw e;
