@@ -29,7 +29,7 @@ class MyLocalStrategy extends LocalStrategy {
     // create and persist a userCode on the User entity before returning it
     const userDataService = this.app.service('userData');
     try {
-      const patchedUser = await userDataService.patch(authenticatedUser.uuid, { userCode: v4() }, params);
+      const patchedUser = await userDataService.patch(authenticatedUser.uuid, { userCode: v4() }, { ...params, populate: true });
       return patchedUser;
     } catch (e) {
       logger.error(`error in login's UserDataService.patch. ${e}`);
