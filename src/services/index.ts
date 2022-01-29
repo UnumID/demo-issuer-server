@@ -9,7 +9,8 @@ import credential from './api/credential/credential.service';
 import pushToken from './api/pushToken/pushToken.service';
 import pushNotification from './api/pushNotification/pushNotification.service';
 import userCredentialRequests from './api/userCredentialRequests/userCredentialRequests.service';
-
+import testCredentialRequests1 from './api/testCredentialRequests1/testCredentialRequests1.service';
+import testCredentialRequests2 from './api/testCredentialRequests2/testCredentialRequests2.service';
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export default function (app: Application): void {
   app.configure(userCredentialRequests);
@@ -22,4 +23,6 @@ export default function (app: Application): void {
   app.configure(credential);
   app.configure(pushToken);
   app.configure(pushNotification);
+  app.configure(testCredentialRequests1);
+  app.configure(testCredentialRequests2);
 }

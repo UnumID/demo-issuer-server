@@ -93,6 +93,43 @@ export const buildKYCCredentialSubject = (did: string, firstName: string): KYCCr
   confidence: '99%'
 });
 
+// test credential types
+export interface Test1ACredentialSubject extends CredentialSubject {
+  type: 'Test1ACredential'
+}
+
+export interface Test1BCredentialSubject extends CredentialSubject {
+  type: 'Test1BCredential'
+}
+
+export interface Test2ACredentialSubject extends CredentialSubject {
+  type: 'Test2ACredential'
+}
+
+export interface Test2BCredentialSubject extends CredentialSubject {
+  type: 'Test2BCredential'
+}
+
+export type TestCredentialTypes = Test1ACredentialSubject | Test1BCredentialSubject | Test2ACredentialSubject | Test2BCredentialSubject;
+
+export const buildTest1ACredentialSubject = (did: string): Test1ACredentialSubject => ({
+  type: 'Test1ACredential',
+  id: did
+});
+
+export const buildTest1BCredentialSubject = (did: string): Test1BCredentialSubject => ({
+  type: 'Test1BCredential',
+  id: did
+});
+export const buildTest2ACredentialSubject = (did: string): Test2ACredentialSubject => ({
+  type: 'Test2ACredential',
+  id: did
+});
+export const buildTest2BCredentialSubject = (did: string): Test2BCredentialSubject => ({
+  type: 'Test2BCredential',
+  id: did
+});
+
 export const issueCredentialsHelper = async (
   issuerEntity: IssuerEntity,
   credentialSubject: string,
