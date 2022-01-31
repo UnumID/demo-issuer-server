@@ -4,7 +4,7 @@ import { isTestEnv } from './utils/isTestEnv';
 
 dotenv.config();
 
-interface Config {
+export interface Config {
   NODE_ENV: string;
   PAPERTRAIL_PORT: number;
   LOG_LEVEL: string;
@@ -15,6 +15,9 @@ interface Config {
   DB_PASSWORD: string;
   FIREBASE_CONFIG: Record<string, string>;
   APP_URL: string;
+  DEFAULT_ISSUER_DID: string;
+  TEST_ISSUER_DID_1: string;
+  TEST_ISSUER_DID_2: string;
 }
 
 const {
@@ -32,7 +35,10 @@ const {
   TEST_DB_USER = '',
   TEST_DB_PASSWORD = '',
   FIREBASE_CONFIG = '{}',
-  APP_URL = 'api.corp.com'
+  APP_URL = 'api.corp.com',
+  DEFAULT_ISSUER_DID = '',
+  TEST_ISSUER_DID_1 = '',
+  TEST_ISSUER_DID_2 = ''
 } = process.env;
 
 const dbConfig = isTestEnv(NODE_ENV)
@@ -57,5 +63,8 @@ export const config: Config = {
   LOG_LEVEL,
   FIREBASE_CONFIG: JSON.parse(FIREBASE_CONFIG),
   APP_URL,
+  DEFAULT_ISSUER_DID,
+  TEST_ISSUER_DID_1,
+  TEST_ISSUER_DID_2,
   ...dbConfig
 };

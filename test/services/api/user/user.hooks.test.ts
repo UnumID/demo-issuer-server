@@ -20,7 +20,6 @@ import { formatBearerToken } from '../../../../src/utils/formatBearerToken';
 import {
   dummyCredentialDto,
   dummyCredentialEntityOptions,
-  dummyCredentialEntityOptions,
   dummyCredentialsDto,
   dummyCredentialSubject,
   dummyIssuerEntity,

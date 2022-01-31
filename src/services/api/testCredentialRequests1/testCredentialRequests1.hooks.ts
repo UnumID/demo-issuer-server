@@ -5,12 +5,13 @@ import { IssuerEntity } from '../../../entities/Issuer';
 import { User } from '../../../entities/User';
 import { UnumDto, revokeAllCredentials, VerifiedStatus, verifySignedDid } from '@unumid/server-sdk';
 import { SubjectCredentialRequestsEnrichedDto } from '@unumid/types';
+import { config } from '../../../config';
 
 export const getIssuerEntity: Hook = async (ctx) => {
   const issuerDataService = ctx.app.service('issuerData');
   let issuerEntity: IssuerEntity;
   try {
-    [issuerEntity] = await issuerDataService.find({ query: { issuerName: 'Test Issuer 1' } });
+    issuerEntity = await issuerDataService.getByDid(config.TEST_ISSUER_DID_1);
 
     return {
       ...ctx,
@@ -21,7 +22,7 @@ export const getIssuerEntity: Hook = async (ctx) => {
 
     };
   } catch (e) {
-    logger.error('getIssuerEntity hook caught an error thrown by issuerDataService.get', e);
+    logger.error('getIssuerEntity hook caught an error thrown by issuerDataService.getByDid', e);
     throw e;
   }
 };

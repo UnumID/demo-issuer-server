@@ -4,15 +4,29 @@ import { ServiceAddons } from '@feathersjs/feathers';
 import { Application } from '../../declarations';
 import { IssuerEntity } from '../../entities/Issuer';
 import logger from '../../logger';
-import { isPaginated } from '../../typeguards';
+import { config } from '../../config';
 
-class IssuerDataService extends MikroOrmService<IssuerEntity> {
+export class IssuerDataService extends MikroOrmService<IssuerEntity> {
   async getDefaultIssuerEntity (): Promise<IssuerEntity> {
     try {
-      const issuerEntities = await this.find();
-      return isPaginated<IssuerEntity>(issuerEntities) ? issuerEntities.data[0] : issuerEntities[0];
+      return await this.getByDid(config.DEFAULT_ISSUER_DID);
     } catch (e) {
-      logger.error('IssuerDataService.getDefaultEntity caught an error thrown by this.find', e);
+      logger.error('IssuerDataService.getDefaultEntity caught an error thrown by this.getByDid', e);
+      throw e;
+    }
+  }
+
+  /**
+   * gets an issuer by did
+   * alias for IssuerDataService.get(null, { query: { did: did } })
+   * @param {string} did
+   * @returns {Promise<IssuerEntity>}
+   */
+  async getByDid (did: string): Promise<IssuerEntity> {
+    try {
+      return await this.get(null, { where: { issuerDid: did } });
+    } catch (e) {
+      logger.error('IssuerDataService.getByDid caught an error thrown by this.get', e);
       throw e;
     }
   }
@@ -20,7 +34,7 @@ class IssuerDataService extends MikroOrmService<IssuerEntity> {
 
 declare module '../../declarations' {
   interface ServiceTypes {
-    issuerData: MikroOrmService<IssuerEntity> & ServiceAddons<IssuerEntity>;
+    issuerData: IssuerDataService & ServiceAddons<IssuerEntity>;
   }
 }
 
