@@ -9,6 +9,8 @@ import { convertCredentialToCredentialEntityOptions } from '../../../utils/conve
 import {
   buildTest1ACredentialSubject,
   buildTest1BCredentialSubject,
+  buildTest4ACredentialSubject,
+  buildTest4BCredentialSubject,
   issueCredentialsHelper,
   TestCredentialTypes
 } from '../../../utils/credentials';
@@ -55,8 +57,8 @@ export class TestCredentialRequests1Service {
      */
     const credentialSubjects: TestCredentialTypes[] = [];
     subjectCredentialRequests.credentialRequests.forEach((credentialRequest: CredentialRequest) => {
-      // This test issuer issues two types of credentials on request, Test1A and Test1B
-      // It does not issue credentials of type Test2A or Test2B
+      // This test issuer issues four types of credentials on request, Test1A, Test1B, Test4A and Test4B
+      // It does not issue credentials of type Test2A, Test2B, Test3A, or Test3B
       switch (credentialRequest.type) {
         case 'Test1ACredential': {
           credentialSubjects.push(buildTest1ACredentialSubject(userDid));
@@ -72,6 +74,22 @@ export class TestCredentialRequests1Service {
         }
         case 'Test2BCredential': {
           logger.info('Test Issuer 1 does not issue Test2BCredential');
+          break;
+        }
+        case 'Test3ACredential': {
+          logger.info('Test Issuer 1 does not issue Test3ACredential');
+          break;
+        }
+        case 'Test3BCredential': {
+          logger.info('Test Issuer 1 does not issue Test3BCredential');
+          break;
+        }
+        case 'Test4ACredential': {
+          credentialSubjects.push(buildTest4ACredentialSubject(userDid));
+          break;
+        }
+        case 'Test4BCredential': {
+          credentialSubjects.push(buildTest4BCredentialSubject(userDid));
           break;
         }
         default: {
