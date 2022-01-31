@@ -2,8 +2,10 @@ import { NotFound } from '@feathersjs/errors';
 import { Service as MikroOrmService } from 'feathers-mikro-orm';
 
 import generateApp from '../../../src/app';
+import { config as actualConfig, Config } from '../../../src/config';
 import { Application } from '../../../src/declarations';
 import { IssuerEntity } from '../../../src/entities/Issuer';
+import { IssuerDataService } from '../../../src/services/data/issuer.data.service';
 import { resetDb } from '../../helpers/resetDb';
 import { dummyIssuerEntityOptions } from '../../mocks';
 
@@ -18,17 +20,20 @@ describe('IssuerDataService', () => {
 
   describe('using the service', () => {
     let app: Application;
-    let service: MikroOrmService<IssuerEntity>;
+    let service: IssuerDataService;
+    let config: Config;
 
     beforeEach(async () => {
       app = await generateApp();
       service = app.service('issuerData');
+      config = actualConfig;
     });
 
     afterEach(async () => {
       const orm = app.get('orm');
       orm.em.clear();
       await resetDb(orm);
+      config = actualConfig;
     });
 
     describe('create', () => {
@@ -87,6 +92,24 @@ describe('IssuerDataService', () => {
         } catch (e) {
           expect(e).toBeInstanceOf(NotFound);
         }
+      });
+    });
+
+    describe('getDefaultIssuerEntity', () => {
+      it('gets the default issuer entity', async () => {
+        const defaultIssuer = await service.create(dummyIssuerEntityOptions);
+        config.DEFAULT_ISSUER_DID = defaultIssuer.issuerDid;
+
+        const result = await service.getDefaultIssuerEntity();
+        expect(result).toEqual(defaultIssuer);
+      });
+    });
+
+    describe('getByDid', () => {
+      it('gets by did', async () => {
+        const issuer = await service.create(dummyIssuerEntityOptions);
+        const result = await service.getByDid(issuer.issuerDid);
+        expect(result).toEqual(issuer);
       });
     });
   });
