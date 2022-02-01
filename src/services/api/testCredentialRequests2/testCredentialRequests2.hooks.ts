@@ -4,6 +4,7 @@ import logger from '../../../logger';
 import { IssuerEntity } from '../../../entities/Issuer';
 import { config } from '../../../config';
 import { handleUserDidAssociation } from '../../hooks/handleUserDidAssociation';
+import { validateCredentialRequest } from '../../hooks/validateCredentialRequest';
 
 export const getIssuerEntity: Hook = async (ctx) => {
   const issuerDataService = ctx.app.service('issuerData');
@@ -25,21 +26,9 @@ export const getIssuerEntity: Hook = async (ctx) => {
   }
 };
 
-export const validateRequest: Hook = async (ctx) => {
-  const { params } = ctx;
-
-  if (!params.headers?.version) {
-    logger.info('CredentialRequest request made without version');
-  } else {
-    logger.info(`CredentialRequest request made with version ${params.headers?.version}`);
-  }
-
-  return ctx;
-};
-
 export const hooks = {
   before: {
-    all: [validateRequest],
+    all: [validateCredentialRequest],
     create: [getIssuerEntity, handleUserDidAssociation]
   },
   after: {}
