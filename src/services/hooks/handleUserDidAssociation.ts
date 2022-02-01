@@ -17,7 +17,7 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
   const userDataService = app.service('userData');
   let user: User;
 
-  const issuer: IssuerEntity = params?.defaultIssuerEntity;
+  const issuer: IssuerEntity = params?.issuerEntity;
   const data: SubjectCredentialRequestsEnrichedDto = ctx.data;
 
   const { userDidAssociation, credentialRequestsInfo: { subjectDid } } = data;
@@ -78,7 +78,7 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
   if (result.authToken !== issuer.authToken) {
     const issuerDataService = app.service('issuerData');
     try {
-      user = await issuerDataService.patch(issuer.uuid, { authToken: result.authToken });
+      await issuerDataService.patch(issuer.uuid, { authToken: result.authToken });
     } catch (e) {
       logger.error('CredentialRequest create caught an error thrown by issuerDataService.patch', e);
       throw e;
