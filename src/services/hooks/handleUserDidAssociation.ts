@@ -46,7 +46,6 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
   const { userCode, did } = userDidAssociation;
 
   try {
-    // assuming user code is the object id... TODO change to query based on attribute
     user = await userDataService.get(null, { where: { userCode } }); // will throw exception if not found
   } catch (e) {
     logger.warn(`No user found with code ${userCode}. Can not associate the did ${did.id}.`);
@@ -70,7 +69,7 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
     // update the user with the new did
     user = await userDataService.patch(user.uuid, { did: userDid, userCode: null });
   } else {
-    logger.debug('User association information sent with identical user did information. This should never happen.');
+    logger.debug('User association information sent with identical user did information.');
     user = await userDataService.patch(user.uuid, { userCode: null }); // remove the userCode from the user
   }
 

@@ -29,7 +29,7 @@ export class UserCredentialRequestsService {
   }
 
   async create (data: UserCredentialRequests, params?: Params): Promise<CredentialsIssuedResponse> {
-    const issuer: IssuerEntity = params?.defaultIssuerEntity;
+    const issuer: IssuerEntity = params?.issuerEntity;
 
     const { user, credentialRequestsInfo: { subjectCredentialRequests, issuerDid, subjectDid } } = data;
 
