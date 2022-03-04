@@ -162,6 +162,7 @@ jobs:
           aws-region: ${AWS_REGION}
           cluster-name: << parameters.cluster-name >>
       - run:
+          name: Update container image
           command: |
             # Deploy the original demo issuer app
             kubectl set image deployment/<< parameters.deployment >> << parameters.deployment >>=${AWS_ECR_URL}/<< parameters.repo >>:"${CIRCLE_BRANCH}-${CIRCLE_PREVIOUS_BUILD_NUM}"
@@ -175,7 +176,9 @@ jobs:
               ATTEMPTS=$((attempts + 1))
               sleep 10
             done
-
+      - run:
+          name: Update unum container image
+          command: |
             # Deploy the acme unum wallet demo issuer app
             kubectl set image deployment/<< parameters.deployment-unum >> << parameters.deployment-unum >>=${AWS_ECR_URL}/<< parameters.repo >>:"${CIRCLE_BRANCH}-${CIRCLE_PREVIOUS_BUILD_NUM}"
             
@@ -188,7 +191,6 @@ jobs:
               ATTEMPTS=$((attempts + 1))
               sleep 10
             done
-          name: Update container image
       - slack/notify:
           event: fail
           mentions: '@devops-team'
@@ -252,6 +254,7 @@ jobs:
           aws-region: ${AWS_REGION}
           cluster-name: << parameters.cluster-name >>
       - run:
+          name: Update container image
           command: |
             # Deploy the original demo issuer app
             kubectl set image deployment/<< parameters.deployment >> << parameters.deployment >>=${AWS_ECR_URL}/<< parameters.repo >>:"${CIRCLE_TAG}" -n << parameters.namespace >>
@@ -265,7 +268,9 @@ jobs:
               ATTEMPTS=$((attempts + 1))
               sleep 10
             done
-
+      - run:
+          name: Update unum container image
+          command: |
             # Deploy the acme unum wallet demo issuer app
             kubectl set image deployment/<< parameters.deployment-unum >> << parameters.deployment-unum >>=${AWS_ECR_URL}/<< parameters.repo >>:"${CIRCLE_TAG}" -n << parameters.namespace >>
 
@@ -278,7 +283,6 @@ jobs:
               ATTEMPTS=$((attempts + 1))
               sleep 10
             done
-          name: Update container image
       - slack/notify:
           event: fail
           mentions: '@devops-team'
