@@ -29,7 +29,11 @@ export class UserCredentialRequestsService {
   }
 
   async create (data: UserCredentialRequests, params?: Params): Promise<CredentialsIssuedResponse> {
-    const issuer: IssuerEntity = params?.defaultIssuerEntity;
+    const issuer: IssuerEntity = params?.issuerEntity;
+
+    if (!issuer) {
+      throw new Error('No issuer entity found in params. This should never happen after the before hook grabbing the issuer entity.');
+    }
 
     const { user, credentialRequestsInfo: { subjectCredentialRequests, issuerDid, subjectDid } } = data;
 
