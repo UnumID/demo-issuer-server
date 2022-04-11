@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   aws-cli: circleci/aws-cli@0.1.22
-  aws-eks: circleci/aws-eks@2.1.1
+  aws-eks: circleci/aws-eks@2.1.2
   kubernetes: circleci/kubernetes@0.4.0
   slack: circleci/slack@4.4.2 # ref: https://github.com/CircleCI-Public/slack-orb, https://circleci.com/developer/orbs/orb/circleci/slack#usage-examples
 
