@@ -35,6 +35,13 @@ export class UserCredentialRequestsService {
       throw new Error('No issuer entity found in params. This should never happen after the before hook grabbing the issuer entity.');
     }
 
+    if (!data.credentialRequestsInfo) {
+      // short circuit as no requests for credentials
+      return {
+        credentialTypesIssued: []
+      };
+    }
+
     const { user, credentialRequestsInfo: { subjectCredentialRequests, issuerDid, subjectDid } } = data;
 
     if (issuer.issuerDid !== issuerDid) {

@@ -32,7 +32,16 @@ export class TestCredentialRequests1Service {
   async create (data: UserCredentialRequests, params?: Params): Promise<CredentialsIssuedResponse> {
     const issuer: IssuerEntity = params?.issuerEntity;
 
-    const { user, credentialRequestsInfo: { subjectCredentialRequests, issuerDid, subjectDid } } = data;
+    const { user, credentialRequestsInfo } = data;
+
+    if (!credentialRequestsInfo) {
+      // short circuit as no requests for credentials; this was likely called solely for UserDidAssociation
+      return {
+        credentialTypesIssued: []
+      }
+    }
+
+    const { subjectCredentialRequests, issuerDid, subjectDid } = credentialRequestsInfo;
 
     if (issuer.issuerDid !== issuerDid) {
       throw new Error(`Persisted Issuer DID ${issuer.issuerDid} does not match request's issuer did ${issuerDid}`);

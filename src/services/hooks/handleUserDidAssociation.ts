@@ -1,6 +1,7 @@
+import { BadRequest } from '@feathersjs/errors';
 import { Hook } from '@feathersjs/feathers';
 import { revokeAllCredentials, UnumDto, VerifiedStatus, verifySignedDid } from '@unumid/server-sdk';
-import { SubjectCredentialRequestsEnrichedDto } from '@unumid/types';
+import { SubjectCredentialRequestsDto, SubjectCredentialRequestsEnrichedDto } from '@unumid/types';
 import { IssuerEntity } from '../../entities/Issuer';
 import { User } from '../../entities/User';
 import logger from '../../logger';
@@ -18,13 +19,14 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
   let user: User;
 
   const issuer: IssuerEntity = params?.issuerEntity;
-  const data: SubjectCredentialRequestsEnrichedDto = ctx.data;
-
-  const { userDidAssociation, credentialRequestsInfo: { subjectDid } } = data;
+  const {credentialRequestsInfo, userDidAssociation }: SubjectCredentialRequestsEnrichedDto = ctx.data;
 
   // if no userDidAssociation as part of request body then it is assume this issuer already has the did associated with a user
   if (!userDidAssociation) {
     logger.debug('No new userDidAssociation in the userCredentialRequests');
+
+    // ensuring credentialRequestsInfo must be present it userDidAssociation is not in the validation before hook validateUserCredentialRequest
+    const subjectDid = credentialRequestsInfo?.subjectDid;
 
     // grabbing user by subjectDid
     try {
@@ -43,7 +45,11 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
     };
   }
 
-  const { userCode, did } = userDidAssociation;
+  const { userCode, did, issuerDid } = userDidAssociation;
+
+  if (issuerDid !== issuer.issuerDid) {
+    throw new BadRequest(`Invalid issuerDid ${issuerDid} in userCredentialRequests.userDidAssociation.issuer ${issuer.issuerDid}`);
+  }
 
   try {
     user = await userDataService.get(null, { where: { userCode } }); // will throw exception if not found
