@@ -68,9 +68,11 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
   const userDid = did.id;
 
   // if this is a new did association for the user then we need to revoke all the credentials associated with the old did document
-  if (user.did && userDid !== user.did) {
-    // revoke all credentials associated with old did
-    await revokeAllCredentials(issuer.authToken, issuer.issuerDid, issuer.privateKey, user.did);
+  if (userDid !== user.did) {
+    if (user.did) {
+      // revoke all credentials associated with old did
+      await revokeAllCredentials(issuer.authToken, issuer.issuerDid, issuer.privateKey, user.did);
+    }
 
     // update the user with the new did
     user = await userDataService.patch(user.uuid, { did: userDid, userCode: null });
