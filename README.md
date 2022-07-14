@@ -47,7 +47,7 @@ $ feathers help                           # Show all commands
 Just merging changes to `main` will trigger automated deployments to dev.
 
 ### Sandbox
-To release version of this project to sandbox push a tag with a preceding `v`. This will trigger an automated deployment to sandbox.
+To release a version of this project to sandbox create a Github release with a preceding `v`, i.e. `v3.4.0`. This will trigger an automated deployment to sandbox.
 
 ## Help
 
