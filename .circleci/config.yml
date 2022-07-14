@@ -140,6 +140,7 @@ jobs:
       - run:
           name: Update container image
           command: |
+            # Deploy the acme wallet demo issuer app
             # Set the image tag then ensure a rollout is triggered. Thanks to the deployment pod spec being set to always pull this should grab the latest image, even with the same tag.
             # ref: https://stackoverflow.com/a/55914480/2631728
             kubectl set image deployment/<< parameters.deployment >> << parameters.deployment >>=${AWS_ECR_URL}/<< parameters.repo >>:<< parameters.image_tag >>
@@ -158,7 +159,10 @@ jobs:
           name: Update unum container image
           command: |
             # Deploy the acme unum wallet demo issuer app
-            kubectl set image deployment/<< parameters.deployment-unum >> << parameters.deployment-unum >>=${AWS_ECR_URL}/<< parameters.repo >>:"${CIRCLE_BRANCH}-${CIRCLE_PREVIOUS_BUILD_NUM}"
+            # Set the image tag then ensure a rollout is triggered. Thanks to the deployment pod spec being set to always pull this should grab the latest image, even with the same tag.
+            # ref: https://stackoverflow.com/a/55914480/2631728
+            kubectl set image deployment/<< parameters.deployment >> << parameters.deployment-unum >>=${AWS_ECR_URL}/<< parameters.repo >>:<< parameters.image_tag >>
+            kubectl rollout restart deploy << parameters.deployment-unum >>
             
             # Check deployment rollout status every 10 seconds (max 10 minutes) until complete.
             # ref: https://www.jeffgeerling.com/blog/2018/updating-kubernetes-deployment-and-waiting-it-roll-out-shell-script
