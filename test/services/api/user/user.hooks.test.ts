@@ -1,17 +1,14 @@
 import { GeneralError } from '@feathersjs/errors';
 import { HookContext } from '@feathersjs/feathers';
-import { issueCredential as sdkIssueCredential, issueCredentials as sdkIssueCredentials } from '@unumid/server-sdk';
+import { issueCredential as sdkIssueCredential, issueCredentials, issueCredentials as sdkIssueCredentials } from '@unumid/server-sdk';
 import { v4 } from 'uuid';
 
 import logger from '../../../../src/logger';
 
 import {
   hooks,
-  issueCredential,
   convertUnumDtoToCredentialEntityOptions,
   getDefaultIssuerEntity,
-  issueAuthCredential,
-  issueKYCCredential,
   issueAuthAndKYCAndEmailCredentials
 } from '../../../../src/services/api/user/user.hooks';
 import { convertCredentialToCredentialEntityOptions } from '../../../../src/utils/converters';
@@ -113,44 +110,6 @@ describe('user api service hooks version 3.0.0', () => {
           email
         };
         expect(emailCredential).toEqual(expected);
-      });
-    });
-
-    describe('issueCredential', () => {
-      const did = `did:unum:${v4}`;
-      const userUuid = v4();
-      const credentialType = 'DemoAuthCredential';
-      const userEmail = 'test@unum.id';
-      const credentialSubject = buildAuthCredentialSubject(did, userUuid, userEmail);
-
-      it('issues a credential using the server sdk', async () => {
-        await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
-        expect(mockIssueCredential).toBeCalledWith(
-          formatBearerToken(dummyIssuerEntity.authToken),
-          credentialType,
-          dummyIssuerEntity.issuerDid,
-          credentialSubject,
-          dummyIssuerEntity.privateKey
-        );
-      });
-
-      it('returns the response from the sdk', async () => {
-        mockIssueCredential.mockResolvedValueOnce(dummyCredentialDto);
-        const received = await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
-        expect(received).toEqual(dummyCredentialDto);
-      });
-
-      it('catches, logs and re-throws errors thrown by the sdk', async () => {
-        const err = new Error('sdk error');
-        mockIssueCredential.mockRejectedValueOnce(err);
-
-        try {
-          await issueCredential(dummyIssuerEntity, credentialSubject, credentialType);
-          fail();
-        } catch (e) {
-          expect(logger.error).toBeCalledWith('issueCredential caught an error thrown by the server sdk', err);
-          expect(e).toEqual(err);
-        }
       });
     });
 

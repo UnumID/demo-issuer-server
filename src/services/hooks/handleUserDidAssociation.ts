@@ -19,7 +19,7 @@ export const handleUserDidAssociation: Hook = async (ctx) => {
   let user: User;
 
   const issuer: IssuerEntity = params?.issuerEntity;
-  const {credentialRequestsInfo, userDidAssociation }: SubjectCredentialRequestsEnrichedDto = ctx.data;
+  const { credentialRequestsInfo, userDidAssociation }: SubjectCredentialRequestsEnrichedDto = ctx.data;
 
   // if no userDidAssociation as part of request body then it is assume this issuer already has the did associated with a user
   if (!userDidAssociation) {
