@@ -102,7 +102,6 @@ describe('issuer api service hooks', () => {
 
         await registerIssuerHook(ctx);
         expect(mockRegisterIssuer).toBeCalledWith(
-          dummyIssuerEntityOptions.issuerCustomerUuid,
           dummyIssuerEntityOptions.apiKey,
           'api.corp.com' // from config.APP_URL default value
         );
