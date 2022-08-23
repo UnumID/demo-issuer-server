@@ -5,6 +5,7 @@ import { registerIssuer } from '@unumid/server-sdk';
 import { IssuerEntityOptions } from '../../../entities/Issuer';
 import logger from '../../../logger';
 import { config } from '../../../config';
+import { VersionInfo } from '@unumid/types/build/protos/verifier';
 
 export const validateIssuerCreateOptions: Hook<IssuerEntityOptions> = (ctx) => {
   const { data } = ctx;
@@ -34,11 +35,11 @@ export const registerIssuerHook: Hook<IssuerEntityOptions> = async (ctx) => {
   if (!data) {
     throw new BadRequest();
   }
-  const { apiKey, issuerCustomerUuid } = data;
+  const { apiKey } = data;
 
   try {
     // use the server sdk to generate keys and register the issuer with the saas
-    const response = await registerIssuer(issuerCustomerUuid, apiKey, config.APP_URL);
+    const response = await registerIssuer(apiKey, config.APP_URL);
     const { body, authToken } = response;
 
     // format the response from the sdk to match the way we represent issuers in this application

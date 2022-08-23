@@ -12,7 +12,7 @@ const validateUserCredentialRequest: Hook = async (ctx) => {
   if (!data) {
     throw new BadRequest('Invalid body must be defined.');
   }
-  
+
   if (!data.credentialRequestsInfo && !data.userDidAssociation) {
     throw new BadRequest('Invalid body: userDidAssociation or credentialRequestsInfo must be defined.');
   }

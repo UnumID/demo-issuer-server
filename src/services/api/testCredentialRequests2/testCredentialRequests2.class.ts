@@ -38,7 +38,7 @@ export class TestCredentialRequests2Service {
       // short circuit as no requests for credentials; this was likely called solely for UserDidAssociation
       return {
         credentialTypesIssued: []
-      }
+      };
     }
 
     const { subjectCredentialRequests, issuerDid, subjectDid } = credentialRequestsInfo;

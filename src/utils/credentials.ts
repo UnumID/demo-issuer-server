@@ -4,19 +4,22 @@ import { IssuerEntity } from '../entities/Issuer';
 import logger from '../logger';
 import { formatBearerToken } from './formatBearerToken';
 
-export interface EmailCredentialSubject extends CredentialSubject {
+export interface EmailCredentialSubject extends CredentialData {
     type: 'EmailCredential'
     email: string;
   }
 
-export interface AuthCredentialSubject extends CredentialSubject {
+export interface AuthCredentialSubject extends CredentialData {
     type: 'DemoAuthCredential'
     isAuthorized: true;
-    userUuid: string;
-    userEmail: string;
 }
 
-export interface KYCCredentialSubject extends CredentialSubject {
+export interface FirstNameCredentialSubject extends CredentialData {
+  type: 'FirstNameCredential'
+  firstName: string;
+}
+
+export interface KYCCredentialSubject extends CredentialData {
     type: 'KYCCredential',
     firstName: string;
     lastName: string;
@@ -46,9 +49,9 @@ export interface KYCCredentialSubject extends CredentialSubject {
     confidence: string;
 }
 
-export type ValidCredentialTypes = EmailCredentialSubject | AuthCredentialSubject | KYCCredentialSubject;
+export type ValidCredentialTypes = EmailCredentialSubject | AuthCredentialSubject | KYCCredentialSubject | FirstNameCredentialSubject;
 
-export const buildAuthCredentialSubject = (did: string, userUuid: string, userEmail: string): AuthCredentialSubject => ({
+export const buildAuthCredentials = (did: string, userUuid: string, userEmail: string): AuthCredentialSubject => ({
   type: 'DemoAuthCredential',
   id: did,
   isAuthorized: true,
@@ -56,10 +59,19 @@ export const buildAuthCredentialSubject = (did: string, userUuid: string, userEm
   userEmail
 });
 
+export const buildAuthCredentialSubject = (did: string, userUuid: string, userEmail: string): AuthCredentialSubject => ({
+  type: 'DemoAuthCredential',
+  isAuthorized: true
+});
+
 export const buildEmailCredentialSubject = (did: string, userEmail: string): EmailCredentialSubject => ({
   type: 'EmailCredential',
-  id: did,
   email: userEmail
+});
+
+export const buildFirstNameCredentialSubject = (did: string, firstName: string): FirstNameCredentialSubject => ({
+  type: 'FirstNameCredential',
+  firstName
 });
 
 export const buildKYCCredentialSubject = (did: string, firstName: string): KYCCredentialSubject => ({
