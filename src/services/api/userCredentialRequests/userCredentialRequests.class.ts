@@ -6,7 +6,7 @@ import { CredentialPb, SubjectCredentialRequests, SubjectCredentialRequestsEnric
 import { UnumDto, VerifiedStatus, verifySubjectCredentialRequests } from '@unumid/server-sdk';
 import { IssuerEntity } from '../../../entities/Issuer';
 import { User } from '../../../entities/User';
-import { buildAuthCredentialSubject, buildEmailCredentialSubject, buildKYCCredentialSubject, issueCredentialsHelper, ValidCredentialTypes } from '../../../utils/credentials';
+import { buildAuthCredentialSubject, buildEmailCredentialSubject, buildFirstNameCredentialSubject, buildKYCCredentialSubject, issueCredentialsHelper, ValidCredentialTypes } from '../../../utils/credentials';
 import { convertCredentialToCredentialEntityOptions } from '../../../utils/converters';
 import { CredentialRequest } from '@unumid/types/build/protos/credential';
 
@@ -71,8 +71,8 @@ export class UserCredentialRequestsService {
         credentialSubjects.push(buildEmailCredentialSubject(userDid, user.email));
       } else if (credentialRequest.type === 'DemoAuthCredential') {
         credentialSubjects.push(buildAuthCredentialSubject(userDid, user.uuid, user.email));
-      } else if (credentialRequest.type === 'KYCCredential') {
-        credentialSubjects.push(buildKYCCredentialSubject(userDid, user.firstName as string));
+      } else if (credentialRequest.type === 'FirstNameCredential') {
+        credentialSubjects.push(buildFirstNameCredentialSubject(userDid, user.firstName as string));
       }
     });
 
